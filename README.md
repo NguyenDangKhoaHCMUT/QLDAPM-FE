@@ -1,6 +1,6 @@
-# Nuxt 4 Project 🚀
+# QLDAPM-FE 🚀
 
-A modern **Nuxt 4** application with TypeScript, Tailwind CSS, and best practices for beginners.
+A modern **Nuxt 4** application for EV Sharing platform with TypeScript, Tailwind CSS, and best practices.
 
 ## 📋 Prerequisites
 
@@ -86,16 +86,27 @@ QLDAPM-FE/
 - **Auto-imports** - No need to manually import components and composables
 - **File-based routing** - Pages are automatically created based on file structure
 - **SEO optimized** - Built-in meta tags and head management
+- **EV Sharing Platform** - Complete booking and vehicle management system
+- **Authentication** - Login and registration pages
+- **Admin Panel** - Management interface
+- **Responsive Design** - Mobile-first approach
 
 ## 📝 Making Your First Changes
 
 ### 1. Edit the Home Page
 Open `app/pages/index.vue` and modify the content to see changes instantly.
 
-### 2. Add a New Page
+### 2. Explore Existing Pages
+- **Vehicles:** `app/pages/vehicles/` - Browse and view vehicle details
+- **Booking:** `app/pages/booking/create.vue` - Create new bookings
+- **Authentication:** `app/pages/auth/` - Login and registration
+- **Profile:** `app/pages/profile/index.vue` - User profile management
+- **Admin:** `app/pages/admin/index.vue` - Admin dashboard
+
+### 3. Add a New Page
 Create a new file in `app/pages/` (e.g., `contact.vue`) and it will automatically become available at `/contact`.
 
-### 3. Create Components
+### 4. Create Components
 Add reusable components in `app/components/` and they'll be auto-imported in your pages.
 
 ## 🎨 Styling
@@ -140,19 +151,41 @@ If you encounter any issues:
 
 ## 🚢 Deployment
 
-When you're ready to deploy your project:
+### Deploy to Vercel (Recommended)
 
-1. **Build for production:**
+This project is configured for easy deployment on Vercel:
+
+1. **Install Vercel CLI:**
    ```bash
-   npm run build
+   npm i -g vercel
    ```
 
-2. **Deploy to platforms like:**
-   - [Vercel](https://vercel.com/)
-   - [Netlify](https://netlify.com/)
-   - [Cloudflare Pages](https://pages.cloudflare.com/)
+2. **Deploy:**
+   ```bash
+   vercel
+   ```
 
-Check out the [deployment documentation](https://nuxt.com/docs/getting-started/deployment) for detailed instructions.
+3. **Deploy to production:**
+   ```bash
+   vercel --prod
+   ```
+
+### Alternative Deployment Methods
+
+- **GitHub + Vercel:** Connect your GitHub repository to Vercel for automatic deployments
+- **Manual Upload:** Use Vercel dashboard to upload the project folder
+- **Other Platforms:** [Netlify](https://netlify.com/), [Cloudflare Pages](https://pages.cloudflare.com/)
+
+### Build for Production
+
+```bash
+npm run build
+```
+
+The project includes:
+- `vercel.json` - Vercel configuration
+- `.vercelignore` - Files to exclude from deployment
+- Optimized build settings for Nuxt 4
 
 ---
 
