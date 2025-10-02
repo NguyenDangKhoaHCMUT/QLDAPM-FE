@@ -29,7 +29,29 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import { useHead } from '@unhead/vue'
+import { useAuth } from '../../composables/useAuth'
+import { useAuthGuard } from '../../composables/useAuthGuard'
+import { useNotification } from '../../composables/useNotification'
+import { useRouter } from 'vue-router'
+
+const { user } = useAuth()
+const { requireAuth } = useAuthGuard()
+const { error } = useNotification()
+const router = useRouter()
+
+// Kiểm tra authentication và role admin
+onMounted(async () => {
+  const isAuthenticated = await requireAuth('Bảng điều khiển quản trị')
+  
+  if (isAuthenticated && user.value?.role !== 'admin') {
+    error('Bạn không có quyền truy cập trang quản trị!')
+    router.push('/')
+    return
+  }
+})
+
 useHead({ title: 'Quản trị | EV Sharing' })
 </script>
 

@@ -27,7 +27,17 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import { useHead } from '@unhead/vue'
+import { useAuthGuard } from '../../composables/useAuthGuard'
+
+const { requireAuth } = useAuthGuard()
+
+// Kiểm tra authentication khi component mount
+onMounted(async () => {
+  await requireAuth('Danh sách xe điện')
+})
+
 useHead({ title: 'Danh sách xe | EV Sharing' })
 </script>
 

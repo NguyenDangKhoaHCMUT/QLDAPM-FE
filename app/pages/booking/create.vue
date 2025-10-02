@@ -31,10 +31,19 @@
 </template>
 
 <script setup lang="ts">
+import { onMounted, computed } from 'vue'
 import { useHead } from '@unhead/vue'
 import { useRoute } from 'vue-router'
-import { computed } from 'vue'
+import { useAuthGuard } from '../../composables/useAuthGuard'
+
 const route = useRoute()
+const { requireAuth } = useAuthGuard()
+
+// Kiểm tra authentication khi component mount
+onMounted(async () => {
+  await requireAuth('Tạo đặt chỗ')
+})
+
 const vehicleId = computed(() => route.query.vehicleId ?? '')
 useHead({ title: 'Tạo đặt chỗ | EV Sharing' })
 </script>

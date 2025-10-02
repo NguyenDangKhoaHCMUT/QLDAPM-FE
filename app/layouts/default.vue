@@ -22,18 +22,8 @@
             >
               Đặt chỗ
             </NuxtLink>
-            <NuxtLink 
-              to="/profile" 
-              class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-            >
-              Tài khoản
-            </NuxtLink>
-            <NuxtLink 
-              to="/admin" 
-              class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-            >
-              Quản trị
-            </NuxtLink>
+            
+            <AuthStatus />
           </div>
         </div>
       </div>
@@ -50,8 +40,15 @@
         <p class="text-center text-gray-600 text-sm">© 2025 EV Sharing.</p>
       </div>
     </footer>
+
+    <!-- Notification Container -->
+    <NotificationContainer />
   </div>
 </template>
+
+<script setup lang="ts">
+// Script setup không cần import gì thêm vì chúng ta đã dùng component AuthStatus
+</script>
 
 <style scoped>
 /* Add any scoped styles here */

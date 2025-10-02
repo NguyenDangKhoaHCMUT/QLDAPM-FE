@@ -55,8 +55,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, onMounted, watchEffect } from 'vue'
+import { useRouter } from 'vue-router'
 import { useHead } from '@unhead/vue'
+import { useAuth } from '../../composables/useAuth'
+import { useAuthGuard } from '../../composables/useAuthGuard'
+
+const router = useRouter()
+const { user } = useAuth()
+const { requireAuth } = useAuthGuard()
+
+// Kiểm tra authentication khi component mount
+onMounted(async () => {
+  await requireAuth('Trang tài khoản')
+})
+
 useHead({ title: 'Tài khoản | EV Sharing' })
 
 type Tab = 'info' | 'history'
@@ -69,7 +82,23 @@ function tabClass(key: Tab) {
   ]
 }
 
-const profile = ref({ fullname: 'Người dùng Demo', phone: '0900000000', email: 'user@example.com' })
+// Sử dụng thông tin user thật từ auth store thay vì hardcode
+const profile = ref({ 
+  fullname: user.value?.fullname || 'Người dùng Demo', 
+  phone: user.value?.phone || '0900000000', 
+  email: user.value?.email || 'user@example.com' 
+})
+
+// Cập nhật profile khi user thay đổi
+watchEffect(() => {
+  if (user.value) {
+    profile.value = {
+      fullname: user.value.fullname,
+      phone: user.value.phone,
+      email: user.value.email
+    }
+  }
+})
 const orders = ref([
   { id: 1, code: 'EV-0001', vehicle: 'VinFast VF 3', time: '02/10/2025 08:00 - 03/10/2025 08:00', price: 590000, status: 'Hoàn tất' },
   { id: 2, code: 'EV-0002', vehicle: 'VinFast VF 6S', time: '05/09/2025 08:00 - 05/09/2025 18:00', price: 1100000, status: 'Hoàn tất' }
