@@ -9,20 +9,7 @@
               EV Sharing
             </NuxtLink>
           </div>
-          <div class="flex items-center space-x-4">
-            <NuxtLink 
-              to="/vehicles" 
-              class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-            >
-              Xe
-            </NuxtLink>
-            <NuxtLink 
-              to="/booking/create" 
-              class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-            >
-              Đặt chỗ
-            </NuxtLink>
-            
+          <div class="flex items-center space-x-4">           
             <AuthStatus />
           </div>
         </div>

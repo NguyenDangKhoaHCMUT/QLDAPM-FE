@@ -1,8 +1,5 @@
 <template>
-  <div class="max-w-md mx-auto space-y-6">
-    <!-- Demo Accounts Info -->
-    <DemoAccounts />
-    
+  <div class="max-w-md mx-auto space-y-6">    
     <h1 class="text-3xl font-semibold text-gray-900">Đăng nhập</h1>
     <form class="space-y-4" @submit.prevent="onSubmit">
       <div class="space-y-2">
@@ -29,30 +26,31 @@ import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useHead } from '@unhead/vue'
 import { useAuth } from '../../composables/useAuth'
-import { useAuthGuard } from '../../composables/useAuthGuard'
 
 const router = useRouter()
 const { login, loading, error } = useAuth()
-const { requireGuest } = useAuthGuard()
 const email = ref('')
 const password = ref('')
 const rememberMe = ref(false)
-
-// Kiểm tra nếu đã đăng nhập, chuyển hướng về trang chủ
-onMounted(() => {
-  requireGuest()
-})
 
 useHead({ title: 'Đăng nhập | EV Sharing' })
 
 async function onSubmit() {
   try {
-    await login({ email: email.value, password: password.value })
+    const response = await login({ email: email.value, password: password.value })
     // Nếu có rememberMe, cookies sẽ được set với thời hạn dài hơn
     if (rememberMe.value) {
       // Logic để extend cookie expiration có thể được thêm vào đây
     }
-    router.push('/')
+    if (response) {
+      if (response.user.role === 'USER') {
+        await router.push('/user')
+      } else if (response.user.role === 'COMPANY') {
+        await router.push('/company')
+      } else {
+        await router.push('/admin')
+      }
+    }
   } catch (e) {
     // hiển thị error từ composable
   }

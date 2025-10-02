@@ -8,7 +8,7 @@ interface ApiResponse<T> {
   data: T
 }
 
-const API_BASE_URL = 'http://localhost:8000'
+const API_BASE_URL = 'http://13.211.77.231:8000'
 
 export function useApi() {
   const loading = ref(false)
@@ -87,49 +87,6 @@ export function useApi() {
       return json as ApiResponse<T>
     } finally {
       loading.value = false
-    }
-  }
-
-  async function tryRefreshToken(): Promise<boolean> {
-    try {
-      const refreshToken = typeof localStorage !== 'undefined' 
-        ? localStorage.getItem('ev_refresh_token')
-        : getCookie('ev_refresh_token')
-      
-      if (!refreshToken) return false
-
-      const res = await fetch(`${API_BASE_URL}/api/v1/gw/auth/refresh`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${refreshToken}`
-        }
-      })
-
-      if (!res.ok) return false
-
-      const json = await res.json()
-      if (json.data) {
-        // Cập nhật token mới
-        if (typeof localStorage !== 'undefined') {
-          localStorage.setItem('ev_access_token', json.data.accessToken)
-          if (json.data.refreshToken) {
-            localStorage.setItem('ev_refresh_token', json.data.refreshToken)
-          }
-        }
-        
-        // Cập nhật cookie
-        if (typeof document !== 'undefined') {
-          setCookieHelper('ev_access_token', json.data.accessToken)
-          if (json.data.refreshToken) {
-            setCookieHelper('ev_refresh_token', json.data.refreshToken)
-          }
-        }
-        return true
-      }
-      return false
-    } catch (e) {
-      return false
     }
   }
 

@@ -2,19 +2,6 @@
   <div class="flex items-center space-x-4">
     <!-- User Menu -->
     <template v-if="isLoggedIn">
-      <NuxtLink 
-        to="/profile" 
-        class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-      >
-        Tài khoản
-      </NuxtLink>
-      <NuxtLink 
-        v-if="user?.role === 'admin'" 
-        to="/admin" 
-        class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-      >
-        Quản trị
-      </NuxtLink>
       <span class="text-gray-600 text-sm">Xin chào, {{ user?.fullname }}</span>
       <button 
         @click="handleLogout"

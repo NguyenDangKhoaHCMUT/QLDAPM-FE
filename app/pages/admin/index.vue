@@ -21,7 +21,7 @@
       <h2 class="text-lg font-medium mb-2">Quản lý nhanh</h2>
       <div class="flex flex-wrap gap-2">
         <NuxtLink to="/vehicles" class="px-4 py-2 bg-gray-100 rounded-md">Xe</NuxtLink>
-        <NuxtLink to="/booking/create" class="px-4 py-2 bg-gray-100 rounded-md">Tạo đặt chỗ</NuxtLink>
+        <NuxtLink to="/user/booking/create" class="px-4 py-2 bg-gray-100 rounded-md">Tạo đặt chỗ</NuxtLink>
         <NuxtLink to="/profile" class="px-4 py-2 bg-gray-100 rounded-md">Hồ sơ người dùng</NuxtLink>
       </div>
     </div>
@@ -32,25 +32,12 @@
 import { onMounted } from 'vue'
 import { useHead } from '@unhead/vue'
 import { useAuth } from '../../composables/useAuth'
-import { useAuthGuard } from '../../composables/useAuthGuard'
 import { useNotification } from '../../composables/useNotification'
 import { useRouter } from 'vue-router'
 
 const { user } = useAuth()
-const { requireAuth } = useAuthGuard()
 const { error } = useNotification()
 const router = useRouter()
-
-// Kiểm tra authentication và role admin
-onMounted(async () => {
-  const isAuthenticated = await requireAuth('Bảng điều khiển quản trị')
-  
-  if (isAuthenticated && user.value?.role !== 'admin') {
-    error('Bạn không có quyền truy cập trang quản trị!')
-    router.push('/')
-    return
-  }
-})
 
 useHead({ title: 'Quản trị | EV Sharing' })
 </script>

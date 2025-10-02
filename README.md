@@ -98,7 +98,7 @@ Open `app/pages/index.vue` and modify the content to see changes instantly.
 
 ### 2. Explore Existing Pages
 - **Vehicles:** `app/pages/vehicles/` - Browse and view vehicle details
-- **Booking:** `app/pages/booking/create.vue` - Create new bookings
+- **Booking:** `app/pages/user/booking/create.vue` - Create new bookings
 - **Authentication:** `app/pages/auth/` - Login and registration
 - **Profile:** `app/pages/profile/index.vue` - User profile management
 - **Admin:** `app/pages/admin/index.vue` - Admin dashboard

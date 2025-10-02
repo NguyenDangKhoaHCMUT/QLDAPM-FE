@@ -139,77 +139,42 @@ export function useAuth() {
   }
 
   async function login(body: LoginBody) {
-    // Mock authentication cho testing
-    const DEMO_ACCOUNTS = [
-      {
-        email: 'demo@evsharing.com',
-        password: '123456',
-        user: {
-          email: 'demo@evsharing.com',
-          fullname: 'Người dùng Demo',
-          phone: '0900000000',
-          role: 'user'
-        }
-      },
-      {
-        email: 'admin@evsharing.com', 
-        password: 'admin123',
-        user: {
-          email: 'admin@evsharing.com',
-          fullname: 'Admin EV Sharing',
-          phone: '0911111111',
-          role: 'admin'
-        }
-      }
-    ]
-
-    // Kiểm tra demo account
-    const demoAccount = DEMO_ACCOUNTS.find(
-      account => account.email === body.email && account.password === body.password
-    )
-
-    if (demoAccount) {
-      // Tạo mock JWT token
-      const mockPayload = {
-        sub: demoAccount.user.email,
-        exp: Math.floor(Date.now() / 1000) + (7 * 24 * 60 * 60), // 7 ngày
-        iat: Math.floor(Date.now() / 1000),
-        role: demoAccount.user.role
-      }
-
-      const mockToken = 'demo.' + btoa(JSON.stringify(mockPayload)) + '.signature'
-      const mockRefreshToken = 'refresh.' + btoa(JSON.stringify({...mockPayload, exp: Math.floor(Date.now() / 1000) + (30 * 24 * 60 * 60)})) + '.signature'
-
-      const mockLoginData: LoginData = {
-        accessToken: mockToken,
-        refreshToken: mockRefreshToken,
-        tokenType: 'Bearer',
-        user: demoAccount.user
-      }
-
-      saveAuthData(mockLoginData)
-      
-      // Thông báo đăng nhập thành công
-      success(`Đăng nhập thành công! Xin chào ${demoAccount.user.fullname}`)
-      
-      return {
-        code: 200,
-        message: 'Đăng nhập thành công',
-        data: mockLoginData
-      }
-    }
-
-    // Nếu không phải demo account, thử gọi API thật
     try {
+      // Gọi API login với URL thực tế
       const res = await post<LoginData>('/api/v1/gw/auth/login', body)
-      if (res.data) {
+      
+      if (res.code === 200 && res.data) {
+        // Lưu thông tin authentication
         saveAuthData(res.data)
+        
+        // Thông báo đăng nhập thành công
         success(`Đăng nhập thành công! Xin chào ${res.data.user.fullname}`)
       }
-      return res
-    } catch (e) {
-      // Nếu API không hoạt động, báo lỗi sai thông tin đăng nhập
-      const errorMessage = 'Email hoặc mật khẩu không đúng'
+      
+      return res.data
+    } catch (e: any) {
+      // Xử lý lỗi từ API
+      let errorMessage = 'Đã có lỗi xảy ra khi đăng nhập'
+      
+      if (e.response) {
+        // Lỗi từ server (4xx, 5xx)
+        const status = e.response.status
+        const data = e.response.data
+        
+        if (status === 401) {
+          errorMessage = 'Email hoặc mật khẩu không đúng'
+        } else if (status === 400) {
+          errorMessage = data?.message || 'Thông tin đăng nhập không hợp lệ'
+        } else if (status >= 500) {
+          errorMessage = 'Lỗi máy chủ, vui lòng thử lại sau'
+        } else {
+          errorMessage = data?.message || 'Đăng nhập thất bại'
+        }
+      } else if (e.request) {
+        // Lỗi network
+        errorMessage = 'Không thể kết nối đến máy chủ'
+      }
+      
       notifyError(errorMessage)
       throw new Error(errorMessage)
     }
@@ -262,17 +227,6 @@ export function useAuth() {
     }
   }
 
-  // Kiểm tra và tự động refresh token nếu cần
-  async function checkAndRefreshToken(): Promise<boolean> {
-    const token = state.accessToken.value
-    if (!token) return false
-
-    if (isTokenExpired(token)) {
-      return await refreshToken()
-    }
-    return true
-  }
-
   const isAuthenticated = computed(() => Boolean(state.accessToken.value))
   const isLoggedIn = computed(() => {
     const token = state.accessToken.value
@@ -286,7 +240,6 @@ export function useAuth() {
     login,
     logout,
     refreshToken,
-    checkAndRefreshToken,
     isAuthenticated,
     isLoggedIn,
     user: state.user,

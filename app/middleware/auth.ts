@@ -1,13 +1,7 @@
-export default defineNuxtRouteMiddleware(async (to, from) => {
-  const { isLoggedIn, checkAndRefreshToken } = useAuth()
+import { useAuth } from '../composables/useAuth'
 
-  // Kiểm tra và làm mới token nếu cần (chỉ ở client)
-  if (import.meta.client) {
-    const valid = await checkAndRefreshToken()
-    if (!valid) {
-      return navigateTo('/auth/login')
-    }
-  }
+export default defineNuxtRouteMiddleware(async (to, from) => {
+  const { isLoggedIn } = useAuth()
 
   // Nếu chưa đăng nhập, chuyển hướng về login
   if (!isLoggedIn.value) {

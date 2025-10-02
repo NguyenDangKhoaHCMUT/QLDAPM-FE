@@ -22,6 +22,13 @@ export default defineNuxtConfig({
   modules: [
     '@nuxtjs/tailwindcss'
   ],
+
+  // Auto-import configuration
+  imports: {
+    dirs: [
+      'composables/**'
+    ]
+  },
   
   // App configuration
   app: {
