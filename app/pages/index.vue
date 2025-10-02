@@ -1,106 +1,108 @@
 <template>
   <div class="space-y-8">
-    <!-- Hero Section -->
-    <div class="text-center py-12">
-      <h1 class="text-4xl font-bold text-gray-900 mb-4">
-        Welcome to Nuxt 4! 🚀
-      </h1>
-      <p class="text-xl text-gray-600 mb-8 max-w-2xl mx-auto">
-        This is a modern Nuxt 4 application with the latest features, 
-        TypeScript support, and optimized performance.
-      </p>
-      <div class="space-x-4">
-        <NuxtLink 
-          to="/about" 
-          class="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors"
-        >
-          Learn More
-        </NuxtLink>
-        <a 
-          href="https://nuxt.com" 
-          target="_blank" 
-          class="bg-gray-200 text-gray-800 px-6 py-3 rounded-lg hover:bg-gray-300 transition-colors"
-        >
-          Documentation
-        </a>
+    <div class="bg-white rounded-lg shadow-sm p-4">
+      <div class="flex gap-2 mb-4">
+        <button @click="activeTab = 'day'" :class="tabClass('day')">Thuê ngày</button>
+        <button @click="activeTab = 'month'" :class="tabClass('month')">Thuê tháng</button>
+        <button @click="activeTab = 'year'" :class="tabClass('year')">Thuê năm</button>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-3">
+        <div class="md:col-span-1">
+          <label class="block text-sm text-gray-600 mb-1">Tỉnh/Thành phố</label>
+          <select v-model="form.city" class="w-full border rounded-md px-3 py-2">
+            <option value="Ha Noi">Hà Nội</option>
+            <option value="Ho Chi Minh">Hồ Chí Minh</option>
+            <option value="Da Nang">Đà Nẵng</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm text-gray-600 mb-1">Ngày nhận xe</label>
+          <input v-model="form.pickDate" type="date" class="w-full border rounded-md px-3 py-2" />
+        </div>
+        <div>
+          <label class="block text-sm text-gray-600 mb-1">Giờ nhận</label>
+          <input v-model="form.pickTime" type="time" class="w-full border rounded-md px-3 py-2" />
+        </div>
+        <div>
+          <label class="block text-sm text-gray-600 mb-1">Ngày trả xe</label>
+          <input v-model="form.dropDate" type="date" class="w-full border rounded-md px-3 py-2" />
+        </div>
+        <div>
+          <label class="block text-sm text-gray-600 mb-1">Giờ trả</label>
+          <input v-model="form.dropTime" type="time" class="w-full border rounded-md px-3 py-2" />
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <button class="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700">Tìm kiếm xe</button>
       </div>
     </div>
 
-    <!-- Features Grid -->
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <FeatureCard
-        icon="⚡"
-        title="Lightning Fast"
-        description="Optimized performance with Nuxt 4's new architecture"
-      />
-      <FeatureCard
-        icon="🔒"
-        title="Type Safe"
-        description="Full TypeScript support with enhanced type checking"
-      />
-      <FeatureCard
-        icon="🎨"
-        title="Modern UI"
-        description="Beautiful components with Tailwind CSS ready"
-      />
-      <FeatureCard
-        icon="📱"
-        title="Responsive"
-        description="Mobile-first design that works on all devices"
-      />
-      <FeatureCard
-        icon="🔧"
-        title="Developer Experience"
-        description="Enhanced dev tools and hot module replacement"
-      />
-      <FeatureCard
-        icon="🚀"
-        title="Production Ready"
-        description="Optimized builds and deployment strategies"
-      />
-    </div>
-
-    <!-- Stats Section -->
-    <div class="bg-white rounded-lg shadow-sm p-8">
-      <h2 class="text-2xl font-semibold text-gray-900 mb-6 text-center">
-        Project Info
-      </h2>
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
-        <div>
-          <div class="text-3xl font-bold text-green-600">{{ nuxtVersion }}</div>
-          <div class="text-sm text-gray-600">Nuxt Version</div>
-        </div>
-        <div>
-          <div class="text-3xl font-bold text-blue-600">{{ vueVersion }}</div>
-          <div class="text-sm text-gray-600">Vue Version</div>
-        </div>
-        <div>
-          <div class="text-3xl font-bold text-purple-600">TypeScript</div>
-          <div class="text-sm text-gray-600">Full Support</div>
+      <div v-for="v in vehicles" :key="v.id" class="bg-white rounded-lg border overflow-hidden">
+        <div class="aspect-[16/9] bg-gray-100"></div>
+        <div class="p-4 space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-green-700">Chỉ từ</span>
+            <span class="text-lg font-semibold text-green-700">{{ formatPrice(v.pricePerDay) }} VNĐ/Ngày</span>
+          </div>
+          <div class="text-lg font-semibold">{{ v.name }}</div>
+          <div class="grid grid-cols-3 gap-2 text-sm text-gray-600">
+            <div>{{ v.type }}</div>
+            <div>{{ v.range }}km</div>
+            <div>{{ v.seats }} chỗ</div>
+          </div>
         </div>
       </div>
     </div>
   </div>
+  
 </template>
 
 <script setup lang="ts">
-// Page meta
-definePageMeta({
-  title: 'Home - Nuxt 4 Project',
-  description: 'Welcome to your new Nuxt 4 application'
+import { ref } from 'vue'
+import { useHead } from '@unhead/vue'
+import { onMounted } from 'vue'
+
+useHead({ title: 'Thuê xe điện | EV Sharing' })
+
+const activeTab = ref<'day' | 'month' | 'year'>('day')
+const form = ref({
+  city: 'Ha Noi',
+  pickDate: '',
+  pickTime: '',
+  dropDate: '',
+  dropTime: ''
 })
 
-// Reactive data
-const nuxtVersion = ref('4.1.1')
-const vueVersion = ref('3.5+')
-
-// SEO
-useHead({
-  title: 'Home - Nuxt 4 Project',
-  meta: [
-    { name: 'description', content: 'Welcome to your new Nuxt 4 application with modern features' },
-    { name: 'keywords', content: 'Nuxt, Vue, TypeScript, Web Development' }
+function tabClass(key: 'day' | 'month' | 'year') {
+  return [
+    'px-4 py-2 rounded-md text-sm',
+    activeTab.value === key ? 'bg-green-600 text-white' : 'bg-gray-100 text-gray-800'
   ]
+}
+
+const vehicles = ref([
+  { id: 1, name: 'VinFast VF 3', pricePerDay: 590000, type: 'Minicar', range: 210, seats: 4 },
+  { id: 2, name: 'VinFast VF 6 Plus', pricePerDay: 1250000, type: 'B-SUV', range: 460, seats: 5 },
+  { id: 3, name: 'VinFast VF 6S', pricePerDay: 1100000, type: 'B-SUV', range: 480, seats: 5 }
+])
+
+function formatPrice(n: number) {
+  return new Intl.NumberFormat('vi-VN').format(n)
+}
+
+function getCookie(name: string): string | null {
+  const pair = document.cookie.split('; ').find(r => r.startsWith(name + '='))
+  return pair ? decodeURIComponent(pair.split('=')[1] ?? '') : null
+}
+
+onMounted(() => {
+  const token = getCookie('ev_access_token')
+  if (!token) {
+    window.location.href = '/account/login'
+  }
 })
 </script>
 

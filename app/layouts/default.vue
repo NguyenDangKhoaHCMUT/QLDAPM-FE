@@ -11,12 +11,6 @@
           </div>
           <div class="flex items-center space-x-4">
             <NuxtLink 
-              to="/" 
-              class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-            >
-              Trang chủ
-            </NuxtLink>
-            <NuxtLink 
               to="/vehicles" 
               class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
             >
@@ -32,25 +26,13 @@
               to="/profile" 
               class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
             >
-              Hồ sơ
+              Tài khoản
             </NuxtLink>
             <NuxtLink 
               to="/admin" 
               class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
             >
               Quản trị
-            </NuxtLink>
-            <NuxtLink 
-              to="/auth/login" 
-              class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-            >
-              Đăng nhập
-            </NuxtLink>
-            <NuxtLink 
-              to="/auth/register" 
-              class="text-gray-600 hover:text-gray-900 px-3 py-2 rounded-md text-sm font-medium"
-            >
-              Đăng ký
             </NuxtLink>
           </div>
         </div>
