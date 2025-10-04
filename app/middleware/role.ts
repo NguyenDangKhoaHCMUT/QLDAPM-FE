@@ -1,15 +1,20 @@
-import { useAuth } from '../composables/useAuth'
-
-export default defineNuxtRouteMiddleware((to) => {
-  const { user, isLoggedIn } = useAuth()
+export default defineNuxtRouteMiddleware(async (to) => {
+  // Sử dụng useCookie của Nuxt để đọc cookies
+  const accessToken = useCookie('ev_access_token')
+  const user = useCookie('ev_user')
   
-  // Kiểm tra đăng nhập
-  if (!isLoggedIn.value) {
-    return navigateTo('/auth/login')
+  // Kiểm tra auth từ cookies
+  const isAuthenticated = !!(accessToken.value && user.value)
+  
+  if (!isAuthenticated) {
+    // Lưu current path để redirect sau khi đăng nhập
+    const currentPath = to.fullPath
+    return navigateTo(`/auth/login?redirect=${encodeURIComponent(currentPath)}`)
   }
   
-  const userRole = user.value?.role
   const path = to.path
+  
+  const userRole = (user.value as any)?.role
   
   // Kiểm tra quyền truy cập theo role
   if (path.startsWith('/admin') && userRole !== 'ADMIN') {

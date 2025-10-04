@@ -29,16 +29,13 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
-import { useHead } from '@unhead/vue'
 import { useAuth } from '../../composables/useAuth'
-import { useNotification } from '../../composables/useNotification'
 import { useRouter } from 'vue-router'
 
 const { user } = useAuth()
-const { error } = useNotification()
 const router = useRouter()
 
+// @ts-ignore - Nuxt auto-import
 useHead({ title: 'Quản trị | EV Sharing' })
 </script>
 

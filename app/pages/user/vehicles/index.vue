@@ -186,17 +186,15 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useAuth } from '../../composables/useAuth'
-import { useNotification } from '../../composables/useNotification'
+import { useAuth } from '../../../composables/useAuth'
 
+// @ts-ignore - Nuxt auto-import
 definePageMeta({
-  layout: 'user',
   middleware: ['role']
 })
 
 // Auth
 const { user } = useAuth()
-const { success, error, info } = useNotification()
 
 // Reactive data
 const loading = ref(false)
@@ -228,7 +226,7 @@ const vehicles = ref([
     seats: 4,
     batteryCapacity: '28.5L',
     efficiency: 'NEDC',
-    image: '/api/placeholder/400/300',
+    image: 'https://th.bing.com/th/id/R.b05d74798f6d2bfd9bd039b4c6ef6ce1?rik=i1BVMYNPZ0KHgQ&pid=ImgRaw&r=0',
     status: 'available',
     freeCharging: true,
     location: 'hanoi'
@@ -242,7 +240,7 @@ const vehicles = ref([
     seats: 5,
     batteryCapacity: '42.3L',
     efficiency: 'NEDC',
-    image: '/api/placeholder/400/300',
+    image: 'https://th.bing.com/th/id/R.b05d74798f6d2bfd9bd039b4c6ef6ce1?rik=i1BVMYNPZ0KHgQ&pid=ImgRaw&r=0',
     status: 'available',
     freeCharging: true,
     location: 'hcm'
@@ -256,7 +254,7 @@ const vehicles = ref([
     seats: 5,
     batteryCapacity: '42.3L',
     efficiency: 'NEDC',
-    image: '/api/placeholder/400/300',
+    image: 'https://th.bing.com/th/id/R.b05d74798f6d2bfd9bd039b4c6ef6ce1?rik=i1BVMYNPZ0KHgQ&pid=ImgRaw&r=0',
     status: 'unavailable',
     freeCharging: true,
     location: 'hanoi'
@@ -270,7 +268,7 @@ const vehicles = ref([
     seats: 5,
     batteryCapacity: '36.8L',
     efficiency: 'NEDC',
-    image: '/api/placeholder/400/300',
+    image: 'https://th.bing.com/th/id/R.b05d74798f6d2bfd9bd039b4c6ef6ce1?rik=i1BVMYNPZ0KHgQ&pid=ImgRaw&r=0',
     status: 'available',
     freeCharging: false,
     location: 'danang'
@@ -284,7 +282,7 @@ const vehicles = ref([
     seats: 7,
     batteryCapacity: '75.3L',
     efficiency: 'EPA',
-    image: '/api/placeholder/400/300',
+    image: 'https://th.bing.com/th/id/R.b05d74798f6d2bfd9bd039b4c6ef6ce1?rik=i1BVMYNPZ0KHgQ&pid=ImgRaw&r=0',
     status: 'available',
     freeCharging: true,
     location: 'hcm'
@@ -298,7 +296,7 @@ const vehicles = ref([
     seats: 7,
     batteryCapacity: '82.0L',
     efficiency: 'EPA',
-    image: '/api/placeholder/400/300',
+    image: 'https://th.bing.com/th/id/R.b05d74798f6d2bfd9bd039b4c6ef6ce1?rik=i1BVMYNPZ0KHgQ&pid=ImgRaw&r=0',
     status: 'available',
     freeCharging: true,
     location: 'hanoi'
@@ -322,29 +320,9 @@ function formatPrice(price: number): string {
   return new Intl.NumberFormat('vi-VN').format(price)
 }
 
-function searchVehicles() {
-  loading.value = true
-  
-  // Simulate API call
-  setTimeout(() => {
-    loading.value = false
-    success('Đã tìm thấy ' + filteredVehicles.value.length + ' xe phù hợp')
-  }, 1000)
-}
+function searchVehicles() {}
 
-function bookVehicle(vehicle: any) {
-  if (vehicle.status !== 'available') {
-    error('Xe này hiện không có sẵn')
-    return
-  }
-
-  info(`Đang chuyển đến trang đặt xe ${vehicle.name}...`)
-  
-  // Navigate to booking page (implement later)
-  setTimeout(() => {
-    navigateTo(`/user/booking/${vehicle.id}`)
-  }, 1000)
-}
+function bookVehicle(vehicle: any) {}
 
 // Initialize filters with current date
 onMounted(() => {
@@ -359,6 +337,7 @@ onMounted(() => {
   if (tomorrowStr) filters.value.endDate = tomorrowStr
 })
 
+// @ts-ignore - Nuxt auto-import
 useHead({
   title: 'Thuê xe điện - EV Sharing User'
 })

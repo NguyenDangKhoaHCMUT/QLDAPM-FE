@@ -20,7 +20,8 @@ export default defineNuxtConfig({
   
   // Modules
   modules: [
-    '@nuxtjs/tailwindcss'
+    '@nuxtjs/tailwindcss',
+    '@pinia/nuxt'
   ],
 
   // Auto-import configuration
@@ -40,5 +41,5 @@ export default defineNuxtConfig({
         { name: 'description', content: 'A modern Nuxt 4 application' }
       ]
     }
-  }
+  },
 })

@@ -90,51 +90,24 @@
     <section class="py-16">
       <div class="max-w-7xl mx-auto px-4">
         <div class="text-center mb-12">
-          <h2 class="text-3xl font-bold text-gray-900 mb-4">Đội Xe Đa Dạng</h2>
-          <p class="text-gray-600">Từ xe mini tiết kiệm đến SUV cao cấp, đáp ứng mọi nhu cầu di chuyển</p>
+          <h2 class="text-3xl font-bold text-gray-900 mb-4">Loại Xe Điện Hỗ Trợ</h2>
+          <p class="text-gray-600">Đa dạng các loại xe điện từ xe máy tiết kiệm đến ô tô cao cấp</p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <div v-for="vehicle in featuredVehicles" :key="vehicle.id" class="group relative overflow-hidden rounded-xl bg-white shadow-lg hover:shadow-xl transition-all duration-300">
-            <div class="aspect-[4/3] bg-gradient-to-br from-gray-100 to-gray-200 relative overflow-hidden">
-              <div class="absolute inset-0 flex items-center justify-center">
-                <div class="w-32 h-20 bg-gray-300 rounded-lg flex items-center justify-center">
-                  <svg class="w-12 h-12 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
-                    <path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"></path>
-                    <path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1V8a1 1 0 00-1-1h-3z"></path>
-                  </svg>
-                </div>
-              </div>
-              <!-- Animated electric effect -->
-              <div class="absolute top-4 right-4 w-8 h-8 bg-green-500 rounded-full flex items-center justify-center animate-pulse">
-                <svg class="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
-                  <path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1h4v1a2 2 0 11-4 0zM12 14c.015-.34.208-.646.477-.859a4 4 0 10-4.954 0c.27.213.462.519.477.859h4z"></path>
-                </svg>
-              </div>
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+          <div v-for="category in vehicleCategories" :key="category.id" class="text-center p-6 bg-white rounded-xl shadow-sm hover:shadow-md transition-all duration-300 group">
+            <!-- Icon placeholder -->
+            <div class="w-16 h-16 bg-gradient-to-br from-green-100 to-green-200 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+              <div class="text-2xl">{{ category.icon }}</div>
             </div>
-            <div class="p-6">
-              <h3 class="text-xl font-semibold mb-2">{{ vehicle.name }}</h3>
-              <div class="flex items-center justify-between mb-3">
-                <span class="text-2xl font-bold text-green-600">{{ formatPrice(vehicle.price) }}đ</span>
-                <span class="text-gray-500">/ngày</span>
-              </div>
-              <div class="grid grid-cols-3 gap-2 text-sm text-gray-600 mb-4">
-                <div class="flex items-center">
-                  <span class="text-xs">⚡</span>
-                  <span class="ml-1">{{ vehicle.range }}km</span>
-                </div>
-                <div class="flex items-center">
-                  <span class="text-xs">👥</span>
-                  <span class="ml-1">{{ vehicle.seats }} chỗ</span>
-                </div>
-                <div class="flex items-center">
-                  <span class="text-xs">🔋</span>
-                  <span class="ml-1">{{ vehicle.battery }}%</span>
-                </div>
-              </div>
-              <button class="w-full bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors">
-                Xem chi tiết
-              </button>
+            
+            <!-- Category info -->
+            <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ category.name }}</h3>
+            <p class="text-sm text-gray-600 mb-3">{{ category.description }}</p>
+            
+            <!-- Examples -->
+            <div class="text-xs text-green-600 font-medium">
+              {{ category.examples.join(' • ') }}
             </div>
           </div>
         </div>
@@ -202,8 +175,8 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { useHead } from '@unhead/vue'
 
+// @ts-ignore
 useHead({ 
   title: 'EV Sharing - Thuê xe điện thông minh',
   meta: [
@@ -211,34 +184,35 @@ useHead({
   ]
 })
 
-// Featured vehicles data
-const featuredVehicles = ref([
+// Vehicle categories data
+const vehicleCategories = ref([
   {
     id: 1,
-    name: 'VinFast VF 3',
-    price: 590000,
-    range: 210,
-    seats: 4,
-    battery: 85,
-    type: 'Minicar'
+    name: 'Xe Máy Điện',
+    description: 'Tiết kiệm, linh hoạt',
+    icon: '🛵',
+    examples: ['VinFast Klara', 'Pega Plus', 'Yadea']
   },
   {
     id: 2,
-    name: 'Tesla Model 3',
-    price: 1800000,
-    range: 550,
-    seats: 5,
-    battery: 92,
-    type: 'Sedan'
+    name: 'Xe Hơi Mini',
+    description: 'Nhỏ gọn, đô thị',
+    icon: '🚗',
+    examples: ['VinFast VF3', 'Wuling Mini']
   },
   {
     id: 3,
-    name: 'VinFast VF 8',
-    price: 2200000,
-    range: 420,
-    seats: 7,
-    battery: 88,
-    type: 'SUV'
+    name: 'Sedan',
+    description: 'Sang trọng, thoải mái',
+    icon: '🚙',
+    examples: ['Tesla Model 3', 'VinFast VF9']
+  },
+  {
+    id: 4,
+    name: 'SUV',
+    description: 'Rộng rãi, gia đình',
+    icon: '🚐',
+    examples: ['VinFast VF8', 'Tesla Model Y']
   }
 ])
 

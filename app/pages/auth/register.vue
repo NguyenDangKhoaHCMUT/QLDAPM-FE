@@ -28,10 +28,10 @@
 </template>
 
 <script setup lang="ts">
-import { useHead } from '@unhead/vue'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '../../composables/useAuth'
+// @ts-ignore - Nuxt auto-import
 useHead({ title: 'Đăng ký | EV Sharing' })
 const router = useRouter()
 const { register, loading, error } = useAuth()

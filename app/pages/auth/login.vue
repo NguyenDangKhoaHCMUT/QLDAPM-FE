@@ -22,17 +22,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
-import { useHead } from '@unhead/vue'
+import { ref } from 'vue'
+import { useRouter, useRoute } from 'vue-router'
+import { toast } from 'vue3-toastify'
 import { useAuth } from '../../composables/useAuth'
 
 const router = useRouter()
+const route = useRoute() // Thêm useRoute để đọc query params
 const { login, loading, error } = useAuth()
 const email = ref('')
 const password = ref('')
 const rememberMe = ref(false)
 
+// @ts-ignore - Nuxt auto-import
 useHead({ title: 'Đăng nhập | EV Sharing' })
 
 async function onSubmit() {
@@ -43,13 +45,29 @@ async function onSubmit() {
       // Logic để extend cookie expiration có thể được thêm vào đây
     }
     if (response) {
-      if (response.user.role === 'USER') {
-        await router.push('/user')
-      } else if (response.user.role === 'COMPANY') {
-        await router.push('/company')
+      // Lấy redirect URL từ query parameter hoặc từ referrer
+      const redirectTo = route.query.redirect as string || route.query.returnUrl as string
+      if (redirectTo) {
+        console.log('Redirecting to:', redirectTo)
       } else {
-        await router.push('/admin')
+        console.log('No redirect parameter found, using default logic.')
       }
+      // Redirect logic
+      if (redirectTo && redirectTo !== '/auth/login' && redirectTo !== '/auth/register') {
+        // Redirect về trang trước đó nếu có
+        await router.push(redirectTo)
+      } else {
+        // Default redirect dựa trên role
+        if (response.user.role === 'USER') {
+          await router.push('/')
+        } else if (response.user.role === 'COMPANY') {
+          await router.push('/company')
+        } else {
+          await router.push('/admin')
+        }
+      }
+      // Toast message
+      toast.success(`Đăng nhập thành công! Xin chào ${response.user.fullname}`)
     }
   } catch (e) {
     // hiển thị error từ composable
