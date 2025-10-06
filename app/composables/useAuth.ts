@@ -1,5 +1,6 @@
 // Simplified useAuth composable using Pinia store
 import { useAuthStore } from '../../stores/auth'
+import { useApi } from './useApi'
 
 export function useAuth() {
   const authStore = useAuthStore()

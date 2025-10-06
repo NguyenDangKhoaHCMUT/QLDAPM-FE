@@ -79,6 +79,43 @@
           </button>
         </div>
       </div>
+
+      <!-- Extra Filters: Type and Price -->
+      <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+        <!-- Vehicle Type -->
+        <div>
+          <label class="block text-sm text-gray-600 mb-1">Loại xe</label>
+          <select v-model="filters.type" class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent">
+            <option value="">Tất cả loại</option>
+            <option v-for="t in vehicleTypes" :key="t" :value="t">{{ t }}</option>
+          </select>
+        </div>
+
+        <!-- Price Range -->
+        <div class="md:col-span-3">
+          <label class="block text-sm text-gray-600 mb-1">Giá tối đa (VNĐ/giờ)</label>
+          <div class="flex items-center space-x-4">
+            <input 
+              v-model.number="filters.maxPrice"
+              :max="priceMax"
+              min="0"
+              type="range"
+              class="w-full"
+            >
+            <span class="text-sm text-gray-700 min-w-[120px] text-right">{{ formatPrice(filters.maxPrice) }}</span>
+          </div>
+        </div>
+
+        <!-- Apply Filters Button -->
+        <div class="flex items-end">
+          <button 
+            @click="applyFilters"
+            class="w-full bg-green-50 text-green-700 border border-green-200 p-3 rounded-md hover:bg-green-100 transition-colors font-medium"
+          >
+            Áp dụng bộ lọc
+          </button>
+        </div>
+      </div>
     </div>
 
     <!-- Vehicle Grid -->
@@ -186,8 +223,10 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useAuth } from '../../../composables/useAuth'
-import { getVehiclesMock, type MockVehicle } from '../../../mock-data/vehicles'
+import { type MockVehicle } from '../../../mock-data/vehicles'
+import { useVehiclesStore } from '../../../../stores/vehicles'
 
 // @ts-ignore - Nuxt auto-import
 definePageMeta({
@@ -198,8 +237,9 @@ definePageMeta({
 const { user } = useAuth()
 
 // Reactive data
-const loading = ref(false)
 const selectedRentalType = ref('daily')
+const vehiclesStore = useVehiclesStore()
+const { loading, filters, priceMax, vehicleTypes, displayVehicles } = storeToRefs(vehiclesStore)
 
 // Rental types
 const rentalTypes = [
@@ -208,47 +248,31 @@ const rentalTypes = [
   { value: 'yearly', label: 'Thuê năm' }
 ]
 
-// Filter state
-const filters = ref({
-  location: '',
-  startDate: '',
-  endDate: '',
-  startTime: '10:00'
-})
+// filters now provided by store
 
-// Vehicles data from mock
-const vehicles = ref<MockVehicle[]>([])
+// vehicles state is managed by store
 
 // Computed properties
-const filteredVehicles = computed(() => {
-  let result = vehicles.value
-
-  // Filter by location
-  if (filters.value.location) {
-    result = result.filter(vehicle => vehicle.location === filters.value.location)
-  }
-
-  return result
-})
+const filteredVehicles = computed(() => displayVehicles.value)
 
 // Methods
 function formatPrice(price: number): string {
   return new Intl.NumberFormat('vi-VN').format(price)
 }
 
-function searchVehicles() {}
+async function searchVehicles() {
+  await vehiclesStore.fetchVehicles()
+}
 
 function bookVehicle(vehicle: any) {}
 
 // Initialize filters with current date
 async function loadVehicles() {
-  loading.value = true
-  try {
-    const data = await getVehiclesMock()
-    vehicles.value = data
-  } finally {
-    loading.value = false
-  }
+  await vehiclesStore.fetchVehicles()
+}
+
+function applyFilters() {
+  vehiclesStore.applyFilters()
 }
 
 onMounted(() => {

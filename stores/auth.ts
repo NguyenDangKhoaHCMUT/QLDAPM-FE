@@ -8,6 +8,8 @@ import { loginMock } from '../app/mock-data/auth'
 interface RegisterBody {
   email: string
   password: string
+  fullname: string
+  phone: string
 }
 
 interface RegisterData {
