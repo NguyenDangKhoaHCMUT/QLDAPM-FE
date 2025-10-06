@@ -4,5 +4,18 @@
   "typescript.preferences.includeProjectReferences": true,
   "vue.codeActions.enabled": true,
   "vue.complete.casing.tags": "pascal",
-  "vue.complete.casing.props": "camel"
+  "vue.complete.casing.props": "camel",
+  "cSpell.words": [
+    "Công",
+    "đăng",
+    "dùng",
+    "dụng",
+    "Người",
+    "nhân",
+    "nhập",
+    "Quản",
+    "tránh",
+    "viên",
+    "xuất"
+  ]
 }

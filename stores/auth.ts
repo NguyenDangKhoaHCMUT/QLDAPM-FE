@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import { toast } from 'vue3-toastify'
 import { useApi } from '../app/composables/useApi'
+import { loginMock } from '../app/mock-data/auth'
 
 // Types
 interface RegisterBody {
@@ -128,6 +129,13 @@ export const useAuthStore = defineStore('auth', () => {
     const { post } = useApi()
     
     try {
+      if (body.email === 'mockdata@gmail.com') {
+        const res = await loginMock(body)
+        if (res.code === 200 && res.data) {
+          saveAuthData(res.data)
+        }
+        return res.data
+      }
       const res = await post<LoginData>('/api/v1/gw/auth/login', body)
       if (res.code === 200 && res.data) {
         saveAuthData(res.data)
