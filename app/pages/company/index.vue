@@ -101,16 +101,19 @@
 </template>
 
 <script setup lang="ts">
+import { useAuth } from '../../composables/useAuth'
+
 // Import composables
 const { user } = useAuth()
 
-// Page meta
+// @ts-ignore - Nuxt auto-import
 definePageMeta({
   layout: 'company',
-  middleware: ['auth', 'role']
+  middleware: ['role']
 })
 
 // Head
+// @ts-ignore - Nuxt auto-import
 useHead({
   title: 'Dashboard Công ty - EV Sharing'
 })

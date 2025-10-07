@@ -124,7 +124,12 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { useAuth } from '../../composables/useAuth'
+import { useAuth } from '../../../composables/useAuth'
+
+// @ts-ignore - Nuxt auto-import
+definePageMeta({
+  middleware: ['role']
+})
 
 // Auth
 const { user } = useAuth()

@@ -47,11 +47,6 @@ async function onSubmit() {
     if (response) {
       // Lấy redirect URL từ query parameter hoặc từ referrer
       const redirectTo = route.query.redirect as string || route.query.returnUrl as string
-      if (redirectTo) {
-        console.log('Redirecting to:', redirectTo)
-      } else {
-        console.log('No redirect parameter found, using default logic.')
-      }
       // Redirect logic
       if (redirectTo && redirectTo !== '/auth/login' && redirectTo !== '/auth/register') {
         // Redirect về trang trước đó nếu có
@@ -65,6 +60,7 @@ async function onSubmit() {
         } else {
           await router.push('/admin')
         }
+
       }
       // Toast message
       toast.success(`Đăng nhập thành công! Xin chào ${response.user.fullname}`)
@@ -77,5 +73,6 @@ async function onSubmit() {
 
 <style scoped>
 </style>
+
 
 

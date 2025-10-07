@@ -10,14 +10,31 @@
           Trải nghiệm di chuyển xanh với hệ thống cho thuê xe điện hiện đại nhất Việt Nam. 
           An toàn, tiện lợi và thân thiện với môi trường.
         </p>
-        <div class="flex justify-center gap-4 fade-in-up" style="animation-delay: 0.4s">
-          <NuxtLink to="/auth/register" class="bg-white text-green-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-all duration-300 hover:scale-105">
-            Đăng ký ngay
-          </NuxtLink>
-          <NuxtLink to="/auth/login" class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-green-600 transition-all duration-300 hover:scale-105">
-            Đăng nhập
-          </NuxtLink>
-        </div>
+        <ClientOnly>
+          <div v-if="!isLoading && !isLoggedIn" class="flex justify-center gap-4 fade-in-up" style="animation-delay: 0.4s">
+            <NuxtLink to="/auth/register" class="bg-white text-green-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-all duration-300 hover:scale-105">
+              Đăng ký ngay
+            </NuxtLink>
+            <NuxtLink to="/auth/login" class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-green-600 transition-all duration-300 hover:scale-105">
+              Đăng nhập
+            </NuxtLink>
+          </div>
+          <div v-else-if="!isLoading && isLoggedIn" class="flex justify-center gap-4 fade-in-up" style="animation-delay: 0.4s">
+            <NuxtLink to="/user/vehicles" class="bg-white text-green-600 px-20 py-5 rounded-lg font-semibold hover:bg-gray-100 transition-all duration-300 hover:scale-105">
+              Đặt xe ngay!
+            </NuxtLink>
+          </div>
+          <template #fallback>
+            <div class="flex justify-center gap-4 fade-in-up" style="animation-delay: 0.4s">
+              <NuxtLink to="/auth/register" class="bg-white text-green-600 px-8 py-3 rounded-lg font-semibold hover:bg-gray-100 transition-all duration-300 hover:scale-105">
+                Đăng ký ngay
+              </NuxtLink>
+              <NuxtLink to="/auth/login" class="border-2 border-white text-white px-8 py-3 rounded-lg font-semibold hover:bg-white hover:text-green-600 transition-all duration-300 hover:scale-105">
+                Đăng nhập
+              </NuxtLink>
+            </div>
+          </template>
+        </ClientOnly>
       </div>
       
       <!-- Animated background elements -->
@@ -165,9 +182,19 @@
         <p class="text-xl mb-8 text-gray-300">
           Đăng ký ngay hôm nay và nhận ngay voucher giảm giá 50% cho chuyến đi đầu tiên
         </p>
-        <NuxtLink to="/auth/register" class="inline-block bg-green-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-green-700 transition-colors">
-          Bắt đầu ngay →
-        </NuxtLink>
+        <ClientOnly>
+          <NuxtLink v-if="!isLoading && !isLoggedIn" to="/auth/register" class="inline-block bg-green-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-green-700 transition-colors">
+            Bắt đầu ngay →
+          </NuxtLink>
+          <NuxtLink v-else-if="!isLoading && isLoggedIn" to="/user/vehicles" class="inline-block bg-white text-green-700 px-8 py-4 rounded-lg font-semibold text-lg hover:bg-gray-100 transition-colors">
+            Khám phá xe ngay →
+          </NuxtLink>
+          <template #fallback>
+            <NuxtLink to="/auth/register" class="inline-block bg-green-600 text-white px-8 py-4 rounded-lg font-semibold text-lg hover:bg-green-700 transition-colors">
+              Bắt đầu ngay →
+            </NuxtLink>
+          </template>
+        </ClientOnly>
       </div>
     </section>
   </div>
@@ -175,6 +202,7 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import { useAuth } from '../composables/useAuth'
 
 // @ts-ignore
 useHead({ 
@@ -215,6 +243,9 @@ const vehicleCategories = ref([
     examples: ['VinFast VF8', 'Tesla Model Y']
   }
 ])
+
+// Auth state for conditional UI
+const { isLoading, isLoggedIn } = useAuth()
 
 // Animated statistics
 const animatedStats = ref({

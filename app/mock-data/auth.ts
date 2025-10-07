@@ -25,19 +25,36 @@ export async function loginMock(body: MockLoginBody): Promise<{ code: number; me
   // Simulate network latency
   await new Promise(resolve => setTimeout(resolve, 300))
 
-  const validEmail = 'mockdata@gmail.com'
-  const validPassword = '12345'
+  const userMocks = [
+    {
+      email: 'user@gmail.com',
+      password: '12345',
+      fullname: 'Mock User',
+      phone: '0123456789',
+      role: 'USER'
+    },
+    {
+      email: 'company@gmail.com',
+      password: '12345',
+      fullname: 'Company Admin',
+      phone: '0987654321',
+      role: 'COMPANY'
+    }
+  ] as const
 
-  if (body.email === validEmail && body.password === validPassword) {
+  const found = userMocks.find(u => u.email === body.email && u.password === body.password)
+
+  if (found) {
+    const tokenSuffix = found.role.toLowerCase()
     const data: MockLoginData = {
-      accessToken: 'mock-access-token',
-      refreshToken: 'mock-refresh-token',
+      accessToken: `mock-access-token-${tokenSuffix}`,
+      refreshToken: `mock-refresh-token-${tokenSuffix}`,
       tokenType: 'Bearer',
       user: {
-        email: validEmail,
-        fullname: 'Mock User',
-        phone: '0123456789',
-        role: 'USER'
+        email: found.email,
+        fullname: found.fullname,
+        phone: found.phone,
+        role: found.role
       }
     }
 
