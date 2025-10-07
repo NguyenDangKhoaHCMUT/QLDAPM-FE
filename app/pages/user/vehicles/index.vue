@@ -26,7 +26,7 @@
       </div>
 
       <!-- Location and Date Filters -->
-      <div class="grid grid-cols-1 md:grid-cols-5 gap-4 mb-4">
+      <div class="grid grid-cols-1 md:grid-cols-6 gap-4 mb-4">
         <!-- Location -->
         <div class="relative">
           <label class="block text-sm text-gray-600 mb-1">Tỉnh/Thành phố</label>
@@ -51,7 +51,7 @@
 
         <!-- Start Time -->
         <div>
-          <label class="block text-sm text-gray-600 mb-1">Giờ nhận</label>
+          <label class="block text-sm text-gray-600 mb-1">Giờ nhận xe</label>
           <input 
             v-model="filters.startTime" 
             type="time" 
@@ -65,6 +65,16 @@
           <input 
             v-model="filters.endDate" 
             type="date" 
+            class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          >
+        </div>
+        
+        <!-- End Time -->
+        <div>
+          <label class="block text-sm text-gray-600 mb-1">Giờ trả xe</label>
+          <input 
+            v-model="filters.endTime" 
+            type="time" 
             class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
           >
         </div>
@@ -224,6 +234,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
+import { useRouter } from 'vue-router'
 import { useAuth } from '../../../composables/useAuth'
 import { type MockVehicle } from '../../../mock-data/vehicles'
 import { useVehiclesStore } from '../../../../stores/vehicles'
@@ -233,8 +244,9 @@ definePageMeta({
   middleware: ['role']
 })
 
-// Auth
+// Auth and routing
 const { user } = useAuth()
+const router = useRouter()
 
 // Reactive data
 const selectedRentalType = ref('daily')
@@ -264,7 +276,50 @@ async function searchVehicles() {
   await vehiclesStore.fetchVehicles()
 }
 
-function bookVehicle(vehicle: any) {}
+function bookVehicle(vehicle: any) {
+  // Validate required fields
+  if (!filters.value.startDate || !filters.value.endDate || 
+      !filters.value.startTime || !filters.value.endTime) {
+    alert('Vui lòng chọn ngày và giờ nhận/trả xe trước khi đặt!')
+    return
+  }
+
+  // Check if end time is after start time
+  const startDateTime = new Date(`${filters.value.startDate}T${filters.value.startTime}`)
+  const endDateTime = new Date(`${filters.value.endDate}T${filters.value.endTime}`)
+  
+  if (endDateTime <= startDateTime) {
+    alert('Thời gian trả xe phải sau thời gian nhận xe!')
+    return
+  }
+
+  // Navigate to checkout with booking data
+  const bookingData = {
+    vehicle: {
+      id: vehicle.id,
+      name: vehicle.name,
+      type: vehicle.type,
+      price: vehicle.price,
+      image: vehicle.image
+    },
+    startDate: filters.value.startDate,
+    startTime: filters.value.startTime,
+    endDate: filters.value.endDate,
+    endTime: filters.value.endTime
+  }
+
+  // Navigate to checkout page with data
+  router.push({
+    path: '/user/booking/checkout',
+    query: {
+      vehicle: JSON.stringify(bookingData.vehicle),
+      startDate: bookingData.startDate,
+      startTime: bookingData.startTime,
+      endDate: bookingData.endDate,
+      endTime: bookingData.endTime
+    }
+  })
+}
 
 // Initialize filters with current date
 async function loadVehicles() {

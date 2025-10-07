@@ -16,6 +16,7 @@ export const useVehiclesStore = defineStore('vehicles', () => {
     startDate: '',
     endDate: '',
     startTime: '10:00',
+    endTime: '10:00',
     type: '',
     maxPrice: 2000000
   })
