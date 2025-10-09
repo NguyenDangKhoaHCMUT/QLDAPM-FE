@@ -77,7 +77,7 @@
                 pattern="[0-9]{10}"
                 maxlength="10"
                 class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="Nhập 10 chữ số điện thoại"
+                placeholder="Nhập số điện thoại"
                 @input="validatePhoneNumber"
               >
               <p v-if="phoneError" class="text-red-500 text-sm mt-1">{{ phoneError }}</p>
@@ -198,6 +198,14 @@
         </div>
       </div>
     </div>
+
+    <!-- Payment Modal -->
+    <PaymentModal 
+      v-if="showPaymentModal && currentPaymentData"
+      :payment-data="currentPaymentData"
+      @close="closePaymentModal"
+      @confirm="handlePaymentConfirmation"
+    />
   </div>
 </template>
 
@@ -205,6 +213,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuth } from '../../../composables/useAuth'
+import { generatePaymentData, type PaymentData } from '../../../mock-data/checkout'
+import PaymentModal from '../../../components/PaymentModal.vue'
 
 // Auth and routing
 const { user } = useAuth()
@@ -236,6 +246,8 @@ const customerInfo = ref({
 const paymentMethod = ref('momo')
 const idNumberError = ref('')
 const phoneError = ref('')
+const showPaymentModal = ref(false)
+const currentPaymentData = ref<PaymentData | null>(null)
 
 // Computed properties
 const dailyRate = computed(() => {
@@ -279,15 +291,15 @@ const totalAmount = computed(() => {
 
 const canProceedPayment = computed(() => {
   return customerInfo.value.fullName && 
-         customerInfo.value.phone && 
-         customerInfo.value.phone.length === 10 &&
-         /^\d{10}$/.test(customerInfo.value.phone) &&
-         customerInfo.value.email && 
-         customerInfo.value.idNumber &&
-         customerInfo.value.idNumber.length === 9 &&
-         /^\d{9}$/.test(customerInfo.value.idNumber) &&
-         paymentMethod.value &&
-         totalHours.value > 0
+        customerInfo.value.phone && 
+        customerInfo.value.phone.length === 10 &&
+        /^\d{10}$/.test(customerInfo.value.phone) &&
+        customerInfo.value.email && 
+        customerInfo.value.idNumber &&
+        customerInfo.value.idNumber.length === 9 &&
+        /^\d{9}$/.test(customerInfo.value.idNumber) &&
+        paymentMethod.value &&
+        totalHours.value > 0
 })
 
 const paymentButtonText = computed(() => {
@@ -313,15 +325,8 @@ function validatePhoneNumber(event: Event) {
   // Validate
   if (digitsOnly.length === 0) {
     phoneError.value = 'Số điện thoại là bắt buộc'
-  } else if (digitsOnly.length < 10) {
-    phoneError.value = 'Số điện thoại phải có đúng 10 chữ số'
-  } else if (digitsOnly.length > 10) {
-    phoneError.value = 'Số điện thoại chỉ được có tối đa 10 chữ số'
-    // Limit to 10 digits
-    customerInfo.value.phone = digitsOnly.substring(0, 10)
-    input.value = customerInfo.value.phone
   } else {
-    phoneError.value = ''
+    phoneError.value = 'Nhập thiếu số điện thoại'
   }
 }
 
@@ -339,15 +344,8 @@ function validateIdNumber(event: Event) {
   // Validate
   if (digitsOnly.length === 0) {
     idNumberError.value = 'Số CMND/CCCD là bắt buộc'
-  } else if (digitsOnly.length < 9) {
-    idNumberError.value = 'Nhập thiếu Số CMND/CCCD '
-  } else if (digitsOnly.length > 9) {
-    idNumberError.value = 'Nhập dư số CMND/CCCD'
-    // Limit to 9 digits
-    customerInfo.value.idNumber = digitsOnly.substring(0, 9)
-    input.value = customerInfo.value.idNumber
   } else {
-    idNumberError.value = ''
+    idNumberError.value = 'Nhập thiếu số CMND/CCCD'
   }
 }
 
@@ -369,6 +367,35 @@ function formatDate(dateString: string): string {
 async function processPayment() {
   if (!canProceedPayment.value) return
 
+  try {
+    // Generate payment data based on method
+    currentPaymentData.value = generatePaymentData(paymentMethod.value, totalAmount.value)
+    
+    // Show payment modal for electronic payments
+    if (paymentMethod.value === 'momo' || paymentMethod.value === 'banking') {
+      showPaymentModal.value = true
+    } else if (paymentMethod.value === 'cash') {
+      // For cash payment, directly proceed to success
+      handlePaymentSuccess(currentPaymentData.value.transactionId)
+    }
+    
+  } catch (error) {
+    console.error('Payment initialization failed:', error)
+    alert('Không thể khởi tạo thanh toán. Vui lòng thử lại!')
+  }
+}
+
+function closePaymentModal() {
+  showPaymentModal.value = false
+  currentPaymentData.value = null
+}
+
+function handlePaymentConfirmation(transactionId: string) {
+  closePaymentModal()
+  handlePaymentSuccess(transactionId)
+}
+
+function handlePaymentSuccess(transactionId: string) {
   // Simulate payment processing
   const paymentData = {
     vehicleId: bookingData.value.vehicle.id,
@@ -380,6 +407,7 @@ async function processPayment() {
     },
     payment: {
       method: paymentMethod.value,
+      transactionId: transactionId,
       subtotal: subtotal.value,
       serviceFee: serviceFee.value,
       vat: vat.value,
@@ -387,20 +415,13 @@ async function processPayment() {
     }
   }
 
-  try {
-    // Here you would integrate with actual payment gateway
-    console.log('Processing payment:', paymentData)
-    
-    // Simulate payment success
-    setTimeout(() => {
-      alert(`Thanh toán thành công! Tổng số tiền: ${formatPrice(totalAmount.value)} VNĐ`)
-      router.push('/user/bookings') // Redirect to bookings page
-    }, 2000)
-    
-  } catch (error) {
-    console.error('Payment failed:', error)
-    alert('Thanh toán thất bại. Vui lòng thử lại!')
-  }
+  console.log('Payment completed:', paymentData)
+  
+  // Show success message
+  alert(`Thanh toán thành công!\nMã giao dịch: ${transactionId}\nTổng số tiền: ${formatPrice(totalAmount.value)} VNĐ`)
+  
+  // Redirect to bookings page
+  router.push('../profile/bookings')
 }
 
 // Initialize booking data from query params
