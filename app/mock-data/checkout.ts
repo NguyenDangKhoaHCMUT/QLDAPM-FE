@@ -47,7 +47,7 @@ export function generatePaymentData(method: string, amount: number): PaymentData
         transactionId,
         qrCode: generateBankingQR(transactionId, amount),
         accountInfo: {
-          bankName: 'Vietcombank',
+          bankName: 'MSB',
           accountNumber: '14001010134225',
           accountName: 'CTY TNHH EV SHARING'
         },

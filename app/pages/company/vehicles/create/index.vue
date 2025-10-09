@@ -141,26 +141,18 @@
         <label class="block text-sm font-medium text-gray-700 mb-2">
           Trạng thái <span class="text-red-500">*</span>
         </label>
-        <div class="flex space-x-4">
-          <label class="flex items-center">
-            <input
-              v-model="formData.status"
-              type="radio"
-              value="available"
-              class="mr-2 text-green-600 focus:ring-green-500"
-            />
-            <span class="text-green-600 font-medium">Có sẵn</span>
-          </label>
-          <label class="flex items-center">
-            <input
-              v-model="formData.status"
-              type="radio"
-              value="unavailable"
-              class="mr-2 text-red-600 focus:ring-red-500"
-            />
-            <span class="text-red-600 font-medium">Không có sẵn</span>
-          </label>
-        </div>
+        <select
+          v-model="formData.status"
+          class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          required
+        >
+          <option value="">Chọn trạng thái</option>
+          <option value="available">Sẵn sàng cho thuê</option>
+          <option value="unavailable">Không khả dụng</option>
+          <option value="active">Đang hoạt động</option>
+          <option value="pending">Chờ duyệt</option>
+          <option value="inactive">Ngừng hoạt động</option>
+        </select>
         <p v-if="errors.status" class="text-red-500 text-sm mt-1">{{ errors.status }}</p>
       </div>
 
@@ -207,11 +199,9 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
-import { useRouter } from 'vue-router'
-import { useCompanyVehicles } from '../../../../composables/useCompanyVehicles'
+import { addVehicle as addMockVehicle } from '../../../../mock-data/vehicles-simple'
 
 const router = useRouter()
-const { addVehicle } = useCompanyVehicles()
 
 // Form data
 const formData = reactive({
@@ -220,7 +210,7 @@ const formData = reactive({
   licensePlate: '',
   image: '',
   pricePerHour: null as number | null,
-  status: 'available',
+  status: 'available' as 'available' | 'unavailable' | 'active' | 'pending' | 'inactive',
   description: ''
 })
 
@@ -337,8 +327,8 @@ async function submitForm() {
       description: formData.description
     }
     
-    // Add vehicle using composable
-    const newVehicle = addVehicle(vehicleData)
+    // Add vehicle using mock function
+    const newVehicle = addMockVehicle(vehicleData)
     
     console.log('Vehicle created:', newVehicle)
     
