@@ -10,6 +10,10 @@ export const useVehiclesStore = defineStore('vehicles', () => {
   const vehicles = ref<MockVehicle[]>([])
   const priceMax = ref<number>(2000000)
   const vehicleTypes = ref<string[]>(['Minicar', 'A-SUV', 'B-SUV', 'C-SUV', 'D-SUV'])
+  
+  // Pagination state
+  const currentPage = ref(1)
+  const itemsPerPage = ref(10)
 
   const filters = ref({
     location: '',
@@ -21,11 +25,14 @@ export const useVehiclesStore = defineStore('vehicles', () => {
     maxPrice: 2000000
   })
 
+  const sortBy = ref('price')
+  const sortOrder = ref('asc')
+
   // API client
   const { get } = useApi()
 
   // Getters
-  const displayVehicles = computed(() => {
+  const filteredVehicles = computed(() => {
     let result = vehicles.value
     // Always show only available vehicles
     result = result.filter(v => v.status === 'available')
@@ -39,36 +46,83 @@ export const useVehiclesStore = defineStore('vehicles', () => {
     if (filters.value.maxPrice != null) {
       result = result.filter(v => v.price <= filters.value.maxPrice)
     }
+
+    // Apply sorting
+    result = [...result].sort((a, b) => {
+      let aValue, bValue
+      
+      switch (sortBy.value) {
+        case 'price':
+          aValue = a.price
+          bValue = b.price
+          break
+        case 'name':
+          aValue = a.name.toLowerCase()
+          bValue = b.name.toLowerCase()
+          break
+        case 'range':
+          aValue = a.range
+          bValue = b.range
+          break
+        case 'seats':
+          aValue = a.seats
+          bValue = b.seats
+          break
+        default:
+          aValue = a.price
+          bValue = b.price
+      }
+
+      if (sortOrder.value === 'asc') {
+        return aValue > bValue ? 1 : aValue < bValue ? -1 : 0
+      } else {
+        return aValue < bValue ? 1 : aValue > bValue ? -1 : 0
+      }
+    })
+
     return result
   })
+
+  // Paginated vehicles for current page
+  const displayVehicles = computed(() => {
+    const start = (currentPage.value - 1) * itemsPerPage.value
+    const end = start + itemsPerPage.value
+    return filteredVehicles.value.slice(start, end)
+  })
+
+  // Pagination info
+  const totalPages = computed(() => Math.ceil(filteredVehicles.value.length / itemsPerPage.value))
+  const totalVehicles = computed(() => filteredVehicles.value.length)
+  const hasNextPage = computed(() => currentPage.value < totalPages.value)
+  const hasPreviousPage = computed(() => currentPage.value > 1)
 
   // Actions
   async function fetchVehicles() {
     loading.value = true
-    try {
-      const params = new URLSearchParams()
-      if (filters.value.location) params.set('location', filters.value.location)
-      if (filters.value.type) params.set('type', filters.value.type)
-      if (filters.value.maxPrice != null) params.set('maxPrice', String(filters.value.maxPrice))
-      if (filters.value.startDate) params.set('startDate', filters.value.startDate)
-      if (filters.value.endDate) params.set('endDate', filters.value.endDate)
+    // try {
+    //   const params = new URLSearchParams()
+    //   if (filters.value.location) params.set('location', filters.value.location)
+    //   if (filters.value.type) params.set('type', filters.value.type)
+    //   if (filters.value.maxPrice != null) params.set('maxPrice', String(filters.value.maxPrice))
+    //   if (filters.value.startDate) params.set('startDate', filters.value.startDate)
+    //   if (filters.value.endDate) params.set('endDate', filters.value.endDate)
 
-      // Try real API
-      const res = await get<MockVehicle[]>(`/api/vehicles?${params.toString()}`)
-      if (res && Array.isArray((res as any).data)) {
-        const data = (res as any).data as MockVehicle[]
-        vehicles.value = data
-        if (data.length) {
-          priceMax.value = Math.max(...data.map(v => v.price))
-          if (filters.value.maxPrice > priceMax.value) filters.value.maxPrice = priceMax.value
-        }
-        return
-      }
-    } catch (e) {
-      // ignore and fallback to mock
-    } finally {
-      loading.value = false
-    }
+    //   // Try real API
+    //   const res = await get<MockVehicle[]>(`/api/vehicles?${params.toString()}`)
+    //   if (res && Array.isArray((res as any).data)) {
+    //     const data = (res as any).data as MockVehicle[]
+    //     vehicles.value = data
+    //     if (data.length) {
+    //       priceMax.value = Math.max(...data.map(v => v.price))
+    //       if (filters.value.maxPrice > priceMax.value) filters.value.maxPrice = priceMax.value
+    //     }
+    //     return
+    //   }
+    // } catch (e) {
+    //   // ignore and fallback to mock
+    // } finally {
+    //   loading.value = false
+    // }
 
     // Fallback to mock
     loading.value = true
@@ -85,8 +139,36 @@ export const useVehiclesStore = defineStore('vehicles', () => {
   }
 
   function applyFilters() {
+    // Reset to first page when applying new filters
+    currentPage.value = 1
     // Trigger refetch with current filters
     return fetchVehicles()
+  }
+
+  function setSort(sort: string, order: string) {
+    sortBy.value = sort
+    sortOrder.value = order
+    // Reset to first page when changing sort
+    currentPage.value = 1
+  }
+
+  // Pagination actions
+  function nextPage() {
+    if (hasNextPage.value) {
+      currentPage.value++
+    }
+  }
+
+  function previousPage() {
+    if (hasPreviousPage.value) {
+      currentPage.value--
+    }
+  }
+
+  function goToPage(page: number) {
+    if (page >= 1 && page <= totalPages.value) {
+      currentPage.value = page
+    }
   }
 
   return {
@@ -96,13 +178,26 @@ export const useVehiclesStore = defineStore('vehicles', () => {
     filters,
     priceMax,
     vehicleTypes,
+    currentPage,
+    itemsPerPage,
+    sortBy,
+    sortOrder,
 
     // Getters
+    filteredVehicles,
     displayVehicles,
+    totalPages,
+    totalVehicles,
+    hasNextPage,
+    hasPreviousPage,
 
     // Actions
     fetchVehicles,
-    applyFilters
+    applyFilters,
+    setSort,
+    nextPage,
+    previousPage,
+    goToPage
   }
 })
 

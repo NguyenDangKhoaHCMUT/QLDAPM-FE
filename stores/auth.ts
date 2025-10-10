@@ -87,10 +87,8 @@ export const useAuthStore = defineStore('auth', () => {
   // Computed
   const isAuthenticated = computed(() => Boolean(accessToken.value))
   const isLoggedIn = computed(() => {
-    // Trên server-side, luôn trả về false để tránh hydration mismatch
     if (typeof window === 'undefined') return false
     
-    // Nếu chưa initialized, trả về false thay vì null
     if (!isInitialized.value) return false
     
     return Boolean(accessToken.value && user.value)

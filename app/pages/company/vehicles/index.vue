@@ -102,7 +102,6 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
 import { mockVehicles, deleteVehicle as deleteMockVehicle } from '../../../mock-data/vehicles-simple'
-import { logVehicleDeleted } from '../../../utils/activityLogger'
 
 const searchTerm = ref('')
 const filterStatus = ref('')
@@ -144,7 +143,7 @@ async function deleteVehicle(id: number) {
       
       if (deleted && vehicleToDelete) {
         // Log activity
-        logVehicleDeleted(vehicleToDelete.name, id)
+        // logVehicleDeleted(vehicleToDelete.name, id)
         
         // Cập nhật lại danh sách
         vehicles.value = mockVehicles
@@ -157,12 +156,14 @@ async function deleteVehicle(id: number) {
 }
 
 // Page meta
+// @ts-ignore
 definePageMeta({
   layout: 'company'
   // Tạm thời chưa có middleware
 })
 
 // Head
+// @ts-ignore
 useHead({
   title: 'Quản lý xe - Dashboard Công ty'
 })

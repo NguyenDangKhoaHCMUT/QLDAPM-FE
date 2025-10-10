@@ -1,36 +1,24 @@
 <template>
-  <div>
+  <div class="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50">
     <!-- Header -->
-    <div class="mb-6">
-      <h1 class="text-3xl font-bold text-gray-900">Thuê xe điện</h1>
-      <p class="text-gray-600">Tìm và đặt xe điện phù hợp với nhu cầu của bạn</p>
+    <div class="mb-8">
+      <div class="text-center mb-6">
+        <h1 class="text-4xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mb-3">
+          Thuê xe điện
+        </h1>
+        <p class="text-gray-600 text-lg">Tìm và đặt xe điện phù hợp với nhu cầu của bạn</p>
+      </div>
     </div>
 
     <!-- Search and Filter Section -->
-    <div class="bg-white p-6 rounded-lg shadow-sm mb-6">
-      <!-- Rental Type Tabs -->
-      <div class="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg">
-        <button 
-          v-for="type in rentalTypes" 
-          :key="type.value"
-          @click="selectedRentalType = type.value"
-          :class="[
-            'flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all',
-            selectedRentalType === type.value 
-              ? 'bg-green-600 text-white' 
-              : 'text-gray-600 hover:text-gray-800'
-          ]"
-        >
-          {{ type.label }}
-        </button>
-      </div>
-
-      <!-- Location and Date Filters -->
-      <div class="grid grid-cols-1 md:grid-cols-6 gap-4 mb-4">
+    <div class="bg-white/80 backdrop-blur-sm p-8 rounded-2xl shadow-xl border border-white/20 mb-8">
+      
+      <!-- Main Filters Row -->
+      <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
         <!-- Location -->
-        <div class="relative">
-          <label class="block text-sm text-gray-600 mb-1">Tỉnh/Thành phố</label>
-          <select v-model="filters.location" class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent">
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-gray-700">📍 Địa điểm</label>
+          <select v-model="filters.location" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white shadow-sm">
             <option value="">Tất cả địa điểm</option>
             <option value="hanoi">Hà Nội</option>
             <option value="hcm">TP. Hồ Chí Minh</option>
@@ -39,163 +27,213 @@
           </select>
         </div>
 
-        <!-- Start Date -->
-        <div>
-          <label class="block text-sm text-gray-600 mb-1">Ngày nhận xe</label>
-          <input 
-            v-model="filters.startDate" 
-            type="date" 
-            class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
-          >
-        </div>
-
-        <!-- Start Time -->
-        <div>
-          <label class="block text-sm text-gray-600 mb-1">Giờ nhận xe</label>
-          <input 
-            v-model="filters.startTime" 
-            type="time" 
-            class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
-          >
-        </div>
-
-        <!-- End Date -->
-        <div>
-          <label class="block text-sm text-gray-600 mb-1">Ngày trả xe</label>
-          <input 
-            v-model="filters.endDate" 
-            type="date" 
-            class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
-          >
-        </div>
-        
-        <!-- End Time -->
-        <div>
-          <label class="block text-sm text-gray-600 mb-1">Giờ trả xe</label>
-          <input 
-            v-model="filters.endTime" 
-            type="time" 
-            class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
-          >
-        </div>
-
-        <!-- Search Button -->
-        <div class="flex items-end">
-          <button 
-            @click="searchVehicles"
-            class="w-full bg-green-600 text-white p-3 rounded-md hover:bg-green-700 transition-colors font-medium"
-          >
-            Tìm kiếm xe
-          </button>
-        </div>
-      </div>
-
-      <!-- Extra Filters: Type and Price -->
-      <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
         <!-- Vehicle Type -->
-        <div>
-          <label class="block text-sm text-gray-600 mb-1">Loại xe</label>
-          <select v-model="filters.type" class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent">
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-gray-700">🚗 Loại xe</label>
+          <select v-model="filters.type" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white shadow-sm">
             <option value="">Tất cả loại</option>
             <option v-for="t in vehicleTypes" :key="t" :value="t">{{ t }}</option>
           </select>
         </div>
 
-        <!-- Price Range -->
-        <div class="md:col-span-3">
-          <label class="block text-sm text-gray-600 mb-1">Giá tối đa (VNĐ/giờ)</label>
-          <div class="flex items-center space-x-4">
+        <!-- Sort -->
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-gray-700">📊 Sắp xếp</label>
+          <div class="flex space-x-2">
+            <select v-model="sortBy" class="flex-1 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white shadow-sm">
+              <option value="price">Giá</option>
+              <option value="name">Tên xe</option>
+              <option value="range">Tầm xa</option>
+              <option value="seats">Số chỗ</option>
+            </select>
+            <button 
+              @click="toggleSortOrder"
+              class="px-4 py-3 bg-green-100 text-green-700 rounded-xl hover:bg-green-200 transition-colors border border-green-200"
+              :title="sortOrder === 'asc' ? 'Tăng dần' : 'Giảm dần'"
+            >
+              {{ sortOrder === 'asc' ? '↑' : '↓' }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Apply Button -->
+        <div class="flex items-end">
+          <button 
+            @click="applyFilters"
+            class="w-full bg-gradient-to-r from-green-500 to-green-600 text-white p-3 rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+          >
+            🔍 Tìm xe
+          </button>
+        </div>
+      </div>
+
+      <!-- Date & Time Section -->
+      <div class="bg-gradient-to-r from-green-50 to-blue-50 p-6 rounded-xl border border-green-100">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+          📅 Thời gian thuê xe
+        </h3>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <!-- Pickup -->
+          <div class="space-y-4">
+            <h4 class="text-md font-medium text-gray-700 flex items-center">
+              🚗 Nhận xe
+            </h4>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">Ngày</label>
+                <input 
+                  v-model="filters.startDate" 
+                  type="date" 
+                  class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white shadow-sm"
+                >
+              </div>
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">Giờ</label>
+                <input 
+                  v-model="filters.startTime" 
+                  type="time" 
+                  class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white shadow-sm"
+                >
+              </div>
+            </div>
+          </div>
+
+          <!-- Return -->
+          <div class="space-y-4">
+            <h4 class="text-md font-medium text-gray-700 flex items-center">
+              🏁 Trả xe
+            </h4>
+            <div class="grid grid-cols-2 gap-3">
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">Ngày</label>
+                <input 
+                  v-model="filters.endDate" 
+                  type="date" 
+                  class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white shadow-sm"
+                >
+              </div>
+              <div>
+                <label class="block text-sm text-gray-600 mb-1">Giờ</label>
+                <input 
+                  v-model="filters.endTime" 
+                  type="time" 
+                  class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white shadow-sm"
+                >
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Price Range Section -->
+      <div class="mt-6 bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-xl border border-blue-100">
+        <h3 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+          💰 Khoảng giá
+        </h3>
+        
+        <div class="space-y-4">
+          <div class="flex items-center justify-between">
+            <span class="text-sm font-medium text-gray-700">Giá tối đa</span>
+            <span class="text-lg font-bold text-green-600">{{ formatPrice(filters.maxPrice) }} VNĐ/Ngày</span>
+          </div>
+          
+          <div class="relative">
             <input 
               v-model.number="filters.maxPrice"
               :max="priceMax"
               min="0"
               type="range"
-              class="w-full"
+              class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
             >
-            <span class="text-sm text-gray-700 min-w-[120px] text-right">{{ formatPrice(filters.maxPrice) }}</span>
+            <div class="flex justify-between text-xs text-gray-500 mt-1">
+              <span>0 VNĐ</span>
+              <span>{{ formatPrice(priceMax) }} VNĐ</span>
+            </div>
           </div>
-        </div>
-
-        <!-- Apply Filters Button -->
-        <div class="flex items-end">
-          <button 
-            @click="applyFilters"
-            class="w-full bg-green-50 text-green-700 border border-green-200 p-3 rounded-md hover:bg-green-100 transition-colors font-medium"
-          >
-            Áp dụng bộ lọc
-          </button>
         </div>
       </div>
     </div>
 
+    <!-- Results Info -->
+    <div class="mb-6 text-center">
+      <p class="text-gray-600 text-lg">
+        Hiển thị <span class="font-semibold text-green-600">{{ displayVehicles.length }}</span> 
+        trong tổng số <span class="font-semibold text-green-600">{{ totalVehicles }}</span> xe điện
+      </p>
+    </div>
+
     <!-- Vehicle Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mb-8">
       <div 
-        v-for="vehicle in filteredVehicles" 
+        v-for="vehicle in displayVehicles" 
         :key="vehicle.id"
-        class="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow"
+        class="bg-white/90 backdrop-blur-sm rounded-2xl shadow-lg overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:-translate-y-2 border border-white/20 group"
       >
         <!-- Vehicle Image -->
-        <div class="relative h-48 bg-gray-100">
+        <div class="relative h-56 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
           <img 
             :src="vehicle.image" 
             :alt="vehicle.name"
-            class="w-full h-full object-cover"
+            class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
           >
+          <!-- Gradient Overlay -->
+          <div class="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
+          
           <!-- Status Badges -->
-          <div class="absolute top-3 left-3">
+          <div class="absolute top-4 left-4 flex flex-col gap-2">
             <span 
               v-if="vehicle.freeCharging"
-              class="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full mr-2"
+              class="bg-green-500/90 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-full font-medium shadow-lg"
             >
-              Miễn phí sạc
+              ⚡ Miễn phí sạc
             </span>
             <span 
               v-if="vehicle.status === 'available'"
-              class="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full"
+              class="bg-blue-500/90 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-full font-medium shadow-lg"
             >
-              Có sẵn
+              ✅ Có sẵn
             </span>
             <span 
               v-else
-              class="bg-red-100 text-red-800 text-xs px-2 py-1 rounded-full"
+              class="bg-red-500/90 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-full font-medium shadow-lg"
             >
-              Hết xe
+              ❌ Hết xe
             </span>
           </div>
         </div>
 
         <!-- Vehicle Info -->
-        <div class="p-4">
+        <div class="p-6">
           <!-- Price -->
-          <div class="flex items-center justify-between mb-2">
-            <span class="text-sm text-gray-600">Chỉ từ</span>
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-sm text-gray-500 font-medium">Chỉ từ</span>
             <div class="text-right">
-              <span class="text-xl font-bold text-green-600">{{ formatPrice(vehicle.price) }}</span>
-              <span class="text-sm text-gray-600 ml-1">VNĐ/Ngày</span>
+              <span class="text-2xl font-bold bg-gradient-to-r from-green-600 to-green-500 bg-clip-text text-transparent">{{ formatPrice(vehicle.price) }}</span>
+              <span class="text-sm text-gray-500 ml-1">VNĐ/Ngày</span>
             </div>
           </div>
 
           <!-- Vehicle Name -->
-          <h3 class="text-lg font-semibold text-gray-900 mb-2">{{ vehicle.name }}</h3>
+          <h3 class="text-xl font-bold text-gray-900 mb-4 group-hover:text-green-600 transition-colors">{{ vehicle.name }}</h3>
 
           <!-- Vehicle Specs -->
-          <div class="grid grid-cols-2 gap-4 mb-4 text-sm text-gray-600">
-            <div class="flex items-center">
-              <span class="mr-2">🚗</span>
-              <span>{{ vehicle.type }}</span>
+          <div class="grid grid-cols-2 gap-3 mb-6 text-sm text-gray-600">
+            <div class="flex items-center bg-gray-50 rounded-lg p-3">
+              <span class="mr-2 text-lg">🚗</span>
+              <span class="font-medium">{{ vehicle.type }}</span>
             </div>
-            <div class="flex items-center">
-              <span class="mr-2">⚡</span>
-              <span>{{ vehicle.range }}km ({{ vehicle.efficiency }})</span>
+            <div class="flex items-center bg-gray-50 rounded-lg p-3">
+              <span class="mr-2 text-lg">⚡</span>
+              <span class="font-medium">{{ vehicle.range }}km</span>
             </div>
-            <div class="flex items-center">
-              <span class="mr-2">👥</span>
-              <span>{{ vehicle.seats }} chỗ</span>
+            <div class="flex items-center bg-gray-50 rounded-lg p-3">
+              <span class="mr-2 text-lg">👥</span>
+              <span class="font-medium">{{ vehicle.seats }} chỗ</span>
             </div>
-            <div class="flex items-center">
-              <span class="mr-2">🔋</span>
-              <span>Dung tích {{ vehicle.batteryCapacity }}</span>
+            <div class="flex items-center bg-gray-50 rounded-lg p-3">
+              <span class="mr-2 text-lg">🔋</span>
+              <span class="font-medium">{{ vehicle.batteryCapacity }}</span>
             </div>
           </div>
 
@@ -204,29 +242,82 @@
             @click="bookVehicle(vehicle)"
             :disabled="vehicle.status !== 'available'"
             :class="[
-              'w-full py-2 px-4 rounded-md font-medium transition-colors',
+              'w-full py-3 px-6 rounded-xl font-semibold transition-all duration-300 transform',
               vehicle.status === 'available'
-                ? 'bg-green-600 text-white hover:bg-green-700'
-                : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                ? 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-lg hover:shadow-xl hover:-translate-y-0.5'
+                : 'bg-gray-200 text-gray-400 cursor-not-allowed'
             ]"
           >
-            {{ vehicle.status === 'available' ? 'Đặt xe ngay' : 'Hết xe' }}
+            {{ vehicle.status === 'available' ? '🚗 Đặt xe ngay' : '❌ Hết xe' }}
           </button>
         </div>
       </div>
     </div>
 
+    <!-- Pagination -->
+    <div v-if="totalPages > 1" class="flex justify-center items-center space-x-2 mb-8">
+      <!-- Previous Button -->
+      <button 
+        @click="previousPage"
+        :disabled="!hasPreviousPage"
+        :class="[
+          'px-4 py-2 rounded-lg font-medium transition-all duration-300',
+          hasPreviousPage 
+            ? 'bg-white text-green-600 hover:bg-green-50 border border-green-200 shadow-md hover:shadow-lg' 
+            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+        ]"
+      >
+        ← Trước
+      </button>
+
+      <!-- Page Numbers -->
+      <div class="flex space-x-1">
+        <button
+          v-for="page in visiblePages"
+          :key="page"
+          @click="goToPage(page)"
+          :class="[
+            'px-4 py-2 rounded-lg font-medium transition-all duration-300',
+            page === currentPage
+              ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg'
+              : 'bg-white text-gray-700 hover:bg-green-50 border border-gray-200 hover:border-green-200'
+          ]"
+        >
+          {{ page }}
+        </button>
+      </div>
+
+      <!-- Next Button -->
+      <button 
+        @click="nextPage"
+        :disabled="!hasNextPage"
+        :class="[
+          'px-4 py-2 rounded-lg font-medium transition-all duration-300',
+          hasNextPage 
+            ? 'bg-white text-green-600 hover:bg-green-50 border border-green-200 shadow-md hover:shadow-lg' 
+            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+        ]"
+      >
+        Sau →
+      </button>
+    </div>
+
+    <!-- Page Info -->
+    <div v-if="totalPages > 1" class="text-center text-gray-600 mb-8">
+      <p>Trang {{ currentPage }} / {{ totalPages }} ({{ totalVehicles }} xe)</p>
+    </div>
+
     <!-- Loading State -->
     <div v-if="loading" class="flex justify-center items-center py-12">
-      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600"></div>
-      <span class="ml-2 text-gray-600">Đang tải xe...</span>
+      <div class="animate-spin rounded-full h-12 w-12 border-4 border-green-200 border-t-green-600"></div>
+      <span class="ml-3 text-gray-600 text-lg">Đang tải xe...</span>
     </div>
 
     <!-- Empty State -->
-    <div v-if="!loading && filteredVehicles.length === 0" class="text-center py-12">
-      <div class="text-gray-400 text-6xl mb-4">🚗</div>
-      <h3 class="text-lg font-semibold text-gray-600 mb-2">Không tìm thấy xe phù hợp</h3>
-      <p class="text-gray-500">Thử thay đổi bộ lọc để tìm xe khác</p>
+    <div v-if="!loading && filteredVehicles.length === 0" class="text-center py-16">
+      <div class="text-gray-400 text-8xl mb-6">🚗</div>
+      <h3 class="text-2xl font-bold text-gray-600 mb-3">Không tìm thấy xe phù hợp</h3>
+      <p class="text-gray-500 text-lg">Thử thay đổi bộ lọc để tìm xe khác</p>
     </div>
   </div>
 </template>
@@ -245,35 +336,52 @@ definePageMeta({
 })
 
 // Auth and routing
-const { user } = useAuth()
 const router = useRouter()
 
 // Reactive data
-const selectedRentalType = ref('daily')
 const vehiclesStore = useVehiclesStore()
-const { loading, filters, priceMax, vehicleTypes, displayVehicles } = storeToRefs(vehiclesStore)
-
-// Rental types
-const rentalTypes = [
-  { value: 'daily', label: 'Thuê ngày' },
-  { value: 'monthly', label: 'Thuê tháng' },
-  { value: 'yearly', label: 'Thuê năm' }
-]
-
-// filters now provided by store
-
-// vehicles state is managed by store
+const { 
+  loading, 
+  filters, 
+  priceMax, 
+  vehicleTypes, 
+  displayVehicles,
+  filteredVehicles,
+  totalPages,
+  totalVehicles,
+  hasNextPage,
+  hasPreviousPage,
+  currentPage,
+  sortBy,
+  sortOrder
+} = storeToRefs(vehiclesStore)
 
 // Computed properties
-const filteredVehicles = computed(() => displayVehicles.value)
+const visiblePages = computed(() => {
+  const pages = []
+  const total = totalPages.value
+  const current = currentPage.value
+  
+  // Show max 5 pages
+  const maxVisible = 5
+  let start = Math.max(1, current - Math.floor(maxVisible / 2))
+  let end = Math.min(total, start + maxVisible - 1)
+  
+  // Adjust start if we're near the end
+  if (end - start + 1 < maxVisible) {
+    start = Math.max(1, end - maxVisible + 1)
+  }
+  
+  for (let i = start; i <= end; i++) {
+    pages.push(i)
+  }
+  
+  return pages
+})
 
 // Methods
 function formatPrice(price: number): string {
   return new Intl.NumberFormat('vi-VN').format(price)
-}
-
-async function searchVehicles() {
-  await vehiclesStore.fetchVehicles()
 }
 
 function bookVehicle(vehicle: any) {
@@ -300,7 +408,12 @@ function bookVehicle(vehicle: any) {
       name: vehicle.name,
       type: vehicle.type,
       price: vehicle.price,
-      image: vehicle.image
+      image: vehicle.image,
+      range: vehicle.range,
+      efficiency: vehicle.efficiency,
+      seats: vehicle.seats,
+      batteryCapacity: vehicle.batteryCapacity,
+      freeCharging: vehicle.freeCharging
     },
     startDate: filters.value.startDate,
     startTime: filters.value.startTime,
@@ -330,6 +443,24 @@ function applyFilters() {
   vehiclesStore.applyFilters()
 }
 
+function toggleSortOrder() {
+  const newOrder = sortOrder.value === 'asc' ? 'desc' : 'asc'
+  vehiclesStore.setSort(sortBy.value, newOrder)
+}
+
+// Pagination methods
+function nextPage() {
+  vehiclesStore.nextPage()
+}
+
+function previousPage() {
+  vehiclesStore.previousPage()
+}
+
+function goToPage(page: number) {
+  vehiclesStore.goToPage(page)
+}
+
 onMounted(() => {
   const today = new Date()
   const tomorrow = new Date(today)
@@ -350,3 +481,51 @@ useHead({
   title: 'Thuê xe điện - EV Sharing User'
 })
 </script>
+
+<style scoped>
+/* Custom slider styles */
+.slider::-webkit-slider-thumb {
+  appearance: none;
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #10b981, #059669);
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
+  transition: all 0.3s ease;
+}
+
+.slider::-webkit-slider-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.slider::-moz-range-thumb {
+  height: 20px;
+  width: 20px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #10b981, #059669);
+  cursor: pointer;
+  border: 2px solid white;
+  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
+  transition: all 0.3s ease;
+}
+
+.slider::-moz-range-thumb:hover {
+  transform: scale(1.1);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+}
+
+.slider::-webkit-slider-track {
+  background: linear-gradient(90deg, #e5e7eb, #d1d5db);
+  border-radius: 10px;
+  height: 8px;
+}
+
+.slider::-moz-range-track {
+  background: linear-gradient(90deg, #e5e7eb, #d1d5db);
+  border-radius: 10px;
+  height: 8px;
+}
+</style>

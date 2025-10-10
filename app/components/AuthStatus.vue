@@ -78,9 +78,12 @@
 
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
-import { useAuth } from '../composables/useAuth'
+import { useAuthStore } from '../../stores/auth'
+import { storeToRefs } from 'pinia'
 
-const { isLoggedIn, user, logout, isLoading } = useAuth()
+const { user, logout } = useAuthStore()
+const authStore = useAuthStore()
+const  { isLoggedIn } = storeToRefs(authStore)
 
 // Dropdown state
 const isDropdownOpen = ref(false)
@@ -140,18 +143,5 @@ function getInitials(name?: string): string {
     }
   }
   return name?.[0]?.toUpperCase() || 'U'
-}
-
-function getRoleText(role?: string): string {
-  switch (role?.toUpperCase()) {
-    case 'ADMIN':
-      return 'Quản trị viên'
-    case 'COMPANY':
-      return 'Công ty'
-    case 'USER':
-      return 'Người dùng'
-    default:
-      return 'Người dùng'
-  }
 }
 </script>
