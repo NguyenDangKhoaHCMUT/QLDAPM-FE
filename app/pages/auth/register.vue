@@ -36,6 +36,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuth } from '../../composables/useAuth'
+import { toast } from 'vue3-toastify'
 // @ts-ignore - Nuxt auto-import
 useHead({ title: 'Đăng ký | EV Sharing' })
 const router = useRouter()
@@ -78,10 +79,13 @@ async function onSubmit() {
   }
 
   try {
-    await register({ email: email.value, password: password.value, fullname: fullname.value, phone: phone.value })
-    router.push('/auth/login')
+    const res = await register({ email: email.value, password: password.value, fullname: fullname.value, phone: phone.value })
+    if (res.code === 200 && res.data) {
+      router.push('/auth/login')
+      toast.success('Đăng ký thành công, vui lòng đăng nhập')
+    }
   } catch (e) {
-    // Server error message is handled by store/useApi and exposed in `error`
+    toast.error(error.value)
   }
 }
 </script>

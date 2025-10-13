@@ -136,7 +136,7 @@ export const useAuthStore = defineStore('auth', () => {
         }
         return res.data
       }
-      const res = await post<LoginData>('/api/v1/gw/auth/login', body)
+      const res = await post<LoginData>('/api/auth/login', body)
       if (res.code === 200 && res.data) {
         saveAuthData(res.data)
       }
@@ -176,7 +176,8 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function register(body: RegisterBody) {
     const { post } = useApi()
-    const res = await post<RegisterData>('/api/v1/gw/auth/register', body)
+    console.log(body)
+    const res = await post<RegisterData>('/api/auth/register', body)
     return res
   }
 
