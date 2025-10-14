@@ -22,6 +22,7 @@ export const useVehiclesStore = defineStore('vehicles', () => {
     startTime: '10:00',
     endTime: '10:00',
     type: '',
+    minPrice: 0,
     maxPrice: 2000000
   })
 
@@ -43,7 +44,10 @@ export const useVehiclesStore = defineStore('vehicles', () => {
     if (filters.value.type) {
       result = result.filter(v => v.type === filters.value.type)
     }
-    if (filters.value.maxPrice != null) {
+    if (filters.value.minPrice > 0) {
+      result = result.filter(v => v.price >= filters.value.minPrice)
+    }
+    if (filters.value.maxPrice > 0) {
       result = result.filter(v => v.price <= filters.value.maxPrice)
     }
 
@@ -99,30 +103,30 @@ export const useVehiclesStore = defineStore('vehicles', () => {
   // Actions
   async function fetchVehicles() {
     loading.value = true
-    // try {
-    //   const params = new URLSearchParams()
-    //   if (filters.value.location) params.set('location', filters.value.location)
-    //   if (filters.value.type) params.set('type', filters.value.type)
-    //   if (filters.value.maxPrice != null) params.set('maxPrice', String(filters.value.maxPrice))
-    //   if (filters.value.startDate) params.set('startDate', filters.value.startDate)
-    //   if (filters.value.endDate) params.set('endDate', filters.value.endDate)
+    try {
+      const params = new URLSearchParams()
+      if (filters.value.location) params.set('location', filters.value.location)
+      if (filters.value.type) params.set('type', filters.value.type)
+      if (filters.value.maxPrice != null) params.set('maxPrice', String(filters.value.maxPrice))
+      if (filters.value.startDate) params.set('startDate', filters.value.startDate)
+      if (filters.value.endDate) params.set('endDate', filters.value.endDate)
 
-    //   // Try real API
-    //   const res = await get<MockVehicle[]>(`/api/vehicles?${params.toString()}`)
-    //   if (res && Array.isArray((res as any).data)) {
-    //     const data = (res as any).data as MockVehicle[]
-    //     vehicles.value = data
-    //     if (data.length) {
-    //       priceMax.value = Math.max(...data.map(v => v.price))
-    //       if (filters.value.maxPrice > priceMax.value) filters.value.maxPrice = priceMax.value
-    //     }
-    //     return
-    //   }
-    // } catch (e) {
-    //   // ignore and fallback to mock
-    // } finally {
-    //   loading.value = false
-    // }
+      // Try real API
+      const res = await get<MockVehicle[]>(`/vehicles/search?${params.toString()}`)
+      if (res && Array.isArray((res as any).data)) {
+        const data = (res as any).data as MockVehicle[]
+        vehicles.value = data
+        if (data.length) {
+          priceMax.value = Math.max(...data.map(v => v.price))
+          if (filters.value.maxPrice > priceMax.value) filters.value.maxPrice = priceMax.value
+        }
+        return
+      }
+    } catch (e) {
+      // ignore and fallback to mock
+    } finally {
+      loading.value = false
+    }
 
     // Fallback to mock
     loading.value = true

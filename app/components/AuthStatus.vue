@@ -13,7 +13,7 @@
             <!-- User Avatar -->
             <div class="w-8 h-8 bg-green-600 rounded-full flex items-center justify-center hover:bg-green-700 transition-colors">
               <span class="text-white text-sm font-medium">
-                {{ getInitials(user?.fullname) }}
+                {{ userInitials }}
               </span>
             </div>
             
@@ -77,13 +77,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useAuthStore } from '../../stores/auth'
 import { storeToRefs } from 'pinia'
 
-const { user, logout } = useAuthStore()
 const authStore = useAuthStore()
-const  { isLoggedIn } = storeToRefs(authStore)
+const { logout } = authStore
+const { user, isLoggedIn } = storeToRefs(authStore)
+
+// Computed property để đảm bảo reactivity
+const userInitials = computed(() => {
+  return getInitials(user.value?.fullname)
+})
 
 // Dropdown state
 const isDropdownOpen = ref(false)
@@ -104,7 +109,7 @@ function handleLogout() {
 function goToProfile() {
   closeDropdown()
   // Navigate to profile page based on user role
-  const role = user?.role?.toLowerCase()
+  const role = user.value?.role?.toLowerCase()
   if (role === 'admin') {
     window.location.href = '/admin/profile'
   } else if (role === 'company') {

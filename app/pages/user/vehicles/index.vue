@@ -132,24 +132,55 @@
           💰 Khoảng giá
         </h3>
         
-        <div class="space-y-4">
-          <div class="flex items-center justify-between">
-            <span class="text-sm font-medium text-gray-700">Giá tối đa</span>
-            <span class="text-lg font-bold text-green-600">{{ formatPrice(filters.maxPrice) }} VNĐ/Ngày</span>
-          </div>
-          
-          <div class="relative">
-            <input 
-              v-model.number="filters.maxPrice"
-              :max="priceMax"
-              min="0"
-              type="range"
-              class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <!-- Min Price -->
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">Giá tối thiểu</label>
+            <select 
+              v-model.number="filters.minPrice" 
+              class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm"
             >
-            <div class="flex justify-between text-xs text-gray-500 mt-1">
-              <span>0 VNĐ</span>
-              <span>{{ formatPrice(priceMax) }} VNĐ</span>
-            </div>
+              <option value="0">0 VNĐ/Ngày</option>
+              <option value="50000">50,000 VNĐ/Ngày</option>
+              <option value="100000">100,000 VNĐ/Ngày</option>
+              <option value="200000">200,000 VNĐ/Ngày</option>
+              <option value="300000">300,000 VNĐ/Ngày</option>
+              <option value="500000">500,000 VNĐ/Ngày</option>
+              <option value="700000">700,000 VNĐ/Ngày</option>
+              <option value="1000000">1,000,000 VNĐ/Ngày</option>
+            </select>
+          </div>
+
+          <!-- Max Price -->
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">Giá tối đa</label>
+            <select 
+              v-model.number="filters.maxPrice" 
+              class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm"
+            >
+              <option value="50000">50,000 VNĐ/Ngày</option>
+              <option value="100000">100,000 VNĐ/Ngày</option>
+              <option value="200000">200,000 VNĐ/Ngày</option>
+              <option value="300000">300,000 VNĐ/Ngày</option>
+              <option value="500000">500,000 VNĐ/Ngày</option>
+              <option value="700000">700,000 VNĐ/Ngày</option>
+              <option value="1000000">1,000,000 VNĐ/Ngày</option>
+              <option value="1500000">1,500,000 VNĐ/Ngày</option>
+              <option value="2000000">2,000,000 VNĐ/Ngày</option>
+              <option value="0">Không giới hạn</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Price Summary -->
+        <div class="mt-4 p-4 bg-white/50 rounded-lg border border-blue-200">
+          <div class="flex items-center justify-center space-x-4 text-sm">
+            <span class="text-gray-600">Khoảng giá:</span>
+            <span class="font-semibold text-blue-600">
+              {{ filters.minPrice === 0 ? 'Từ 0' : formatPrice(filters.minPrice) }} 
+              - 
+              {{ filters.maxPrice === 0 ? 'Không giới hạn' : formatPrice(filters.maxPrice) }} VNĐ/Ngày
+            </span>
           </div>
         </div>
       </div>
@@ -483,49 +514,5 @@ useHead({
 </script>
 
 <style scoped>
-/* Custom slider styles */
-.slider::-webkit-slider-thumb {
-  appearance: none;
-  height: 20px;
-  width: 20px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #10b981, #059669);
-  cursor: pointer;
-  border: 2px solid white;
-  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
-  transition: all 0.3s ease;
-}
-
-.slider::-webkit-slider-thumb:hover {
-  transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
-}
-
-.slider::-moz-range-thumb {
-  height: 20px;
-  width: 20px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #10b981, #059669);
-  cursor: pointer;
-  border: 2px solid white;
-  box-shadow: 0 2px 6px rgba(16, 185, 129, 0.3);
-  transition: all 0.3s ease;
-}
-
-.slider::-moz-range-thumb:hover {
-  transform: scale(1.1);
-  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
-}
-
-.slider::-webkit-slider-track {
-  background: linear-gradient(90deg, #e5e7eb, #d1d5db);
-  border-radius: 10px;
-  height: 8px;
-}
-
-.slider::-moz-range-track {
-  background: linear-gradient(90deg, #e5e7eb, #d1d5db);
-  border-radius: 10px;
-  height: 8px;
-}
+/* Custom styles for the vehicle booking page */
 </style>

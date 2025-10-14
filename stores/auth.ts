@@ -144,21 +144,8 @@ export const useAuthStore = defineStore('auth', () => {
     } catch (e: any) {
       let errorMessage = 'Đã có lỗi xảy ra khi đăng nhập'
       
-      if (e.response) {
-        const status = e.response.status
-        const data = e.response.data
-        
-        if (status === 401) {
-          errorMessage = 'Email hoặc mật khẩu không đúng'
-        } else if (status === 400) {
-          errorMessage = data?.message || 'Thông tin đăng nhập không hợp lệ'
-        } else if (status >= 500) {
-          errorMessage = 'Lỗi máy chủ, vui lòng thử lại sau'
-        } else {
-          errorMessage = data?.message || 'Đăng nhập thất bại'
-        }
-      } else if (e.request) {
-        errorMessage = 'Không thể kết nối đến máy chủ'
+      if (e.message) {
+        errorMessage = 'Email hoặc mật khẩu không đúng'
       }
 
       toast.error(errorMessage)
@@ -176,7 +163,6 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function register(body: RegisterBody) {
     const { post } = useApi()
-    console.log(body)
     const res = await post<RegisterData>('/api/auth/register', body)
     return res
   }
