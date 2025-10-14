@@ -35,7 +35,7 @@ export async function loginMock(body: MockLoginBody): Promise<{ code: number; me
     },
     {
       email: 'company@gmail.com',
-      password: '12345',
+      password: '123456789aA',
       fullname: 'Company Admin',
       phone: '0987654321',
       role: 'COMPANY'

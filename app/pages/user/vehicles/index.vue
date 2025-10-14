@@ -140,14 +140,14 @@
               v-model.number="filters.minPrice" 
               class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm"
             >
-              <option value="0">0 VNĐ/Ngày</option>
-              <option value="50000">50,000 VNĐ/Ngày</option>
-              <option value="100000">100,000 VNĐ/Ngày</option>
-              <option value="200000">200,000 VNĐ/Ngày</option>
-              <option value="300000">300,000 VNĐ/Ngày</option>
-              <option value="500000">500,000 VNĐ/Ngày</option>
-              <option value="700000">700,000 VNĐ/Ngày</option>
-              <option value="1000000">1,000,000 VNĐ/Ngày</option>
+              <option value="0">0 VNĐ/Giờ</option>
+              <option value="50000">50,000 VNĐ/Giờ</option>
+              <option value="100000">100,000 VNĐ/Giờ</option>
+              <option value="200000">200,000 VNĐ/Giờ</option>
+              <option value="300000">300,000 VNĐ/Giờ</option>
+              <option value="500000">500,000 VNĐ/Giờ</option>
+              <option value="700000">700,000 VNĐ/Giờ</option>
+              <option value="1000000">1,000,000 VNĐ/Giờ</option>
             </select>
           </div>
 
@@ -158,15 +158,15 @@
               v-model.number="filters.maxPrice" 
               class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm"
             >
-              <option value="50000">50,000 VNĐ/Ngày</option>
-              <option value="100000">100,000 VNĐ/Ngày</option>
-              <option value="200000">200,000 VNĐ/Ngày</option>
-              <option value="300000">300,000 VNĐ/Ngày</option>
-              <option value="500000">500,000 VNĐ/Ngày</option>
-              <option value="700000">700,000 VNĐ/Ngày</option>
-              <option value="1000000">1,000,000 VNĐ/Ngày</option>
-              <option value="1500000">1,500,000 VNĐ/Ngày</option>
-              <option value="2000000">2,000,000 VNĐ/Ngày</option>
+              <option value="50000">50,000 VNĐ/Giờ</option>
+              <option value="100000">100,000 VNĐ/Giờ</option>
+              <option value="200000">200,000 VNĐ/Giờ</option>
+              <option value="300000">300,000 VNĐ/Giờ</option>
+              <option value="500000">500,000 VNĐ/Giờ</option>
+              <option value="700000">700,000 VNĐ/Giờ</option>
+              <option value="1000000">1,000,000 VNĐ/Giờ</option>
+              <option value="1500000">1,500,000 VNĐ/Giờ</option>
+              <option value="2000000">2,000,000 VNĐ/Giờ</option>
               <option value="0">Không giới hạn</option>
             </select>
           </div>
@@ -179,7 +179,7 @@
             <span class="font-semibold text-blue-600">
               {{ filters.minPrice === 0 ? 'Từ 0' : formatPrice(filters.minPrice) }} 
               - 
-              {{ filters.maxPrice === 0 ? 'Không giới hạn' : formatPrice(filters.maxPrice) }} VNĐ/Ngày
+              {{ filters.maxPrice === 0 ? 'Không giới hạn' : formatPrice(filters.maxPrice) }} VNĐ/Giờ
             </span>
           </div>
         </div>
@@ -241,7 +241,7 @@
             <span class="text-sm text-gray-500 font-medium">Chỉ từ</span>
             <div class="text-right">
               <span class="text-2xl font-bold bg-gradient-to-r from-green-600 to-green-500 bg-clip-text text-transparent">{{ formatPrice(vehicle.price) }}</span>
-              <span class="text-sm text-gray-500 ml-1">VNĐ/Ngày</span>
+              <span class="text-sm text-gray-500 ml-1">VNĐ/Giờ</span>
             </div>
           </div>
 

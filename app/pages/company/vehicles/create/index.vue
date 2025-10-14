@@ -52,20 +52,6 @@
         <p v-if="errors.type" class="text-red-500 text-sm mt-1">{{ errors.type }}</p>
       </div>
 
-      <!-- License Plate -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">
-          Biển số xe <span class="text-red-500">*</span>
-        </label>
-        <input
-          v-model="formData.licensePlate"
-          type="text"
-          class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
-          placeholder="VD: 29A-12345"
-          required
-        />
-        <p v-if="errors.licensePlate" class="text-red-500 text-sm mt-1">{{ errors.licensePlate }}</p>
-      </div>
 
       <!-- Vehicle Image -->
       <div>
@@ -115,7 +101,7 @@
           @change="handleImageUpload"
           class="hidden"
         />
-        <p v-if="errors.image" class="text-red-500 text-sm mt-1">{{ errors.image }}</p>
+        <p v-if="errors.imageUrl" class="text-red-500 text-sm mt-1">{{ errors.imageUrl }}</p>
       </div>
 
       <!-- Price per Hour -->
@@ -136,38 +122,6 @@
         <p class="text-gray-500 text-sm mt-1">Giá tối thiểu: 1,000 VNĐ/giờ</p>
       </div>
 
-      <!-- Status -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">
-          Trạng thái <span class="text-red-500">*</span>
-        </label>
-        <select
-          v-model="formData.status"
-          class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
-          required
-        >
-          <option value="">Chọn trạng thái</option>
-          <option value="available">Sẵn sàng cho thuê</option>
-          <option value="unavailable">Không khả dụng</option>
-          <option value="active">Đang hoạt động</option>
-          <option value="pending">Chờ duyệt</option>
-          <option value="inactive">Ngừng hoạt động</option>
-        </select>
-        <p v-if="errors.status" class="text-red-500 text-sm mt-1">{{ errors.status }}</p>
-      </div>
-
-      <!-- Description (Optional) -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">
-          Mô tả thêm
-        </label>
-        <textarea
-          v-model="formData.description"
-          rows="4"
-          class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
-          placeholder="Mô tả chi tiết về xe, tính năng đặc biệt..."
-        ></textarea>
-      </div>
 
       <!-- Submit Buttons -->
       <div class="flex space-x-4 pt-6">
@@ -199,19 +153,19 @@
 
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
-import { addVehicle as addMockVehicle } from '../../../../mock-data/vehicles-simple'
+import { useRouter } from 'vue-router'
+import { useApi } from '../../../../composables/useApi'
+import { toast } from 'vue3-toastify'
 
 const router = useRouter()
+const { post } = useApi()
 
 // Form data
 const formData = reactive({
   name: '',
   type: '',
-  licensePlate: '',
-  image: '',
   pricePerHour: null as number | null,
-  status: 'available' as 'available' | 'unavailable' | 'active' | 'pending' | 'inactive',
-  description: ''
+  imageUrl: ''
 })
 
 // Form state
@@ -220,10 +174,8 @@ const imagePreview = ref('')
 const errors = reactive({
   name: '',
   type: '',
-  licensePlate: '',
-  image: '',
   pricePerHour: '',
-  status: ''
+  imageUrl: ''
 })
 
 // Handle image upload
@@ -234,22 +186,24 @@ function handleImageUpload(event: Event) {
   if (file) {
     // Validate file size (10MB max)
     if (file.size > 10 * 1024 * 1024) {
-      errors.image = 'Kích thước file không được vượt quá 10MB'
+      errors.imageUrl = 'Kích thước file không được vượt quá 10MB'
       return
     }
     
     // Validate file type
     if (!file.type.startsWith('image/')) {
-      errors.image = 'Vui lòng chọn file ảnh'
+      errors.imageUrl = 'Vui lòng chọn file ảnh'
       return
     }
     
-    // Create preview
+    // Create preview and store file for upload
     const reader = new FileReader()
     reader.onload = (e) => {
       imagePreview.value = e.target?.result as string
-      formData.image = e.target?.result as string
-      errors.image = ''
+      // For now, we'll use the file name as imageUrl
+      // In a real app, you'd upload to a file service first
+      formData.imageUrl = file.name
+      errors.imageUrl = ''
     }
     reader.readAsDataURL(file)
   }
@@ -258,7 +212,7 @@ function handleImageUpload(event: Event) {
 // Remove image
 function removeImage() {
   imagePreview.value = ''
-  formData.image = ''
+  formData.imageUrl = ''
   // Reset file input
   const fileInput = document.getElementById('image-upload') as HTMLInputElement
   if (fileInput) fileInput.value = ''
@@ -283,23 +237,13 @@ function validateForm(): boolean {
     isValid = false
   }
   
-  if (!formData.licensePlate.trim()) {
-    errors.licensePlate = 'Biển số xe là bắt buộc'
-    isValid = false
-  }
-  
-  if (!formData.image) {
-    errors.image = 'Ảnh xe là bắt buộc'
+  if (!formData.imageUrl) {
+    errors.imageUrl = 'Ảnh xe là bắt buộc'
     isValid = false
   }
   
   if (!formData.pricePerHour || formData.pricePerHour < 1000) {
     errors.pricePerHour = 'Giá thuê phải từ 1,000 VNĐ/giờ trở lên'
-    isValid = false
-  }
-  
-  if (!formData.status) {
-    errors.status = 'Trạng thái là bắt buộc'
     isValid = false
   }
   
@@ -313,34 +257,60 @@ async function submitForm() {
   isSubmitting.value = true
   
   try {
-    // Simulate API call delay
-    await new Promise(resolve => setTimeout(resolve, 2000))
-    
-    // Create vehicle object
+    // Prepare API payload
     const vehicleData = {
-      name: formData.name,
+      name: formData.name.trim(),
       type: formData.type,
-      licensePlate: formData.licensePlate,
-      image: formData.image || 'https://via.placeholder.com/400x300/gray/white?text=No+Image',
       pricePerHour: formData.pricePerHour!,
-      status: formData.status as 'available' | 'unavailable',
-      description: formData.description
+      imageUrl: formData.imageUrl
     }
     
-    // Add vehicle using mock function
-    const newVehicle = addMockVehicle(vehicleData)
+    // Call API
+    const response = await post('/vehicles', vehicleData)
     
-    console.log('Vehicle created:', newVehicle)
+    if (response && response.data) {
+      console.log('Vehicle created:', response.data)
+      
+      // Show success message
+      toast.success('Đăng xe thành công!')
+      
+      // Redirect back to vehicles list
+      router.push('/company/vehicles')
+    } else {
+      throw new Error(response?.message || 'Không thể tạo xe')
+    }
     
-    // Show success message
-    alert('Đăng xe thành công!')
-    
-    // Redirect back to vehicles list
-    router.push('/company/vehicles')
-    
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error creating vehicle:', error)
-    alert('Có lỗi xảy ra khi đăng xe. Vui lòng thử lại!')
+    console.log('Status Code:', error.statusCode)
+    console.log('Status:', error.status)
+    console.log('Response:', error.response)
+    console.log('Is Network Error:', error.isNetworkError)
+    
+    // Handle different error types
+    let errorMessage = 'Có lỗi xảy ra khi đăng xe. Vui lòng thử lại!'
+    
+    if (error.isNetworkError) {
+      errorMessage = 'Không thể kết nối đến máy chủ'
+    } else if (error.statusCode || error.status) {
+      const status = error.statusCode || error.status
+      
+      if (status === 400) {
+        errorMessage = error.response?.message || 'Thông tin xe không hợp lệ'
+      } else if (status === 401) {
+        errorMessage = 'Bạn không có quyền thực hiện thao tác này'
+      } else if (status === 403) {
+        errorMessage = 'Bạn không có quyền truy cập tài nguyên này'
+      } else if (status >= 500) {
+        errorMessage = 'Lỗi máy chủ, vui lòng thử lại sau'
+      } else {
+        errorMessage = error.response?.message || error.message || errorMessage
+      }
+    } else {
+      errorMessage = error.message || errorMessage
+    }
+    
+    toast.error(errorMessage)
   } finally {
     isSubmitting.value = false
   }

@@ -2,7 +2,12 @@
   <div>
     <div class="mb-6">
       <h1 class="text-3xl font-bold text-gray-900">Dashboard Công ty</h1>
-      <p class="text-gray-600">Xin chào {{ user?.fullname }}, quản lý hoạt động kinh doanh xe điện của bạn</p>
+      <ClientOnly>
+        <p class="text-gray-600">Xin chào {{ user?.fullname || 'Company Admin' }}, quản lý hoạt động kinh doanh xe điện của bạn</p>
+        <template #fallback>
+          <p class="text-gray-600">Xin chào Company Admin, quản lý hoạt động kinh doanh xe điện của bạn</p>
+        </template>
+      </ClientOnly>
     </div>
 
     <!-- Stats Cards -->
@@ -48,7 +53,7 @@
         <h3 class="text-xl font-semibold mb-4">Đơn đặt xe</h3>
         <p class="text-gray-600 mb-4">Quản lý các đơn đặt từ khách hàng</p>
         <div class="space-y-2">
-          <NuxtLink to="/company/bookings" class="block w-full bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 text-center">
+          <NuxtLink to="" class="block w-full bg-purple-600 text-white px-4 py-2 rounded-md hover:bg-purple-700 text-center">
             Xem đơn đặt
           </NuxtLink>
           <div class="text-sm text-gray-600">
@@ -60,7 +65,7 @@
       <div class="bg-white p-6 rounded-lg shadow">
         <h3 class="text-xl font-semibold mb-4">Báo cáo & Thống kê</h3>
         <p class="text-gray-600 mb-4">Xem báo cáo doanh thu và hiệu suất</p>
-        <NuxtLink to="/company/reports" class="block w-full bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 text-center">
+        <NuxtLink to="" class="block w-full bg-orange-600 text-white px-4 py-2 rounded-md hover:bg-orange-700 text-center">
           Xem báo cáo
         </NuxtLink>
       </div>

@@ -56,9 +56,27 @@ export function useApi() {
       
       if (!res.ok) {
         error.value = (json && (json.message || json.error)) || `HTTP ${res.status}`
-        throw new Error(error.value || 'Request failed')
+        const apiError = new Error(error.value || 'Request failed') as any
+        apiError.status = res.status
+        apiError.statusCode = res.status
+        apiError.response = json
+        throw apiError
       }
       return json as ApiResponse<T>
+    } catch (e) {
+      if (e instanceof Error && 'status' in e) {
+        // Already processed HTTP error
+        error.value = e.message
+        throw e
+      } else {
+        // Network or other error
+        error.value = e instanceof Error ? e.message : 'Request failed'
+        const networkError = new Error(error.value) as any
+        networkError.status = 0
+        networkError.statusCode = 0
+        networkError.isNetworkError = true
+        throw networkError
+      }
     } finally {
       loading.value = false
     }

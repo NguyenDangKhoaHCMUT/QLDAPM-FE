@@ -11,8 +11,6 @@
             <div class="hidden md:flex space-x-4">
               <NuxtLink to="/company" class="nav-link">Dashboard</NuxtLink>
               <NuxtLink to="/company/vehicles" class="nav-link">Quản lý xe</NuxtLink>
-              <NuxtLink to="/company/bookings" class="nav-link">Đơn đặt xe</NuxtLink>
-              <NuxtLink to="/company/reports" class="nav-link">Báo cáo</NuxtLink>
             </div>
           </div>
           <div class="flex items-center space-x-4">
