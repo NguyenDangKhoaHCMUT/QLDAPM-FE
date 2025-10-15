@@ -102,6 +102,7 @@
           class="hidden"
         />
         <p v-if="errors.imageUrl" class="text-red-500 text-sm mt-1">{{ errors.imageUrl }}</p>
+        <p v-if="uploadError" class="text-red-500 text-sm mt-1">{{ uploadError }}</p>
       </div>
 
       <!-- Price per Hour -->
@@ -127,16 +128,16 @@
       <div class="flex space-x-4 pt-6">
         <button
           type="submit"
-          :disabled="isSubmitting"
+          :disabled="isSubmitting || isUploading"
           class="flex-1 bg-green-600 text-white py-3 px-6 rounded-md hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed font-medium"
         >
-          <span v-if="!isSubmitting">Đăng xe</span>
+          <span v-if="!isSubmitting && !isUploading">Đăng xe</span>
           <span v-else class="flex items-center justify-center">
             <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
               <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
               <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            Đang đăng...
+            {{ isUploading ? 'Đang tải ảnh...' : 'Đang đăng...' }}
           </span>
         </button>
         
@@ -156,6 +157,7 @@ import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useApi } from '../../../../composables/useApi'
 import { toast } from 'vue3-toastify'
+import { useCloudinary } from '../../../../composables/useCloudinary'
 
 const router = useRouter()
 const { post } = useApi()
@@ -177,6 +179,10 @@ const errors = reactive({
   pricePerHour: '',
   imageUrl: ''
 })
+
+// Cloudinary upload state
+const { isUploading, lastError: cloudinaryError, uploadImage } = useCloudinary()
+const uploadError = ref('')
 
 // Handle image upload
 function handleImageUpload(event: Event) {
@@ -200,9 +206,8 @@ function handleImageUpload(event: Event) {
     const reader = new FileReader()
     reader.onload = (e) => {
       imagePreview.value = e.target?.result as string
-      // For now, we'll use the file name as imageUrl
-      // In a real app, you'd upload to a file service first
-      formData.imageUrl = file.name
+      // We'll upload the file to Cloudinary during submit, not here
+      formData.imageUrl = ''
       errors.imageUrl = ''
     }
     reader.readAsDataURL(file)
@@ -252,11 +257,26 @@ function validateForm(): boolean {
 
 // Submit form
 async function submitForm() {
-  if (!validateForm()) return
-  
   isSubmitting.value = true
+  uploadError.value = ''
   
   try {
+    // Upload image first if we have a selected file (from preview)
+    const fileInput = document.getElementById('image-upload') as HTMLInputElement
+    const file = fileInput?.files?.[0] || null
+    if (file) {
+      try {
+        const { url } = await uploadImage(file)
+        formData.imageUrl = url
+      } catch (e: any) {
+        uploadError.value = cloudinaryError.value || e?.message || 'Tải ảnh thất bại'
+        throw e
+      }
+    }
+
+    // Validate after we have attempted upload
+    if (!validateForm()) return
+
     // Prepare API payload
     const vehicleData = {
       name: formData.name.trim(),
@@ -268,9 +288,7 @@ async function submitForm() {
     // Call API
     const response = await post('/vehicles', vehicleData)
     
-    if (response && response.data) {
-      console.log('Vehicle created:', response.data)
-      
+    if (response && response.data) {      
       // Show success message
       toast.success('Đăng xe thành công!')
       

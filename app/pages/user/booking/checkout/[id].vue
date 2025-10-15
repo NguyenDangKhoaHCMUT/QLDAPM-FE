@@ -1,10 +1,38 @@
 <template>
   <div class="max-w-4xl mx-auto">
-    <!-- Header -->
-    <div class="mb-6">
-      <h1 class="text-3xl font-bold text-gray-900">Thanh toán đặt xe</h1>
-      <p class="text-gray-600">Xác nhận thông tin và thanh toán để hoàn tất đặt xe</p>
+    <!-- Loading State -->
+    <FullPageSpinner
+      v-if="isLoadingVehicle"
+      title="Đang tải thông tin xe"
+      subtitle="Vui lòng chờ trong giây lát..."
+      size="lg"
+      background="green"
+    />
+
+    <!-- Error State -->
+    <div v-else-if="vehicleError" class="text-center py-12">
+      <div class="w-24 h-24 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg class="w-12 h-12 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+        </svg>
+      </div>
+      <h3 class="text-xl font-semibold text-gray-900 mb-2">Không tìm thấy xe</h3>
+      <p class="text-gray-600 mb-6">{{ vehicleError }}</p>
+      <button
+        @click="$router.push('/user/vehicles')"
+        class="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700"
+      >
+        Quay lại danh sách xe
+      </button>
     </div>
+
+    <!-- Main Content -->
+    <div v-else>
+      <!-- Header -->
+      <div class="mb-6">
+        <h1 class="text-3xl font-bold text-gray-900">Thanh toán đặt xe</h1>
+        <p class="text-gray-600">Xác nhận thông tin và thanh toán để hoàn tất đặt xe</p>
+      </div>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <!-- Left Column: Booking Details -->
@@ -199,27 +227,47 @@
       </div>
     </div>
 
-    <!-- Payment Modal -->
-    <PaymentModal 
-      v-if="showPaymentModal && currentPaymentData"
-      :payment-data="currentPaymentData"
-      @close="closePaymentModal"
-      @confirm="handlePaymentConfirmation"
-    />
+      <!-- Payment Modal -->
+      <PaymentModal 
+        v-if="showPaymentModal && currentPaymentData"
+        :payment-data="currentPaymentData"
+        @close="closePaymentModal"
+        @confirm="handlePaymentConfirmation"
+      />
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useAuth } from '../../../composables/useAuth'
-import { generatePaymentData, type PaymentData } from '../../../mock-data/checkout'
-import PaymentModal from '../../../components/PaymentModal.vue'
+import { useAuth } from '../../../../composables/useAuth'
+import { useApi } from '../../../../composables/useApi'
+import { generatePaymentData, type PaymentData } from '../../../../mock-data/checkout'
+
+// Types
+interface VehicleApiResponse {
+  id: number
+  name: string
+  type: string
+  pricePerHour: number
+  imageUrl: string
+  status: string
+  ownerId: string
+  ownerEmail: string
+  createdAt: string
+  updatedAt: string
+}
 
 // Auth and routing
 const { user } = useAuth()
 const route = useRoute()
 const router = useRouter()
+const { get } = useApi()
+
+// Loading and error states
+const isLoadingVehicle = ref(true)
+const vehicleError = ref('')
 
 // Reactive data
 const bookingData = ref({
@@ -310,6 +358,33 @@ const paymentButtonText = computed(() => {
 })
 
 // Methods
+async function fetchVehicleDetails(vehicleId: string) {
+  try {
+    isLoadingVehicle.value = true
+    vehicleError.value = ''
+    
+    // Try to get vehicle from API
+    const response = await get<VehicleApiResponse>(`/vehicles/${vehicleId}`)
+    
+    if (response && response.data) {
+      const vehicleData = response.data
+      bookingData.value.vehicle = {
+        id: vehicleData.id.toString(),
+        name: vehicleData.name || '',
+        type: vehicleData.type || '',
+        price: vehicleData.pricePerHour || 0,
+        image: vehicleData.imageUrl || ''
+      }
+    } else {
+      throw new Error('Không tìm thấy thông tin xe')
+    }
+  } catch (error: any) {
+    console.error('Error fetching vehicle:', error)
+    vehicleError.value = error?.message || 'Không thể tải thông tin xe. Vui lòng thử lại.'
+  } finally {
+    isLoadingVehicle.value = false
+  }
+}
 
 function validatePhoneNumber(event: Event) {
   const input = event.target as HTMLInputElement
@@ -325,8 +400,10 @@ function validatePhoneNumber(event: Event) {
   // Validate
   if (digitsOnly.length === 0) {
     phoneError.value = 'Số điện thoại là bắt buộc'
+  } else if (digitsOnly.length < 10) {
+    phoneError.value = 'Số điện thoại phải có 10 chữ số'
   } else {
-    phoneError.value = 'Nhập thiếu số điện thoại'
+    phoneError.value = ''
   }
 }
 
@@ -344,8 +421,10 @@ function validateIdNumber(event: Event) {
   // Validate
   if (digitsOnly.length === 0) {
     idNumberError.value = 'Số CMND/CCCD là bắt buộc'
+  } else if (digitsOnly.length < 9) {
+    idNumberError.value = 'Số CMND/CCCD phải có 9 chữ số'
   } else {
-    idNumberError.value = 'Nhập thiếu số CMND/CCCD'
+    idNumberError.value = ''
   }
 }
 
@@ -424,27 +503,30 @@ function handlePaymentSuccess(transactionId: string) {
   router.push('../profile/bookings')
 }
 
-// Initialize booking data from query params
-onMounted(() => {
+// Initialize booking data from params and query
+onMounted(async () => {
+  const vehicleId = route.params.id as string
   const query = route.query
   
-  if (query.vehicle) {
-    try {
-      bookingData.value.vehicle = JSON.parse(query.vehicle as string)
-    } catch (e) {
-      console.error('Invalid vehicle data')
-      router.push('/user/vehicles')
-    }
+  // Validate vehicle ID
+  if (!vehicleId) {
+    vehicleError.value = 'Không tìm thấy ID xe'
+    isLoadingVehicle.value = false
+    return
   }
   
+  // Fetch vehicle details from API
+  await fetchVehicleDetails(vehicleId)
+  
+  // Get booking details from query params
   bookingData.value.startDate = query.startDate as string || ''
   bookingData.value.startTime = query.startTime as string || ''
   bookingData.value.endDate = query.endDate as string || ''
   bookingData.value.endTime = query.endTime as string || ''
   
-  // If no booking data, redirect back
-  if (!bookingData.value.vehicle.id) {
-    router.push('/user/vehicles')
+  // Validate booking data
+  if (!bookingData.value.startDate || !bookingData.value.endDate) {
+    vehicleError.value = 'Thiếu thông tin ngày đặt xe'
   }
 })
 

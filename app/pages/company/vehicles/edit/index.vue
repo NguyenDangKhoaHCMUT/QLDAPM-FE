@@ -49,7 +49,7 @@
         <input
           v-model="formData.name"
           type="text"
-          class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           placeholder="VD: Tesla Model 3, VinFast VF5..."
           required
         />
@@ -63,30 +63,15 @@
         </label>
         <select
           v-model="formData.type"
-          class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           required
         >
           <option value="">Chọn loại xe</option>
-          <option value="Xe máy điện">Xe máy điện</option>
-          <option value="Xe đạp điện">Xe đạp điện</option>
-          <option value="Ô tô điện">Ô tô điện</option>
+          <option value="ô tô điện">Ô tô điện</option>
+          <option value="xe máy điện">Xe máy điện</option>
+          <option value="xe đạp điện">Xe đạp điện</option>
         </select>
         <p v-if="errors.type" class="mt-1 text-sm text-red-600">{{ errors.type }}</p>
-      </div>
-
-      <!-- License Plate -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">
-          Biển số xe <span class="text-red-500">*</span>
-        </label>
-        <input
-          v-model="formData.licensePlate"
-          type="text"
-          class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
-          placeholder="VD: 30A-12345"
-          required
-        />
-        <p v-if="errors.licensePlate" class="mt-1 text-sm text-red-600">{{ errors.licensePlate }}</p>
       </div>
 
       <!-- Vehicle Image -->
@@ -107,17 +92,6 @@
 
         <!-- Image Upload Options -->
         <div class="space-y-3">
-          <!-- URL Input -->
-          <div>
-            <input
-              v-model="formData.image"
-              type="url"
-              class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              placeholder="Nhập URL ảnh hoặc chọn file bên dưới"
-              @input="updateImagePreview"
-            />
-          </div>
-
           <!-- File Upload Button -->
           <div class="flex items-center space-x-4">
             <label class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-4 py-2 rounded-md cursor-pointer transition-colors">
@@ -143,7 +117,7 @@
           type="number"
           min="1000"
           step="1000"
-          class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           placeholder="VD: 50000"
           required
         />
@@ -151,45 +125,12 @@
         <p v-if="errors.pricePerHour" class="mt-1 text-sm text-red-600">{{ errors.pricePerHour }}</p>
       </div>
 
-      <!-- Status -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">
-          Trạng thái <span class="text-red-500">*</span>
-        </label>
-        <select
-          v-model="formData.status"
-          class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
-          required
-        >
-          <option value="">Chọn trạng thái</option>
-          <option value="available">Sẵn sàng cho thuê</option>
-          <option value="unavailable">Không khả dụng</option>
-          <option value="active">Đang hoạt động</option>
-          <option value="pending">Chờ duyệt</option>
-          <option value="inactive">Ngừng hoạt động</option>
-        </select>
-        <p v-if="errors.status" class="mt-1 text-sm text-red-600">{{ errors.status }}</p>
-      </div>
-
-      <!-- Description -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">
-          Mô tả xe
-        </label>
-        <textarea
-          v-model="formData.description"
-          rows="4"
-          class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
-          placeholder="Mô tả chi tiết về xe (tùy chọn)..."
-        ></textarea>
-      </div>
-
       <!-- Form Actions -->
       <div class="flex space-x-4 pt-6">
         <button
           type="submit"
           :disabled="isSubmitting"
-          class="flex-1 bg-green-600 text-white py-3 px-6 rounded-md hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+          class="flex-1 bg-blue-600 text-white py-3 px-6 rounded-md hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
         >
           <span v-if="isSubmitting" class="flex items-center justify-center">
             <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
@@ -214,10 +155,12 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed } from 'vue'
-import { findVehicleById, updateVehicle as updateMockVehicle, type VehicleSimple } from '../../../../mock-data/vehicles-simple'
+import { useCompanyVehiclesStore, type UiVehicleItem } from '../../../../../stores/companyVehicles'
 
 // Get route and router (sử dụng auto-import của Nuxt)
+// @ts-ignore
 const route = useRoute()
+// @ts-ignore
 const router = useRouter()
 
 // Get vehicle ID from query params
@@ -226,9 +169,12 @@ const vehicleId = computed(() => {
   return id ? parseInt(id as string) : null
 })
 
+// Store
+const vehiclesStore = useCompanyVehiclesStore()
+
 // State
 const loading = ref(true)
-const vehicle = ref<VehicleSimple | null>(null)
+const vehicle = ref<UiVehicleItem | null>(null)
 const isSubmitting = ref(false)
 const imagePreview = ref('')
 
@@ -236,21 +182,16 @@ const imagePreview = ref('')
 const formData = reactive({
   name: '',
   type: '',
-  licensePlate: '',
   image: '',
-  pricePerHour: null as number | null,
-  status: 'available' as VehicleSimple['status'],
-  description: ''
+  pricePerHour: null as number | null
 })
 
 // Form errors
 const errors = reactive({
   name: '',
   type: '',
-  licensePlate: '',
   image: '',
-  pricePerHour: '',
-  status: ''
+  pricePerHour: ''
 })
 
 // Load vehicle data
@@ -258,19 +199,21 @@ onMounted(async () => {
   loading.value = true
   
   try {
+    // Ensure we have the latest vehicle list
+    if (!vehiclesStore.items.length) {
+      await vehiclesStore.fetchMyVehicles()
+    }
+    
     if (vehicleId.value) {
-      const foundVehicle = findVehicleById(vehicleId.value)
+      const foundVehicle = vehiclesStore.findVehicleInStore(vehicleId.value)
       if (foundVehicle) {
         vehicle.value = foundVehicle
         
         // Populate form with existing data
         formData.name = foundVehicle.name
         formData.type = foundVehicle.type
-        formData.licensePlate = foundVehicle.licensePlate
         formData.image = foundVehicle.image
         formData.pricePerHour = foundVehicle.pricePerHour
-        formData.status = foundVehicle.status
-        formData.description = foundVehicle.description || ''
         
         // Set image preview
         imagePreview.value = foundVehicle.image
@@ -284,10 +227,6 @@ onMounted(async () => {
 })
 
 // Methods
-function updateImagePreview() {
-  imagePreview.value = formData.image
-}
-
 function handleFileUpload(event: Event) {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
@@ -339,18 +278,8 @@ function validateForm(): boolean {
     isValid = false
   }
   
-  if (!formData.licensePlate.trim()) {
-    errors.licensePlate = 'Biển số xe là bắt buộc'
-    isValid = false
-  }
-  
   if (!formData.pricePerHour || formData.pricePerHour < 1000) {
     errors.pricePerHour = 'Giá thuê phải từ 1,000 VNĐ/giờ trở lên'
-    isValid = false
-  }
-  
-  if (!formData.status) {
-    errors.status = 'Trạng thái là bắt buộc'
     isValid = false
   }
   
@@ -363,46 +292,37 @@ async function submitForm() {
   isSubmitting.value = true
   
   try {
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500))
-    
-    // Update vehicle using mock function
-    const updatedVehicle = updateMockVehicle(vehicleId.value, {
+    // Update vehicle using store
+    const success = await vehiclesStore.updateVehicle(vehicleId.value, {
       name: formData.name,
       type: formData.type,
-      licensePlate: formData.licensePlate,
       image: formData.image || 'https://via.placeholder.com/400x300/gray/white?text=No+Image',
-      pricePerHour: formData.pricePerHour!,
-      status: formData.status,
-      description: formData.description
+      pricePerHour: formData.pricePerHour!
     })
     
-    if (updatedVehicle) {
-      console.log('Vehicle updated:', updatedVehicle)
-      
-      // Show success message
-      alert('Cập nhật thông tin xe thành công!')
-      
+    if (success) {      
       // Redirect back to vehicles list
       router.push('/company/vehicles')
     } else {
       throw new Error('Không thể cập nhật xe')
     }
     
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating vehicle:', error)
-    alert('Có lỗi xảy ra khi cập nhật xe. Vui lòng thử lại!')
+    alert(error?.message || 'Có lỗi xảy ra khi cập nhật xe. Vui lòng thử lại!')
   } finally {
     isSubmitting.value = false
   }
 }
 
 // Page meta
+// @ts-ignore
 definePageMeta({
   layout: 'company'
 })
 
 // Head
+// @ts-ignore
 useHead({
   title: 'Chỉnh sửa xe - Dashboard Công ty'
 })

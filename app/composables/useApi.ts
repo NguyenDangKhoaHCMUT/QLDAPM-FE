@@ -14,13 +14,6 @@ export function useApi() {
   const loading = ref(false)
   const error = ref<string | null>(null)
 
-  function getToken() {
-    if (typeof localStorage !== 'undefined') {
-      return localStorage.getItem('ev_access_token')
-    }
-    return null
-  }
-
   function getCookie(name: string): string | null {
     if (typeof document === 'undefined') return null
     const value = `; ${document.cookie}`
@@ -29,6 +22,10 @@ export function useApi() {
       return parts.pop()?.split(';').shift() || null
     }
     return null
+  }
+
+  function getToken() {
+    return getCookie('ev_access_token')
   }
 
   async function request<T>(path: string, options: { method?: HttpMethod; body?: unknown; headers?: Record<string, string> } = {}) {

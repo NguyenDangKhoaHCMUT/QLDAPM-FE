@@ -56,4 +56,14 @@ export default defineNuxtConfig({
       ]
     }
   },
+
+  // Runtime config
+  runtimeConfig: {
+    public: {
+      cloudinary: {
+        cloudName: 'nguyendangkhoa',
+        uploadPreset: 'qldapm-fe'
+      }
+    }
+  }
 })

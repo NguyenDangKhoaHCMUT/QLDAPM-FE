@@ -11,7 +11,6 @@ export default defineNuxtPlugin((nuxtApp) => {
     closeOnClick: true, // Cho phép click để đóng
     pauseOnHover: true, // Dừng đếm ngược khi hover
     draggable: true, // Cho phép kéo thả
-    transition: 'Vue-Toastification__bounce', // Animation mượt hơn
     newestOnTop: true // Toast mới nhất hiển thị trên cùng
   })
 })

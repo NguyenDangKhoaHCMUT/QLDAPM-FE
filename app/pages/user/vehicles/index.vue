@@ -355,10 +355,9 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
+import { toast } from 'vue3-toastify'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
-import { useAuth } from '../../../composables/useAuth'
-import { type MockVehicle } from '../../../mock-data/vehicles'
 import { useVehiclesStore } from '../../../../stores/vehicles'
 
 // @ts-ignore - Nuxt auto-import
@@ -416,19 +415,12 @@ function formatPrice(price: number): string {
 }
 
 function bookVehicle(vehicle: any) {
-  // Validate required fields
-  if (!filters.value.startDate || !filters.value.endDate || 
-      !filters.value.startTime || !filters.value.endTime) {
-    alert('Vui lòng chọn ngày và giờ nhận/trả xe trước khi đặt!')
-    return
-  }
-
   // Check if end time is after start time
   const startDateTime = new Date(`${filters.value.startDate}T${filters.value.startTime}`)
   const endDateTime = new Date(`${filters.value.endDate}T${filters.value.endTime}`)
   
   if (endDateTime <= startDateTime) {
-    alert('Thời gian trả xe phải sau thời gian nhận xe!')
+    toast.error('Thời gian trả xe phải sau thời gian nhận xe!')
     return
   }
 
