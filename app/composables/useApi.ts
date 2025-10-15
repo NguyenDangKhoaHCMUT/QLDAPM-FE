@@ -28,6 +28,19 @@ export function useApi() {
     return getCookie('ev_access_token')
   }
 
+  // Local logout handler for 401 cases
+  function logout() {
+    if (typeof document !== 'undefined') {
+      // clear auth cookies
+      document.cookie = 'ev_access_token=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=/; SameSite=Lax'
+      document.cookie = 'ev_refresh_token=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=/; SameSite=Lax'
+      document.cookie = 'ev_user=; Expires=Thu, 01 Jan 1970 00:00:00 GMT; Path=/; SameSite=Lax'
+    }
+    if (typeof window !== 'undefined') {
+      window.location.href = '/auth/login'
+    }
+  }
+
   async function request<T>(path: string, options: { method?: HttpMethod; body?: unknown; headers?: Record<string, string> } = {}) {
     loading.value = true
     error.value = null
@@ -64,6 +77,9 @@ export function useApi() {
       if (e instanceof Error && 'status' in e) {
         // Already processed HTTP error
         error.value = e.message
+        if (e.status === 401) {
+          // logout()
+        }
         throw e
       } else {
         // Network or other error

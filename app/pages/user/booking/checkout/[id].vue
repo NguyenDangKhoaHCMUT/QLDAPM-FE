@@ -49,7 +49,7 @@
             <div>
               <h3 class="text-lg font-semibold text-gray-900">{{ bookingData.vehicle.name }}</h3>
               <p class="text-gray-600">{{ bookingData.vehicle.type }}</p>
-              <p class="text-green-600 font-medium">{{ formatPrice(dailyRate) }} VNĐ/</p>
+              <p class="text-green-600 font-medium">{{ formatPrice(hourlyRate) }} VNĐ/giờ</p>
             </div>
           </div>
         </div>
@@ -60,19 +60,35 @@
           <div class="grid grid-cols-2 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Ngày nhận xe</label>
-              <p class="text-gray-900">{{ formatDate(bookingData.startDate) }}</p>
+              <input 
+                v-model="bookingData.startDate"
+                type="date" 
+                class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              >
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Giờ nhận xe</label>
-              <p class="text-gray-900">{{ bookingData.startTime }}</p>
+              <input 
+                v-model="bookingData.startTime"
+                type="time" 
+                class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              >
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Ngày trả xe</label>
-              <p class="text-gray-900">{{ formatDate(bookingData.endDate) }}</p>
+              <input 
+                v-model="bookingData.endDate"
+                type="date" 
+                class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              >
             </div>
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">Giờ trả xe</label>
-              <p class="text-gray-900">{{ bookingData.endTime }}</p>
+              <input 
+                v-model="bookingData.endTime"
+                type="time" 
+                class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+              >
             </div>
           </div>
           
@@ -93,8 +109,9 @@
               <input 
                 v-model="customerInfo.fullName"
                 type="text" 
-                class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="Nhập họ và tên"
+                readonly
+                class="w-full p-3 border border-gray-200 rounded-md bg-gray-50 text-gray-600 cursor-not-allowed"
+                placeholder="Họ và tên"
               >
             </div>
             <div>
@@ -102,35 +119,20 @@
               <input 
                 v-model="customerInfo.phone"
                 type="text"  
-                pattern="[0-9]{10}"
-                maxlength="10"
-                class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="Nhập số điện thoại"
-                @input="validatePhoneNumber"
+                readonly
+                class="w-full p-3 border border-gray-200 rounded-md bg-gray-50 text-gray-600 cursor-not-allowed"
+                placeholder="Số điện thoại"
               >
-              <p v-if="phoneError" class="text-red-500 text-sm mt-1">{{ phoneError }}</p>
             </div>
             <div class="col-span-2">
               <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
               <input 
                 v-model="customerInfo.email"
                 type="email" 
-                class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="Nhập email"
+                readonly
+                class="w-full p-3 border border-gray-200 rounded-md bg-gray-50 text-gray-600 cursor-not-allowed"
+                placeholder="Email"
               >
-            </div>
-            <div class="col-span-2">
-              <label class="block text-sm font-medium text-gray-700 mb-1">Số CMND/CCCD</label>
-              <input 
-                v-model="customerInfo.idNumber"
-                type="text" 
-                pattern="[0-9]{9}"
-                maxlength="9"
-                class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
-                placeholder="Nhập CMND/CCCD"
-                @input="validateIdNumber"
-              >
-              <p v-if="idNumberError" class="text-red-500 text-sm mt-1">{{ idNumberError }}</p>
             </div>
           </div>
         </div>
@@ -143,19 +145,10 @@
               <input 
                 v-model="paymentMethod" 
                 type="radio" 
-                value="momo" 
+                value="vnpay" 
                 class="text-green-600 focus:ring-green-500"
               >
-              <span class="ml-3">MoMo</span>
-            </label>
-            <label class="flex items-center p-3 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50">
-              <input 
-                v-model="paymentMethod" 
-                type="radio" 
-                value="banking" 
-                class="text-green-600 focus:ring-green-500"
-              >
-              <span class="ml-3">Chuyển khoản ngân hàng</span>
+              <span class="ml-3">💳 VNPay</span>
             </label>
             <label class="flex items-center p-3 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50">
               <input 
@@ -164,7 +157,7 @@
                 value="cash" 
                 class="text-green-600 focus:ring-green-500"
               >
-              <span class="ml-3">Thanh toán khi nhận xe</span>
+              <span class="ml-3">💵 Thanh toán khi nhận xe</span>
             </label>
           </div>
         </div>
@@ -178,7 +171,7 @@
           <div class="space-y-3">
             <div class="flex justify-between">
               <span class="text-gray-600">Giá thuê xe</span>
-              <span class="text-gray-900">{{ formatPrice(dailyRate) }} VNĐ/ngày</span>
+              <span class="text-gray-900">{{ formatPrice(hourlyRate) }} VNĐ/giờ</span>
             </div>
             <div class="flex justify-between">
               <span class="text-gray-600">Số giờ thuê</span>
@@ -241,29 +234,17 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useAuth } from '../../../../composables/useAuth'
-import { useApi } from '../../../../composables/useApi'
+import { useAuth } from '~/composables/useAuth'
+import { useVehiclesStore } from '~~/stores/vehicles'
+import { useBookingsStore } from '~~/stores/bookings'
 import { generatePaymentData, type PaymentData } from '../../../../mock-data/checkout'
-
-// Types
-interface VehicleApiResponse {
-  id: number
-  name: string
-  type: string
-  pricePerHour: number
-  imageUrl: string
-  status: string
-  ownerId: string
-  ownerEmail: string
-  createdAt: string
-  updatedAt: string
-}
 
 // Auth and routing
 const { user } = useAuth()
 const route = useRoute()
 const router = useRouter()
-const { get } = useApi()
+const vehiclesStore = useVehiclesStore()
+const bookingsStore = useBookingsStore()
 
 // Loading and error states
 const isLoadingVehicle = ref(true)
@@ -287,23 +268,16 @@ const bookingData = ref({
 const customerInfo = ref({
   fullName: user?.fullname || '',
   phone: user?.phone || '',
-  email: user?.email || '',
-  idNumber: ''
+  email: user?.email || ''
 })
 
-const paymentMethod = ref('momo')
-const idNumberError = ref('')
-const phoneError = ref('')
+const paymentMethod = ref('vnpay')
 const showPaymentModal = ref(false)
 const currentPaymentData = ref<PaymentData | null>(null)
 
 // Computed properties
-const dailyRate = computed(() => {
-  return bookingData.value.vehicle.price // Daily rate as is
-})
-
 const hourlyRate = computed(() => {
-  return bookingData.value.vehicle.price / 24 // Convert daily rate to hourly for calculation
+  return bookingData.value.vehicle.price // Price is already per hour from API
 })
 
 const totalHours = computed(() => {
@@ -338,16 +312,12 @@ const totalAmount = computed(() => {
 })
 
 const canProceedPayment = computed(() => {
-  return customerInfo.value.fullName && 
-        customerInfo.value.phone && 
-        customerInfo.value.phone.length === 10 &&
-        /^\d{10}$/.test(customerInfo.value.phone) &&
-        customerInfo.value.email && 
-        customerInfo.value.idNumber &&
-        customerInfo.value.idNumber.length === 9 &&
-        /^\d{9}$/.test(customerInfo.value.idNumber) &&
-        paymentMethod.value &&
-        totalHours.value > 0
+  return paymentMethod.value &&
+        totalHours.value > 0 &&
+        bookingData.value.startDate &&
+        bookingData.value.endDate &&
+        bookingData.value.startTime &&
+        bookingData.value.endTime
 })
 
 const paymentButtonText = computed(() => {
@@ -363,17 +333,23 @@ async function fetchVehicleDetails(vehicleId: string) {
     isLoadingVehicle.value = true
     vehicleError.value = ''
     
-    // Try to get vehicle from API
-    const response = await get<VehicleApiResponse>(`/vehicles/${vehicleId}`)
+    // First, try to get vehicle from store
+    const vehicleIdNum = parseInt(vehicleId)
+    let vehicle = vehiclesStore.findVehicleById(vehicleIdNum)
     
-    if (response && response.data) {
-      const vehicleData = response.data
+    if (!vehicle) {
+      // If not found in store, try to fetch from API and update store
+      await vehiclesStore.fetchMyVehicles()
+      vehicle = vehiclesStore.findVehicleById(vehicleIdNum)
+    }
+    
+    if (vehicle) {
       bookingData.value.vehicle = {
-        id: vehicleData.id.toString(),
-        name: vehicleData.name || '',
-        type: vehicleData.type || '',
-        price: vehicleData.pricePerHour || 0,
-        image: vehicleData.imageUrl || ''
+        id: vehicle.id.toString(),
+        name: vehicle.name || '',
+        type: vehicle.type || '',
+        price: vehicle.price || 0,
+        image: vehicle.image || ''
       }
     } else {
       throw new Error('Không tìm thấy thông tin xe')
@@ -386,47 +362,7 @@ async function fetchVehicleDetails(vehicleId: string) {
   }
 }
 
-function validatePhoneNumber(event: Event) {
-  const input = event.target as HTMLInputElement
-  const value = input.value
-  
-  // Remove non-digit characters
-  const digitsOnly = value.replace(/\D/g, '')
-  
-  // Update the input value and model
-  input.value = digitsOnly
-  customerInfo.value.phone = digitsOnly
-  
-  // Validate
-  if (digitsOnly.length === 0) {
-    phoneError.value = 'Số điện thoại là bắt buộc'
-  } else if (digitsOnly.length < 10) {
-    phoneError.value = 'Số điện thoại phải có 10 chữ số'
-  } else {
-    phoneError.value = ''
-  }
-}
 
-function validateIdNumber(event: Event) {
-  const input = event.target as HTMLInputElement
-  const value = input.value
-  
-  // Remove non-digit characters
-  const digitsOnly = value.replace(/\D/g, '')
-  
-  // Update the input value and model
-  input.value = digitsOnly
-  customerInfo.value.idNumber = digitsOnly
-  
-  // Validate
-  if (digitsOnly.length === 0) {
-    idNumberError.value = 'Số CMND/CCCD là bắt buộc'
-  } else if (digitsOnly.length < 9) {
-    idNumberError.value = 'Số CMND/CCCD phải có 9 chữ số'
-  } else {
-    idNumberError.value = ''
-  }
-}
 
 function formatPrice(price: number): string {
   return new Intl.NumberFormat('vi-VN').format(price)
@@ -443,6 +379,23 @@ function formatDate(dateString: string): string {
   })
 }
 
+function formatDateTimeForApi(dateString: string, timeString: string): string {
+  if (!dateString || !timeString) return ''
+  
+  // Combine date and time, then format as yyyy-MM-dd HH:mm:ss
+  const dateTime = new Date(`${dateString}T${timeString}`)
+  
+  // Format to yyyy-MM-dd HH:mm:ss
+  const year = dateTime.getFullYear()
+  const month = String(dateTime.getMonth() + 1).padStart(2, '0')
+  const day = String(dateTime.getDate()).padStart(2, '0')
+  const hours = String(dateTime.getHours()).padStart(2, '0')
+  const minutes = String(dateTime.getMinutes()).padStart(2, '0')
+  const seconds = String(dateTime.getSeconds()).padStart(2, '0')
+  
+  return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
+}
+
 async function processPayment() {
   if (!canProceedPayment.value) return
 
@@ -450,8 +403,8 @@ async function processPayment() {
     // Generate payment data based on method
     currentPaymentData.value = generatePaymentData(paymentMethod.value, totalAmount.value)
     
-    // Show payment modal for electronic payments
-    if (paymentMethod.value === 'momo' || paymentMethod.value === 'banking') {
+    // Show payment modal for VNPay
+    if (paymentMethod.value === 'vnpay') {
       showPaymentModal.value = true
     } else if (paymentMethod.value === 'cash') {
       // For cash payment, directly proceed to success
@@ -474,33 +427,30 @@ function handlePaymentConfirmation(transactionId: string) {
   handlePaymentSuccess(transactionId)
 }
 
-function handlePaymentSuccess(transactionId: string) {
-  // Simulate payment processing
-  const paymentData = {
-    vehicleId: bookingData.value.vehicle.id,
-    customerInfo: customerInfo.value,
-    bookingDetails: {
-      startDateTime: `${bookingData.value.startDate}T${bookingData.value.startTime}`,
-      endDateTime: `${bookingData.value.endDate}T${bookingData.value.endTime}`,
-      totalHours: totalHours.value
-    },
-    payment: {
-      method: paymentMethod.value,
-      transactionId: transactionId,
-      subtotal: subtotal.value,
-      serviceFee: serviceFee.value,
-      vat: vat.value,
-      totalAmount: totalAmount.value
+async function handlePaymentSuccess(transactionId: string) {
+  try {
+    // Create booking through API
+    const bookingRequest = {
+      vehicle_id: bookingData.value.vehicle.id,
+      start_time: formatDateTimeForApi(bookingData.value.startDate, bookingData.value.startTime),
+      end_time: formatDateTimeForApi(bookingData.value.endDate, bookingData.value.endTime),
+      total_amount: totalAmount.value
     }
-  }
 
-  console.log('Payment completed:', paymentData)
-  
-  // Show success message
-  alert(`Thanh toán thành công!\nMã giao dịch: ${transactionId}\nTổng số tiền: ${formatPrice(totalAmount.value)} VNĐ`)
-  
-  // Redirect to bookings page
-  router.push('../profile/bookings')
+    const bookingResponse = await bookingsStore.createBooking(bookingRequest)
+    
+    console.log('Booking created:', bookingResponse)
+    
+    // Show success message
+    alert(`Đặt xe thành công!\nMã đặt xe: ${bookingResponse.booking_id}\nTổng số tiền: ${formatPrice(totalAmount.value)} VNĐ`)
+    
+    // Redirect to bookings page
+    router.push('/user/profile/bookings')
+    
+  } catch (error: any) {
+    console.error('Failed to create booking:', error)
+    alert(`Đặt xe thất bại: ${error?.message || 'Có lỗi xảy ra'}`)
+  }
 }
 
 // Initialize booking data from params and query

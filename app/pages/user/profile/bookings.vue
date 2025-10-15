@@ -1,32 +1,22 @@
 <template>
-  <div>
+  <FullPageSpinner
+    v-if="rentedLoading"
+    title="Đang tải đơn đặt xe"
+    subtitle="Vui lòng chờ trong giây lát..."
+    size="lg"
+    background="green"
+  />
+  <div v-else>
     <!-- Header -->
     <div class="mb-6">
       <h1 class="text-3xl font-bold text-gray-900">Đơn đặt xe của tôi</h1>
       <p class="text-gray-600">Quản lý và theo dõi các đơn đặt xe của bạn</p>
     </div>
 
-    <!-- Booking Status Tabs -->
-    <div class="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg">
-      <button 
-        v-for="status in bookingStatuses" 
-        :key="status.value"
-        @click="selectedStatus = status.value"
-        :class="[
-          'flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all',
-          selectedStatus === status.value 
-            ? 'bg-green-600 text-white' 
-            : 'text-gray-600 hover:text-gray-800'
-        ]"
-      >
-        {{ status.label }}
-      </button>
-    </div>
-
     <!-- Bookings List -->
     <div class="space-y-4">
       <div 
-        v-for="booking in filteredBookings" 
+        v-for="booking in rentedBookings" 
         :key="booking.id"
         class="bg-white rounded-lg shadow-sm overflow-hidden hover:shadow-md transition-shadow"
       >
@@ -34,73 +24,74 @@
           <div class="flex items-start justify-between">
             <!-- Booking Info -->
             <div class="flex-1">
-              <div class="flex items-center space-x-4 mb-4">
+              <div class="flex items-center gap-4 mb-4">
                 <img 
                   :src="booking.vehicle.image" 
                   :alt="booking.vehicle.name"
                   class="w-16 h-16 object-cover rounded-lg"
                 >
-                <div>
-                  <h3 class="text-lg font-semibold text-gray-900">{{ booking.vehicle.name }}</h3>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2 flex-wrap">
+                    <h3 class="text-lg font-semibold text-gray-900">{{ booking.vehicle.name }}</h3>
+                    <span
+                      v-if="booking.bookingStatus"
+                      :class="badgeClass(booking.bookingStatus)"
+                      class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
+                    >
+                      {{ statusLabel(booking.bookingStatus) }}
+                    </span>
+                  </div>
                   <p class="text-gray-600">{{ booking.vehicle.type }}</p>
                   <p class="text-green-600 font-medium">{{ formatPrice(booking.vehicle.price) }} VNĐ/giờ</p>
                 </div>
               </div>
 
               <!-- Booking Details -->
-              <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+              <div class="grid grid-cols-2 md:grid-cols-5 gap-4 mb-4">
                 <div>
                   <label class="block text-sm font-medium text-gray-700 mb-1">Mã đơn</label>
                   <p class="text-gray-900">#{{ booking.bookingCode }}</p>
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Ngày nhận xe</label>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Nhận xe</label>
                   <p class="text-gray-900">{{ formatDateTime(booking.startDateTime) }}</p>
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Ngày trả xe</label>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Trả xe</label>
                   <p class="text-gray-900">{{ formatDateTime(booking.endDateTime) }}</p>
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 mb-1">Tổng thời gian</label>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Thời gian</label>
                   <p class="text-gray-900">{{ booking.totalHours }} giờ</p>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium text-gray-700 mb-1">Đơn giá</label>
+                  <p class="text-gray-900">{{ formatPrice(booking.vehicle.price) }} VNĐ/giờ</p>
                 </div>
               </div>
 
               <!-- Payment Info -->
-              <div class="flex items-center justify-between">
+              <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
                 <div>
                   <span class="text-lg font-semibold text-gray-900">Tổng tiền: </span>
                   <span class="text-xl font-bold text-green-600">{{ formatPrice(booking.totalAmount) }} VNĐ</span>
                 </div>
-                <div class="flex items-center space-x-2">
-                  <span 
-                    :class="[
-                      'px-3 py-1 rounded-full text-sm font-medium',
-                      getStatusStyle(booking.status)
-                    ]"
+                <div class="flex items-center gap-2">
+                  <button
+                    v-if="booking.bookingStatus === 'PENDING_PAYMENT'"
+                    class="bg-green-600 text-white px-4 py-2 rounded-md hover:bg-green-700 transition-colors"
+                    @click="goToCheckout(booking.id)"
                   >
-                    {{ getStatusText(booking.status) }}
-                  </span>
+                    Thanh toán
+                  </button>
+                  <button
+                    class="border border-gray-300 text-gray-700 px-4 py-2 rounded-md hover:bg-gray-50 transition-colors"
+                    @click="viewDetails(booking.id)"
+                  >
+                    Xem chi tiết
+                  </button>
                 </div>
               </div>
-            </div>
-
-            <!-- Actions -->
-            <div class="ml-6 flex flex-col space-y-2">
-              <button 
-                v-if="booking.status === 'confirmed'"
-                @click="cancelBooking(booking.id)"
-                class="px-4 py-2 text-red-600 border border-red-200 rounded-md hover:bg-red-50 transition-colors"
-              >
-                Hủy đơn
-              </button>
-              <button 
-                @click="viewDetails(booking.id)"
-                class="px-4 py-2 text-green-600 border border-green-200 rounded-md hover:bg-green-50 transition-colors"
-              >
-                Chi tiết
-              </button>
             </div>
           </div>
         </div>
@@ -108,7 +99,7 @@
     </div>
 
     <!-- Empty State -->
-    <div v-if="filteredBookings.length === 0" class="text-center py-12">
+    <div v-if="rentedBookings.length === 0" class="text-center py-12">
       <div class="text-gray-400 text-6xl mb-4">📋</div>
       <h3 class="text-lg font-semibold text-gray-600 mb-2">Chưa có đơn đặt xe nào</h3>
       <p class="text-gray-500 mb-4">Hãy đặt xe đầu tiên của bạn!</p>
@@ -123,74 +114,18 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
-import { useAuth } from '../../../composables/useAuth'
+import { onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useVehiclesStore } from '~~/stores/vehicles'
 
 // @ts-ignore - Nuxt auto-import
 definePageMeta({
   middleware: ['role']
 })
 
-// Auth
-const { user } = useAuth()
-
-// Reactive data
-const selectedStatus = ref('all')
-const bookings = ref([
-  {
-    id: 'BK001',
-    bookingCode: 'EVS20251007001',
-    vehicle: {
-      id: 'v1',
-      name: 'VinFast VF e34',
-      type: 'Minicar',
-      price: 45000,
-      image: 'https://images.unsplash.com/photo-1593941707882-a5bac6861d75?w=400'
-    },
-    startDateTime: '2025-10-08T10:00',
-    endDateTime: '2025-10-08T18:00',
-    totalHours: 8,
-    totalAmount: 414000,
-    status: 'confirmed',
-    paymentMethod: 'vnpay',
-    createdAt: '2025-10-07T14:30'
-  },
-  {
-    id: 'BK002', 
-    bookingCode: 'EVS20251005002',
-    vehicle: {
-      id: 'v2',
-      name: 'Tesla Model 3',
-      type: 'B-SUV',
-      price: 85000,
-      image: 'https://images.unsplash.com/photo-1560958089-b8a1929cea89?w=400'
-    },
-    startDateTime: '2025-10-05T09:00',
-    endDateTime: '2025-10-05T17:00',
-    totalHours: 8,
-    totalAmount: 782000,
-    status: 'completed',
-    paymentMethod: 'momo',
-    createdAt: '2025-10-04T16:45'
-  }
-])
-
-// Booking statuses
-const bookingStatuses = [
-  { value: 'all', label: 'Tất cả' },
-  { value: 'confirmed', label: 'Đã xác nhận' },
-  { value: 'ongoing', label: 'Đang thuê' },
-  { value: 'completed', label: 'Hoàn thành' },
-  { value: 'cancelled', label: 'Đã hủy' }
-]
-
-// Computed properties
-const filteredBookings = computed(() => {
-  if (selectedStatus.value === 'all') {
-    return bookings.value
-  }
-  return bookings.value.filter(booking => booking.status === selectedStatus.value)
-})
+// Store
+const vehiclesStore = useVehiclesStore()
+const { rentedLoading, rentedBookings } = storeToRefs(vehiclesStore)
 
 // Methods
 function formatPrice(price: number): string {
@@ -209,55 +144,51 @@ function formatDateTime(dateTimeString: string): string {
   })
 }
 
-function getStatusStyle(status: string): string {
+function statusLabel(status?: string): string {
+  if (!status) return ''
+  const map: Record<string, string> = {
+    PENDING_PAYMENT: 'Chờ thanh toán',
+    PAID: 'Đã thanh toán',
+    CANCELLED: 'Đã hủy',
+    COMPLETED: 'Hoàn tất',
+    CONFIRMED: 'Đã xác nhận'
+  }
+  return map[status] ?? status
+}
+
+function badgeClass(status?: string): string {
+  if (!status) return 'bg-gray-100 text-gray-800'
   switch (status) {
-    case 'confirmed':
-      return 'bg-blue-100 text-blue-800'
-    case 'ongoing':
+    case 'PENDING_PAYMENT':
       return 'bg-yellow-100 text-yellow-800'
-    case 'completed':
+    case 'PAID':
+    case 'CONFIRMED':
       return 'bg-green-100 text-green-800'
-    case 'cancelled':
+    case 'COMPLETED':
+      return 'bg-blue-100 text-blue-800'
+    case 'CANCELLED':
       return 'bg-red-100 text-red-800'
     default:
       return 'bg-gray-100 text-gray-800'
   }
 }
 
-function getStatusText(status: string): string {
-  switch (status) {
-    case 'confirmed':
-      return 'Đã xác nhận'
-    case 'ongoing':
-      return 'Đang thuê'
-    case 'completed':
-      return 'Hoàn thành'
-    case 'cancelled':
-      return 'Đã hủy'
-    default:
-      return 'Không xác định'
-  }
+function goToCheckout(id: string | number) {
+  // Navigate to checkout page for this booking
+  // Using English comments for code per project convention
+  // If there is a dynamic route like /user/booking/checkout/[id]
+  // @ts-ignore - Nuxt app router is available
+  navigateTo(`/user/booking/checkout/${id}`)
 }
 
-function cancelBooking(bookingId: string) {
-  if (confirm('Bạn có chắc chắn muốn hủy đơn đặt xe này?')) {
-    const booking = bookings.value.find(b => b.id === bookingId)
-    if (booking) {
-      booking.status = 'cancelled'
-      alert('Đơn đặt xe đã được hủy thành công!')
-    }
-  }
-}
-
-function viewDetails(bookingId: string) {
-  // Navigate to booking details page
-  // For now, just show alert
-  alert(`Xem chi tiết đơn đặt xe: ${bookingId}`)
+function viewDetails(id: string | number) {
+  // Navigate to booking details page (placeholder route)
+  // @ts-ignore
+  navigateTo(`/user/booking/checkout/${id}`)
 }
 
 onMounted(() => {
-  // Load user's bookings from API
-  // For now using mock data
+  vehiclesStore.fetchRentedVehicles()
 })
 
 // @ts-ignore - Nuxt auto-import

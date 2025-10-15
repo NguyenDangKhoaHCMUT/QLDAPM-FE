@@ -15,28 +15,6 @@ export default defineNuxtRouteMiddleware(async (to) => {
   const path = to.path
   
   const userRole = (user.value as any)?.role
-  
-  // // Kiểm tra quyền truy cập theo role
-  // if (path.startsWith('/admin') && userRole !== 'ADMIN') {
-  //   throw createError({
-  //     statusCode: 403,
-  //     statusMessage: 'Không có quyền truy cập'
-  //   })
-  // }
-  
-  // if (path.startsWith('/company') && !['COMPANY', 'ADMIN'].includes(userRole || '')) {
-  //   throw createError({
-  //     statusCode: 403,
-  //     statusMessage: 'Không có quyền truy cập'
-  //   })
-  // }
-  
-  // if (path.startsWith('/user') && !['USER', 'COMPANY', 'ADMIN'].includes(userRole || '')) {
-  //   throw createError({
-  //     statusCode: 403,
-  //     statusMessage: 'Không có quyền truy cập'
-  //   })
-  // }
   const isCompanySection = path.startsWith('/company')
   const isUserSection = path === '/' || path.startsWith('/user')
 

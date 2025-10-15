@@ -354,7 +354,7 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { computed, onMounted } from 'vue'
 import { toast } from 'vue3-toastify'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
@@ -373,7 +373,6 @@ const vehiclesStore = useVehiclesStore()
 const { 
   loading, 
   filters, 
-  priceMax, 
   vehicleTypes, 
   displayVehicles,
   filteredVehicles,
@@ -415,6 +414,17 @@ function formatPrice(price: number): string {
 }
 
 function bookVehicle(vehicle: any) {
+  // Check if dates and times are selected
+  if (!filters.value.startDate || !filters.value.endDate) {
+    toast.error('Vui lòng chọn ngày nhận và trả xe!')
+    return
+  }
+
+  if (!filters.value.startTime || !filters.value.endTime) {
+    toast.error('Vui lòng chọn giờ nhận và trả xe!')
+    return
+  }
+
   // Check if end time is after start time
   const startDateTime = new Date(`${filters.value.startDate}T${filters.value.startTime}`)
   const endDateTime = new Date(`${filters.value.endDate}T${filters.value.endTime}`)
@@ -424,46 +434,33 @@ function bookVehicle(vehicle: any) {
     return
   }
 
-  // Navigate to checkout with booking data
-  const bookingData = {
-    vehicle: {
-      id: vehicle.id,
-      name: vehicle.name,
-      type: vehicle.type,
-      price: vehicle.price,
-      image: vehicle.image,
-      range: vehicle.range,
-      efficiency: vehicle.efficiency,
-      seats: vehicle.seats,
-      batteryCapacity: vehicle.batteryCapacity,
-      freeCharging: vehicle.freeCharging
-    },
-    startDate: filters.value.startDate,
-    startTime: filters.value.startTime,
-    endDate: filters.value.endDate,
-    endTime: filters.value.endTime
+  // Check if start time is not in the past
+  const now = new Date()
+  if (startDateTime <= now) {
+    toast.error('Thời gian nhận xe không thể trong quá khứ!')
+    return
   }
 
-  // Navigate to checkout page with data
+  // Navigate to checkout page with vehicle ID and booking data
   router.push({
-    path: '/user/booking/checkout',
+    path: `/user/booking/checkout/${vehicle.id}`,
     query: {
-      vehicle: JSON.stringify(bookingData.vehicle),
-      startDate: bookingData.startDate,
-      startTime: bookingData.startTime,
-      endDate: bookingData.endDate,
-      endTime: bookingData.endTime
+      startDate: filters.value.startDate,
+      startTime: filters.value.startTime,
+      endDate: filters.value.endDate,
+      endTime: filters.value.endTime
     }
   })
 }
 
 // Initialize filters with current date
 async function loadVehicles() {
-  await vehiclesStore.fetchVehicles()
+  await vehiclesStore.fetchMyVehicles()
 }
 
 function applyFilters() {
-  vehiclesStore.applyFilters()
+  // Use fetchMyVehicles instead of the generic applyFilters
+  loadVehicles()
 }
 
 function toggleSortOrder() {

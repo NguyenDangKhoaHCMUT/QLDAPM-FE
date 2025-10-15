@@ -30,20 +30,6 @@ export default defineNuxtConfig({
       'composables/**'
     ]
   },
-  
-  // Vite configuration for production builds
-  vite: {
-    build: {
-      rollupOptions: {
-        output: {
-          manualChunks: undefined
-        }
-      }
-    },
-    esbuild: {
-      drop: ['console', 'debugger']
-    }
-  },
 
   // App configuration
   app: {

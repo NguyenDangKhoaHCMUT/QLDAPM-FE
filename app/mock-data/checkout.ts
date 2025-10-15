@@ -12,13 +12,9 @@ export interface PaymentData {
 }
 
 export const mockPaymentMethods = {
-  momo: {
-    name: 'MoMo',
-    logo: '/images/momo-logo.png'
-  },
-  banking: {
-    name: 'Chuyển khoản ngân hàng',
-    logo: '/images/bank-logo.png'
+  vnpay: {
+    name: 'VNPay',
+    logo: '/images/vnpay-logo.png'
   },
   cash: {
     name: 'Thanh toán khi nhận xe',
@@ -31,26 +27,12 @@ export function generatePaymentData(method: string, amount: number): PaymentData
   const expiresAt = new Date(Date.now() + 15 * 60 * 1000) // 15 minutes from now
 
   switch (method) {
-    case 'momo':
+    case 'vnpay':
       return {
         method,
         amount,
         transactionId,
-        qrCode: generateMoMoQR(transactionId, amount),
-        expiresAt
-      }
-
-    case 'banking':
-      return {
-        method,
-        amount,
-        transactionId,
-        qrCode: generateBankingQR(transactionId, amount),
-        accountInfo: {
-          bankName: 'MSB',
-          accountNumber: '14001010134225',
-          accountName: 'CTY TNHH EV SHARING'
-        },
+        qrCode: generateVNPayQR(transactionId, amount),
         expiresAt
       }
 
@@ -74,17 +56,13 @@ function generateTransactionId(): string {
   return `${prefix}${timestamp}${random}`
 }
 
-function generateMoMoQR(transactionId: string, amount: number): string {
-  return '/images/momo-qr.png'
-}
-
-function generateBankingQR(transactionId: string, amount: number): string {
-  return '/images/bank-qr.png'
+function generateVNPayQR(transactionId: string, amount: number): string {
+  return '/images/vnpay-qr.png'
 }
 export const mockTransactionHistory = [
   {
     id: 'EV202410011234',
-    method: 'momo',
+    method: 'vnpay',
     amount: 450000,
     status: 'success',
     createdAt: new Date('2024-10-01T10:30:00'),
@@ -92,7 +70,7 @@ export const mockTransactionHistory = [
   },
   {
     id: 'EV202410025678',
-    method: 'banking',
+    method: 'vnpay',
     amount: 680000,
     status: 'success',
     createdAt: new Date('2024-10-02T14:20:00'),
