@@ -155,12 +155,14 @@
 <script setup lang="ts">
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
-import { useApi } from '../../../../composables/useApi'
 import { toast } from 'vue3-toastify'
-import { useCloudinary } from '../../../../composables/useCloudinary'
+import { useApi } from '~/composables/useApi'
+import { useCloudinary } from '~/composables/useCloudinary'
+import { useCompanyVehiclesStore } from '~~/stores/companyVehicles'
 
 const router = useRouter()
 const { post } = useApi()
+const vehiclesStore = useCompanyVehiclesStore()
 
 // Form data
 const formData = reactive({
@@ -291,6 +293,9 @@ async function submitForm() {
     if (response && response.data) {      
       // Show success message
       toast.success('Đăng xe thành công!')
+      
+      // Refresh the vehicles list to show the new vehicle
+      await vehiclesStore.fetchMyVehicles()
       
       // Redirect back to vehicles list
       router.push('/company/vehicles')

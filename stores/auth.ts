@@ -157,7 +157,15 @@ export const useAuthStore = defineStore('auth', () => {
     const userName = user.value?.fullname || 'Người dùng'
     clearAuthData()
     if (typeof window !== 'undefined') {
-      window.location.href = '/'
+      window.location.href = '/auth/login'
+    }
+  }
+
+  // Handle token expiration - called by useApi when 401 is received
+  function handleTokenExpiration() {
+    clearAuthData()
+    if (typeof window !== 'undefined') {
+      window.location.href = '/auth/login'
     }
   }
 
@@ -187,6 +195,7 @@ export const useAuthStore = defineStore('auth', () => {
     logout,
     register,
     clearAuthData,
-    initializeFromStorage
+    initializeFromStorage,
+    handleTokenExpiration
   }
 })

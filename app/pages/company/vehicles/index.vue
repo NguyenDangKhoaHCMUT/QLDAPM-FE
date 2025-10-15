@@ -347,8 +347,8 @@ async function confirmResume() {
 // Page meta
 // @ts-ignore
 definePageMeta({
-  layout: 'company'
-  // Tạm thời chưa có middleware
+  layout: 'company',
+  middleware: ['role']
 })
 
 // Head
