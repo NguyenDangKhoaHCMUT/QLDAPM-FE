@@ -179,19 +179,6 @@ export const useVehiclesStore = defineStore('vehicles', () => {
     } finally {
       loading.value = false
     }
-
-    // Fallback to mock
-    loading.value = true
-    try {
-      const data = await getVehiclesMock()
-      vehicles.value = data
-      if (data.length) {
-        priceMax.value = Math.max(...data.map(v => v.price))
-        if (filters.value.maxPrice > priceMax.value) filters.value.maxPrice = priceMax.value
-      }
-    } finally {
-      loading.value = false
-    }
   }
 
   // Helpers
@@ -240,13 +227,6 @@ export const useVehiclesStore = defineStore('vehicles', () => {
       }
     } catch (e: any) {
       console.error('Failed to fetch my vehicles:', e)
-      // Fallback to mock data if API fails
-      const data = await getVehiclesMock()
-      vehicles.value = data
-      if (data.length) {
-        priceMax.value = Math.max(...data.map(v => v.price))
-        if (filters.value.maxPrice > priceMax.value) filters.value.maxPrice = priceMax.value
-      }
     } finally {
       loading.value = false
     }

@@ -1,6 +1,6 @@
 <template>
   <div class="max-w-md mx-auto space-y-6">
-    <h1 class="text-3xl font-semibold text-gray-900">Đăng ký</h1>
+    <h1 class="text-3xl font-semibold text-gray-900">Đăng ký công ty</h1>
     <form class="space-y-4" @submit.prevent="onSubmit">
       <div class="space-y-2">
         <label class="block text-sm text-gray-700">Họ và tên</label>
@@ -96,7 +96,7 @@
       </button>
     </form>
     
-    <p class="text-sm text-gray-600">Đăng ký công ty? <NuxtLink to="/auth/register-company" class="text-green-700 font-medium">Chuyển sang đăng ký công ty</NuxtLink></p>
+    <p class="text-sm text-gray-600">Đăng ký cá nhân? <NuxtLink to="/auth/register" class="text-green-700 font-medium">Chuyển sang đăng ký cá nhân</NuxtLink></p>
     <p class="text-sm text-gray-600">Đã có tài khoản? <NuxtLink to="/auth/login" class="text-green-700 font-medium">Đăng nhập</NuxtLink></p>
   </div>
 </template>
@@ -110,7 +110,7 @@ import { toast } from 'vue3-toastify'
 useHead({ title: 'Đăng ký | EV Sharing' })
 
 const router = useRouter()
-const { register, loading, error } = useAuth()
+const { register, loading } = useAuth()
 
 // Form data
 const email = ref('')
@@ -242,11 +242,11 @@ async function onSubmit() {
 
   try {
     const res = await register({ 
-      email: email.value.trim(), 
-      password: password.value, 
-      fullname: fullname.value.trim(), 
+      email: email.value.trim(),
+      password: password.value,
+      fullname: fullname.value.trim(),
       phone: phone.value.trim(),
-      role: 'USER'
+      role: 'COMPANY'
     })
     
     if (res.code === 200 && res.data) {

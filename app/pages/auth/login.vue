@@ -41,7 +41,7 @@
         {{ loading ? 'Đang xử lý...' : 'Đăng nhập' }}
       </button>
     </form>    
-    <p class="text-sm text-gray-600">Chưa có tài khoản? <NuxtLink to="/auth/register" class="text-green-700 font-medium">Đăng ký</NuxtLink></p>
+    <p class="text-sm text-gray-600">Chưa có tài khoản? <NuxtLink to="/auth/register" class="text-green-700 font-medium">Đăng ký cá nhân</NuxtLink> hoặc <NuxtLink to="/auth/register-company" class="text-green-700 font-medium">Đăng ký công ty</NuxtLink></p>
   </div>
 </template>
 

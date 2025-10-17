@@ -2,6 +2,10 @@
   // https://nuxt.com/docs/guide/concepts/typescript
   "files": [],
   "extends": "./tsconfig.paths.json",
+  "compilerOptions": {
+    "target": "ES2015",
+    "lib": ["ES2015", "DOM"]
+  },
   "references": [
     {
       "path": "./.nuxt/tsconfig.app.json"
@@ -17,6 +21,6 @@
     },
     {
       "path": "./tsconfig.paths.json"
-    },
+    }
   ]
 }
