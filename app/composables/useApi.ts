@@ -78,7 +78,7 @@ export function useApi() {
         // Already processed HTTP error
         error.value = e.message
         if (e.status === 401) {
-          // logout()
+          logout()
         }
         throw e
       } else {
