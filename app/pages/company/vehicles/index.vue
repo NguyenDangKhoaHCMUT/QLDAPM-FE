@@ -48,7 +48,7 @@
         <p class="text-red-600 mb-4">Có lỗi khi tải dữ liệu: {{ lastError }}</p>
         <button
           class="bg-blue-600 text-white px-4 py-2 rounded-md hover:bg-blue-700"
-          @click="vehiclesStore.fetchMyVehicles()"
+          @click="vehiclesStore.fetchMyVehiclesCompany()"
         >
           Thử lại
         </button>
@@ -245,7 +245,7 @@ const pendingActionId = ref<number | null>(null)
 onMounted(async () => {
   if (!vehiclesStore.items.length) {
     try {
-      await vehiclesStore.fetchMyVehicles()
+      await vehiclesStore.fetchMyVehiclesCompany()
     } finally {
       hasFetchedOnce.value = true
     }

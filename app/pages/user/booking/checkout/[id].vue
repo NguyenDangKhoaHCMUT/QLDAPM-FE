@@ -339,7 +339,7 @@ async function fetchVehicleDetails(vehicleId: string) {
     
     if (!vehicle) {
       // If not found in store, try to fetch from API and update store
-      await vehiclesStore.fetchMyVehicles()
+      await vehiclesStore.SearchVehicles()
       vehicle = vehiclesStore.findVehicleById(vehicleIdNum)
     }
     

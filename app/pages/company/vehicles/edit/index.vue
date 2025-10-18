@@ -155,7 +155,7 @@
 
 <script setup lang="ts">
 import { ref, reactive, onMounted, computed } from 'vue'
-import { useCompanyVehiclesStore, type UiVehicleItem } from '../../../../../stores/companyVehicles'
+import { useCompanyVehiclesStore, type UiVehicleItem } from '~~/stores/companyVehicles'
 
 // Get route and router (sử dụng auto-import của Nuxt)
 // @ts-ignore
@@ -201,7 +201,7 @@ onMounted(async () => {
   try {
     // Ensure we have the latest vehicle list
     if (!vehiclesStore.items.length) {
-      await vehiclesStore.fetchMyVehicles()
+      await vehiclesStore.fetchMyVehiclesCompany()
     }
     
     if (vehicleId.value) {

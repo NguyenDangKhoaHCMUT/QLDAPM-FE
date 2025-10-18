@@ -455,11 +455,10 @@ function bookVehicle(vehicle: any) {
 
 // Initialize filters with current date
 async function loadVehicles() {
-  await vehiclesStore.fetchMyVehicles()
+  await vehiclesStore.SearchVehicles()
 }
 
 function applyFilters() {
-  // Use fetchMyVehicles instead of the generic applyFilters
   loadVehicles()
 }
 

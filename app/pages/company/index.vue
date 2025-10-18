@@ -271,7 +271,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useAuth } from '../../composables/useAuth'
-import { useCompanyVehiclesStore } from '../../../stores/companyVehicles'
+import { useCompanyVehiclesStore } from '~~/stores/companyVehicles'
 
 // Import composables
 const { user } = useAuth()
@@ -383,7 +383,7 @@ onMounted(async () => {
     
     // Fetch vehicles data if not already loaded
     if (!vehiclesStore.items.length) {
-      await vehiclesStore.fetchMyVehicles()
+      await vehiclesStore.fetchMyVehiclesCompany()
     }
     
     // Calculate remaining time to reach minimum loading duration (2 seconds)

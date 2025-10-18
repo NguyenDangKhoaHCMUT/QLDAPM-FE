@@ -34,7 +34,7 @@ export const useCompanyVehiclesStore = defineStore('companyVehicles', () => {
   const { get, put, error } = useApi()
   const { delete: del } = useApi()
 
-  async function fetchMyVehicles() {
+  async function fetchMyVehiclesCompany() {
     isLoading.value = true
     lastError.value = null
     try {
@@ -96,7 +96,7 @@ export const useCompanyVehiclesStore = defineStore('companyVehicles', () => {
       const ok = (res as any)?.status === 'success' || (res as any)?.message?.toLowerCase?.().includes('thành công')
       if (ok) {
         // Refresh the list to get updated data
-        await fetchMyVehicles()
+        await fetchMyVehiclesCompany()
         toast.success('Cập nhật xe thành công')
         return true
       } else {
@@ -163,7 +163,7 @@ export const useCompanyVehiclesStore = defineStore('companyVehicles', () => {
     isLoading,
     lastError,
     total,
-    fetchMyVehicles,
+    fetchMyVehiclesCompany,
     removeLocal: removeVehicleInScreen,
     deleteVehicle,
     findVehicleInStore,

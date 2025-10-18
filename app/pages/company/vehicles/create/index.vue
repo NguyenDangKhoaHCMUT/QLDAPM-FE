@@ -295,7 +295,7 @@ async function submitForm() {
       toast.success('Đăng xe thành công!')
       
       // Refresh the vehicles list to show the new vehicle
-      await vehiclesStore.fetchMyVehicles()
+      await vehiclesStore.fetchMyVehiclesCompany()
       
       // Redirect back to vehicles list
       router.push('/company/vehicles')
