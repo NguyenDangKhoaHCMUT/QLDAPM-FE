@@ -45,13 +45,70 @@
           required
         >
           <option value="">Chọn loại xe</option>
-          <option value="xe máy điện">Xe máy điện</option>
-          <option value="xe đạp điện">Xe đạp điện</option>
-          <option value="ô tô điện">Ô tô điện</option>
+          <option value="BIKE">Xe đạp điện</option>
+          <option value="SCOOTER">Xe máy điện</option>
+          <option value="CAR">Ô tô điện</option>
         </select>
         <p v-if="errors.type" class="text-red-500 text-sm mt-1">{{ errors.type }}</p>
       </div>
 
+      <!-- Vehicle Address -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          Địa chỉ <span class="text-red-500">*</span>
+        </label>
+        <div class="space-y-4">
+          <!-- Location -->
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">📍 Thành phố</label>
+            <div class="relative" ref="provinceDropdownRef">
+              <input
+                type="text"
+                v-model="provinceSearch"
+                @focus="showProvinceDropdown = true"
+                placeholder="Tìm thành phố..."
+                class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white shadow-sm"
+              />
+              <div v-if="showProvinceDropdown" class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                <div
+                  v-for="province in filteredProvinces"
+                  :key="province.code"
+                  @click="selectProvince(province)"
+                  class="p-3 hover:bg-green-100 cursor-pointer"
+                >
+                  {{ province.name }}
+                </div>
+              </div>
+            </div>
+            <p v-if="errors.province" class="text-red-500 text-sm mt-1">{{ errors.province }}</p>
+          </div>
+
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">📍 Xã/Phường</label>
+            <div class="relative" ref="provinceDropdownRef">
+              <input
+                type="text"
+                v-model="wardSearch"
+                @focus="showWardDropdown = true"
+                :placeholder="selectedProvince ? 'Tìm xã/phường...' : 'Vui lòng chọn thành phố'"
+                :disabled="!selectedProvince"
+                class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white shadow-sm disabled:bg-gray-100"
+              />
+              <div v-if="showWardDropdown && selectedProvince" class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+                <div
+                  v-for="ward in filteredWards"
+                  :key="ward.id"
+                  @click="selectWard(ward)"
+                  class="p-3 hover:bg-green-100 cursor-pointer"
+                >
+                  {{ ward.name }}
+                </div>
+              </div>
+            </div>
+            <p v-if="errors.ward" class="text-red-500 text-sm mt-1">{{ errors.ward }}</p>
+          </div>
+        </div>
+      </div>
 
       <!-- Vehicle Image -->
       <div>
@@ -123,7 +180,6 @@
         <p class="text-gray-500 text-sm mt-1">Giá tối thiểu: 1,000 VNĐ/giờ</p>
       </div>
 
-
       <!-- Submit Buttons -->
       <div class="flex space-x-4 pt-6">
         <button
@@ -153,12 +209,13 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { toast } from 'vue3-toastify'
 import { useApi } from '~/composables/useApi'
 import { useCloudinary } from '~/composables/useCloudinary'
 import { useCompanyVehiclesStore } from '~~/stores/companyVehicles'
+import vnApi from '~~/stores/vn_api.json'
 
 const router = useRouter()
 const { post } = useApi()
@@ -168,6 +225,8 @@ const vehiclesStore = useCompanyVehiclesStore()
 const formData = reactive({
   name: '',
   type: '',
+  province: '',
+  ward: '',
   pricePerHour: null as number | null,
   imageUrl: ''
 })
@@ -178,9 +237,68 @@ const imagePreview = ref('')
 const errors = reactive({
   name: '',
   type: '',
+  brand: '',
+  model: '',
+  province: '',
+  ward: '',
   pricePerHour: '',
   imageUrl: ''
 })
+
+// Location data
+const allProvinces = ref(vnApi)
+const provinceSearch = ref('')
+const selectedProvince = ref(null)
+const showProvinceDropdown = ref(false)
+
+const allWards = ref([])
+const wardSearch = ref('')
+const selectedWard = ref(null)
+const showWardDropdown = ref(false)
+
+const filteredProvinces = computed(() => {
+  if (!provinceSearch.value) {
+    return allProvinces.value
+  }
+  return allProvinces.value.filter(p => p.name.toLowerCase().includes(provinceSearch.value.toLowerCase()))
+})
+
+const filteredWards = computed(() => {
+  if (!wardSearch.value) {
+    return allWards.value
+  }
+  return allWards.value.filter((w: { name: string }) => w.name.toLowerCase().includes(wardSearch.value.toLowerCase()))
+})
+
+watch(selectedProvince, (newProvince) => {
+  if (newProvince) {
+    allWards.value = (newProvince as any).wards
+    selectedWard.value = null
+    wardSearch.value = ''
+    formData.province = (newProvince as any).slug
+    formData.ward = ''
+  } else {
+    allWards.value = []
+    formData.province = ''
+    formData.ward = ''
+  }
+})
+
+function selectProvince(province : any) {
+  selectedProvince.value = province
+  provinceSearch.value = province.name
+  showProvinceDropdown.value = false
+}
+
+function selectWard(ward : any) {
+  selectedWard.value = ward
+  wardSearch.value = ward.name
+  showWardDropdown.value = false
+  if (selectedProvince.value) {
+    formData.ward = ward.name
+  }
+}
+
 
 // Cloudinary upload state
 const { isUploading, lastError: cloudinaryError, uploadImage } = useCloudinary()
@@ -243,8 +361,15 @@ function validateForm(): boolean {
     errors.type = 'Loại xe là bắt buộc'
     isValid = false
   }
-  
-  if (!formData.imageUrl) {
+  if (!formData.province) {
+    errors.province = 'Tỉnh/Thành phố không được để trống'
+    isValid = false
+  }
+  if (!formData.ward) {
+    errors.ward = 'Phường/Xã không được để trống'
+    isValid = false
+  }
+  if (!imagePreview.value) {
     errors.imageUrl = 'Ảnh xe là bắt buộc'
     isValid = false
   }
@@ -259,45 +384,57 @@ function validateForm(): boolean {
 
 // Submit form
 async function submitForm() {
+  if (isSubmitting.value) return
   isSubmitting.value = true
   uploadError.value = ''
   
+  // First, run basic validation
+  if (!validateForm()) {
+    isSubmitting.value = false
+    return
+  }
+  
   try {
-    // Upload image first if we have a selected file (from preview)
+    // Upload image if a new one is selected
     const fileInput = document.getElementById('image-upload') as HTMLInputElement
     const file = fileInput?.files?.[0] || null
-    if (file) {
+    if (file && imagePreview.value) {
       try {
         const { url } = await uploadImage(file)
         formData.imageUrl = url
       } catch (e: any) {
         uploadError.value = cloudinaryError.value || e?.message || 'Tải ảnh thất bại'
-        throw e
+        toast.error(uploadError.value)
+        isSubmitting.value = false
+        return
       }
     }
 
-    // Validate after we have attempted upload
-    if (!validateForm()) return
+    // Final validation after image URL is set
+    if (!formData.imageUrl) {
+      errors.imageUrl = 'Ảnh xe là bắt buộc và phải được tải lên thành công.'
+      isSubmitting.value = false
+      return
+    }
 
     // Prepare API payload
+    const address = `${formData.ward}, ${formData.province}`
     const vehicleData = {
       name: formData.name.trim(),
       type: formData.type,
       pricePerHour: formData.pricePerHour!,
-      imageUrl: formData.imageUrl
+      imageUrl: formData.imageUrl,
+      ward: formData.ward, 
+      province: formData.province,
+      address: address
     }
     
     // Call API
     const response = await post('/vehicles', vehicleData)
     
     if (response && response.data) {      
-      // Show success message
       toast.success('Đăng xe thành công!')
-      
-      // Refresh the vehicles list to show the new vehicle
       await vehiclesStore.fetchMyVehiclesCompany()
-      
-      // Redirect back to vehicles list
       router.push('/company/vehicles')
     } else {
       throw new Error(response?.message || 'Không thể tạo xe')
@@ -305,15 +442,12 @@ async function submitForm() {
     
   } catch (error: any) {
     console.error('Error creating vehicle:', error)
-    console.log('Status Code:', error.statusCode)
-    console.log('Status:', error.status)
-    console.log('Response:', error.response)
-    console.log('Is Network Error:', error.isNetworkError)
     
-    // Handle different error types
     let errorMessage = 'Có lỗi xảy ra khi đăng xe. Vui lòng thử lại!'
     
-    if (error.isNetworkError) {
+    if (uploadError.value) {
+      errorMessage = uploadError.value
+    } else if (error.isNetworkError) {
       errorMessage = 'Không thể kết nối đến máy chủ'
     } else if (error.statusCode || error.status) {
       const status = error.statusCode || error.status

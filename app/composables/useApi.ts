@@ -8,7 +8,7 @@ interface ApiResponse<T> {
   data: T
 }
 
-const API_BASE_URL = 'https://ec2-54-79-121-161.ap-southeast-2.compute.amazonaws.com'
+const API_BASE_URL = 'https://ec2-15-134-124-141.ap-southeast-2.compute.amazonaws.com'
 
 export function useApi() {
   const loading = ref(false)

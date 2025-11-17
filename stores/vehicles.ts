@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, provide } from 'vue'
 import { useApi } from '../app/composables/useApi'
 
 // Types for rented vehicles/booking view
@@ -14,8 +14,10 @@ interface VehicleSearchResponse {
   pricePerHour: number
   imageUrl: string
   status: string
-  latitude: number | null
-  longitude: number | null
+  province: string
+  ward: string
+  address: string
+  typeSortOrder: number
   paused: boolean
 }
 
@@ -32,28 +34,26 @@ type RentedBooking = {
   bookingStatus?: string
 }
 
-interface MockVehicle {
+interface ApiVehicle {
   id: number
   name: string
   type: string
   price: number
   range: number
-  seats: number
-  batteryCapacity: string
-  efficiency: string
   image: string
   status: 'available' | 'unavailable'
-  freeCharging: boolean
-  location: 'hanoi' | 'hcm' | 'danang' | 'haiphong'
+  province: string
+  ward: string
+  address: string
 }
 
 // Store to manage vehicles list and filters
 export const useVehiclesStore = defineStore('vehicles', () => {
   // State
   const loading = ref(false)
-  const vehicles = ref<MockVehicle[]>([])
+  const vehicles = ref<ApiVehicle[]>([])
   const priceMax = ref<number>(2000000)
-  const vehicleTypes = ref<string[]>(['Minicar', 'A-SUV', 'B-SUV', 'C-SUV', 'D-SUV'])
+  const vehicleTypes = ref<string[]>(['BIKE', 'SCOOTER', 'CAR'])
   
   // Rented vehicles state (bookings)
   const rentedLoading = ref(false)
@@ -64,7 +64,8 @@ export const useVehiclesStore = defineStore('vehicles', () => {
   const itemsPerPage = ref(10)
 
   const filters = ref({
-    location: '',
+    province: '',
+    ward: '',
     startDate: '',
     endDate: '',
     startTime: '10:00',
@@ -74,7 +75,7 @@ export const useVehiclesStore = defineStore('vehicles', () => {
     maxPrice: 2000000
   })
 
-  const sortBy = ref('price')
+  const sortBy = ref('price_asc')
   const sortOrder = ref('asc')
 
   // API client
@@ -83,55 +84,6 @@ export const useVehiclesStore = defineStore('vehicles', () => {
   // Getters
   const filteredVehicles = computed(() => {
     let result = vehicles.value
-    // Always show only available vehicles
-    result = result.filter(v => v.status === 'available')
-
-    if (filters.value.location) {
-      result = result.filter(v => v.location === filters.value.location)
-    }
-    if (filters.value.type) {
-      result = result.filter(v => v.type === filters.value.type)
-    }
-    if (filters.value.minPrice > 0) {
-      result = result.filter(v => v.price >= filters.value.minPrice)
-    }
-    if (filters.value.maxPrice > 0) {
-      result = result.filter(v => v.price <= filters.value.maxPrice)
-    }
-
-    // Apply sorting
-    result = [...result].sort((a, b) => {
-      let aValue, bValue
-      
-      switch (sortBy.value) {
-        case 'price':
-          aValue = a.price
-          bValue = b.price
-          break
-        case 'name':
-          aValue = a.name.toLowerCase()
-          bValue = b.name.toLowerCase()
-          break
-        case 'range':
-          aValue = a.range
-          bValue = b.range
-          break
-        case 'seats':
-          aValue = a.seats
-          bValue = b.seats
-          break
-        default:
-          aValue = a.price
-          bValue = b.price
-      }
-
-      if (sortOrder.value === 'asc') {
-        return aValue > bValue ? 1 : aValue < bValue ? -1 : 0
-      } else {
-        return aValue < bValue ? 1 : aValue > bValue ? -1 : 0
-      }
-    })
-
     return result
   })
 
@@ -167,26 +119,31 @@ export const useVehiclesStore = defineStore('vehicles', () => {
   // Actions: fetch my vehicles (similar to companyVehicles)
   async function SearchVehicles() {
     loading.value = true
+    const params = new URLSearchParams()
+    if (filters.value.province) params.append('province', filters.value.province)
+    if (filters.value.ward) params.append('district',filters.value.ward) 
+    if (filters.value.type) params.append('type', filters.value.type)
+
+    // if (sortBy.value && sortBy.value !== 'default') params.append('sort', sortBy.value)
+    if (filters.value.minPrice) params.append('priceMin', String(filters.value.minPrice))
+    if (filters.value.maxPrice && filters.value.maxPrice > 0) params.append('priceMax', String(filters.value.maxPrice))
+    
     try {
-      const res = await get<VehicleSearchResponse[]>('/vehicles/search')
-      const data = Array.isArray(res?.data) ? res.data : []
-      
-      // Transform API data to match MockVehicle interface
+      const res = await get<VehicleSearchResponse[]>(`/vehicles/search?${params.toString()}`)
+      const data = Array.isArray(res?.data?.items) ? res.data.items : []
+      // Transform API data to match ApiVehicle interface
       const transformedData = data.map(v => ({
         id: v.id,
         name: v.name,
         type: v.type,
         price: v.pricePerHour || 0,
         image: v.imageUrl || '',
-        range: 200, // Default value since API doesn't provide
-        efficiency: 'Good', // Default value
-        seats: v.type === 'MOTORBIKE' ? 2 : 4, // Default based on type
-        batteryCapacity: '50kWh', // Default value
-        freeCharging: false, // Default value
         status: (v.status === 'AVAILABLE' ? 'available' : 'unavailable') as 'available' | 'unavailable',
-        location: 'hanoi' as 'hanoi' | 'hcm' | 'danang' | 'haiphong' // Default location
+        province: v.province || '',
+        ward: v.ward || '',
+        address: v.address || ''
+        
       }))
-      
       vehicles.value = transformedData
       if (transformedData.length) {
         priceMax.value = Math.max(...transformedData.map(v => v.price))
@@ -311,5 +268,3 @@ export const useVehiclesStore = defineStore('vehicles', () => {
     findVehicleById
   }
 })
-
-

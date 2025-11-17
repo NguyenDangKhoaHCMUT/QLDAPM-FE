@@ -11,6 +11,9 @@ interface ApiVehicle {
   ownerEmail: string
   name: string
   type: string
+  province: string
+  ward: string
+  address: string
   pricePerHour: number
   imageUrl: string
   status: string
@@ -19,6 +22,9 @@ interface ApiVehicle {
 export interface UiVehicleItem {
   id: number
   name: string
+  province: string
+  ward: string
+  address: string
   image: string
   licensePlate: string
   status: string
@@ -43,6 +49,9 @@ export const useCompanyVehiclesStore = defineStore('companyVehicles', () => {
       items.value = data.map(v => ({
         id: v.id,
         name: v.name,
+        province: v.province || '',
+        ward: v.ward || '',
+        address: v.address || '',
         image: v.imageUrl || '',
         licensePlate: '-',
         status: (v.status || '').toLowerCase(),

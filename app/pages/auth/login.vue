@@ -105,9 +105,9 @@ function clearError(field: keyof typeof errors.value) {
 // Computed properties
 const isFormValid = computed(() => {
   return email.value.trim() && 
-         password.value && 
-         !errors.value.email &&
-         !errors.value.password
+        password.value && 
+        !errors.value.email &&
+        !errors.value.password
 })
 
 async function onSubmit() {
