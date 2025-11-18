@@ -124,7 +124,7 @@ export const useVehiclesStore = defineStore('vehicles', () => {
     if (filters.value.ward) params.append('district',filters.value.ward) 
     if (filters.value.type) params.append('type', filters.value.type)
 
-    // if (sortBy.value && sortBy.value !== 'default') params.append('sort', sortBy.value)
+    if (sortBy.value && sortBy.value !== 'default') params.append('sort', sortBy.value)
     if (filters.value.minPrice) params.append('priceMin', String(filters.value.minPrice))
     if (filters.value.maxPrice && filters.value.maxPrice > 0) params.append('priceMax', String(filters.value.maxPrice))
     
@@ -147,7 +147,6 @@ export const useVehiclesStore = defineStore('vehicles', () => {
       vehicles.value = transformedData
       if (transformedData.length) {
         priceMax.value = Math.max(...transformedData.map(v => v.price))
-        if (filters.value.maxPrice > priceMax.value) filters.value.maxPrice = priceMax.value
       }
     } catch (e: any) {
       console.error('Failed to fetch my vehicles:', e)

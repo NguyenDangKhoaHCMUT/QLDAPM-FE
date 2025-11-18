@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, AsyncComponentLoader } from 'vue'
 import { useApi } from '../app/composables/useApi'
 import { toast } from 'vue3-toastify'
 

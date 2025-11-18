@@ -266,9 +266,9 @@ const provinceSearch = ref('')
 const selectedProvince = ref(null)
 const showProvinceDropdown = ref(false)
 
-const allWards = ref([])
+const allWards = ref<any[]>([])
 const wardSearch = ref('')
-const selectedWard = ref(null)
+const selectedWard = ref<any>(null)
 const showWardDropdown = ref(false)
 
 const filteredProvinces = computed(() => {
@@ -282,7 +282,7 @@ const filteredWards = computed(() => {
   if (!wardSearch.value) {
     return allWards.value
   }
-  return allWards.value.filter((w: { name: string }) => w.name.toLowerCase().includes(wardSearch.value.toLowerCase()))
+  return allWards.value.filter((w: any) => (w.name || '').toLowerCase().includes(wardSearch.value.toLowerCase()))
 })
 
 watch(selectedProvince, (newProvince, oldProvince) => {
