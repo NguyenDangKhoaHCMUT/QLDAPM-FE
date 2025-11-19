@@ -56,6 +56,66 @@
         <p v-if="errors.name" class="mt-1 text-sm text-red-600">{{ errors.name }}</p>
       </div>
 
+      
+      <!-- Vehicle Address -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          Địa chỉ <span class="text-red-500">*</span>
+        </label>
+        <div class="space-y-4">
+          <!-- Location -->
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">📍 Thành phố</label>            
+            <div class="relative" v-click-outside="() => showProvinceDropdown = false">
+              <input
+                type="text"
+                v-model="provinceSearch"
+                @focus="showProvinceDropdown = true"
+                placeholder="Tìm thành phố..."
+                class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm"
+              />
+              <div v-if="showProvinceDropdown" class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                <div
+                  v-for="province in filteredProvinces"
+                  :key="province.code"
+                  @click="selectProvince(province)"
+                  class="p-3 hover:bg-blue-100 cursor-pointer"
+                >
+                  {{ province.name }}
+                </div>
+              </div>
+            </div>
+            <p v-if="errors.province" class="text-red-500 text-sm mt-1">{{ errors.province }}</p>
+          </div>
+
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">📍 Xã/Phường</label>            
+            <div class="relative" v-click-outside="() => showWardDropdown = false">
+              <input
+                type="text"
+                v-model="wardSearch"
+                @focus="showWardDropdown = true"
+                :placeholder="selectedProvince ? 'Tìm xã/phường...' : 'Vui lòng chọn thành phố'"
+                :disabled="!selectedProvince"
+                class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white shadow-sm disabled:bg-gray-100"
+              />
+              <div v-if="showWardDropdown && selectedProvince" class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
+                <div
+                  v-for="ward in filteredWards"
+                  :key="ward.id"
+                  @click="selectWard(ward)"
+                  class="p-3 hover:bg-blue-100 cursor-pointer"
+                >
+                  {{ ward.name }}
+                </div>
+              </div>
+            </div>
+            <p v-if="errors.ward" class="text-red-500 text-sm mt-1">{{ errors.ward }}</p>
+          </div>
+        </div>
+      </div>
+
+
       <!-- Vehicle Type -->
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -67,9 +127,9 @@
           required
         >
           <option value="">Chọn loại xe</option>
-          <option value="ô tô điện">Ô tô điện</option>
-          <option value="xe máy điện">Xe máy điện</option>
-          <option value="xe đạp điện">Xe đạp điện</option>
+          <option value="BIKE">Xe đạp điện</option>
+          <option value="SCOOTER">Xe máy điện</option>
+          <option value="CAR">Ô tô điện</option>
         </select>
         <p v-if="errors.type" class="mt-1 text-sm text-red-600">{{ errors.type }}</p>
       </div>
@@ -154,8 +214,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, onMounted, computed, watch } from 'vue'
 import { useCompanyVehiclesStore, type UiVehicleItem } from '~~/stores/companyVehicles'
+import { toast } from 'vue3-toastify'
+import vnApi from '~~/stores/vn_api.json'
 
 // Get route and router (sử dụng auto-import của Nuxt)
 // @ts-ignore
@@ -182,6 +244,8 @@ const imagePreview = ref('')
 const formData = reactive({
   name: '',
   type: '',
+  province: '',
+  ward: '',
   image: '',
   pricePerHour: null as number | null
 })
@@ -190,9 +254,69 @@ const formData = reactive({
 const errors = reactive({
   name: '',
   type: '',
+  province: '',
+  ward: '',
   image: '',
   pricePerHour: ''
 })
+
+// Location data
+const allProvinces = ref(vnApi)
+const provinceSearch = ref('')
+const selectedProvince = ref(null)
+const showProvinceDropdown = ref(false)
+
+const allWards = ref<any[]>([])
+const wardSearch = ref('')
+const selectedWard = ref<any>(null)
+const showWardDropdown = ref(false)
+
+const filteredProvinces = computed(() => {
+  if (!provinceSearch.value) {
+    return allProvinces.value
+  }
+  return allProvinces.value.filter(p => p.name.toLowerCase().includes(provinceSearch.value.toLowerCase()))
+})
+
+const filteredWards = computed(() => {
+  if (!wardSearch.value) {
+    return allWards.value
+  }
+  return allWards.value.filter((w: any) => (w.name || '').toLowerCase().includes(wardSearch.value.toLowerCase()))
+})
+
+watch(selectedProvince, (newProvince, oldProvince) => {
+  if (newProvince) {
+    allWards.value = (newProvince as any).wards
+    formData.province = (newProvince as any).slug
+    // Chỉ reset xã/phường khi người dùng chủ động thay đổi tỉnh/thành phố
+    // (không phải lúc onMounted đang chạy)
+    if (oldProvince && newProvince.slug !== oldProvince.slug) {
+      selectedWard.value = null
+      wardSearch.value = ''
+      formData.ward = ''
+    }
+  } else {
+    allWards.value = []
+    formData.province = ''
+    formData.ward = ''
+  }
+})
+
+function selectProvince(province : any) {
+  selectedProvince.value = province
+  provinceSearch.value = province.name
+  showProvinceDropdown.value = false
+}
+
+function selectWard(ward : any) {
+  selectedWard.value = ward
+  wardSearch.value = ward.name
+  showWardDropdown.value = false
+  if (selectedProvince.value) {
+    formData.ward = ward.name
+  }
+}
 
 // Load vehicle data
 onMounted(async () => {
@@ -214,13 +338,30 @@ onMounted(async () => {
         formData.type = foundVehicle.type
         formData.image = foundVehicle.image
         formData.pricePerHour = foundVehicle.pricePerHour
+        formData.province = foundVehicle.province
+        formData.ward = foundVehicle.ward
         
         // Set image preview
         imagePreview.value = foundVehicle.image
+
+        // Populate location fields
+        if (foundVehicle.province) {
+          const province = allProvinces.value.find(p => p.slug === foundVehicle.province)
+          if (province) {
+            selectProvince(province) // This will also populate wards
+            if (foundVehicle.ward) {
+              const ward = province.wards.find(w => w.name === foundVehicle.ward)
+              if (ward) {
+                selectWard(ward)
+              }
+            }
+          }
+        }
       }
     }
   } catch (error) {
     console.error('Error loading vehicle:', error)
+    toast.error('Không thể tải thông tin xe.')
   } finally {
     loading.value = false
   }
@@ -277,6 +418,16 @@ function validateForm(): boolean {
     errors.type = 'Loại xe là bắt buộc'
     isValid = false
   }
+
+  if (!formData.province) {
+    errors.province = 'Tỉnh/Thành phố không được để trống'
+    isValid = false
+  }
+
+  if (!formData.ward) {
+    errors.ward = 'Phường/Xã không được để trống'
+    isValid = false
+  }
   
   if (!formData.pricePerHour || formData.pricePerHour < 1000) {
     errors.pricePerHour = 'Giá thuê phải từ 1,000 VNĐ/giờ trở lên'
@@ -292,15 +443,20 @@ async function submitForm() {
   isSubmitting.value = true
   
   try {
+    const address = `${formData.ward}, ${formData.province}`
     // Update vehicle using store
     const success = await vehiclesStore.updateVehicle(vehicleId.value, {
       name: formData.name,
       type: formData.type,
+      province: formData.province,
+      ward: formData.ward,
+      address: address,
       image: formData.image || 'https://via.placeholder.com/400x300/gray/white?text=No+Image',
       pricePerHour: formData.pricePerHour!
     })
     
     if (success) {      
+      toast.success('Cập nhật xe thành công!')
       // Redirect back to vehicles list
       router.push('/company/vehicles')
     } else {
@@ -309,7 +465,7 @@ async function submitForm() {
     
   } catch (error: any) {
     console.error('Error updating vehicle:', error)
-    alert(error?.message || 'Có lỗi xảy ra khi cập nhật xe. Vui lòng thử lại!')
+    toast.error(error?.message || 'Có lỗi xảy ra khi cập nhật xe. Vui lòng thử lại!')
   } finally {
     isSubmitting.value = false
   }

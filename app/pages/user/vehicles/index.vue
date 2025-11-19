@@ -15,16 +15,53 @@
       
       <!-- Main Filters Row -->
       <div class="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
+        
         <!-- Location -->
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">📍 Địa điểm</label>
-          <select v-model="filters.location" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white shadow-sm">
-            <option value="">Tất cả địa điểm</option>
-            <option value="hanoi">Hà Nội</option>
-            <option value="hcm">TP. Hồ Chí Minh</option>
-            <option value="danang">Đà Nẵng</option>
-            <option value="haiphong">Hải Phòng</option>
-          </select>
+          <label class="block text-sm font-medium text-gray-700">📍 Thành phố</label>
+          <div class="relative">
+            <input
+              type="text"
+              v-model="provinceSearch"
+              @focus="showProvinceDropdown = true"
+              placeholder="Tìm thành phố..."
+              class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white shadow-sm"
+            />
+            <div v-if="showProvinceDropdown" class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+              <div
+                v-for="province in filteredProvinces"
+                :key="province.code"
+                @click="selectProvince(province)"
+                class="p-3 hover:bg-green-100 cursor-pointer"
+              >
+                {{ province.name }}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <label class="block text-sm font-medium text-gray-700">📍 Xã/Phường</label>
+          <div class="relative">
+            <input
+              type="text"
+              v-model="wardSearch"
+              @focus="showWardDropdown = true"
+              :placeholder="selectedProvince ? 'Tìm xã/phường...' : 'Vui lòng chọn thành phố'"
+              :disabled="!selectedProvince"
+              class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white shadow-sm disabled:bg-gray-100"
+            />
+            <div v-if="showWardDropdown && selectedProvince" class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-xl shadow-lg max-h-60 overflow-y-auto">
+              <div
+                v-for="ward in filteredWards"
+                :key="ward.id"
+                @click="selectWard(ward)"
+                class="p-3 hover:bg-green-100 cursor-pointer"
+              >
+                {{ ward.name }}
+              </div>
+            </div>
+          </div>
         </div>
 
         <!-- Vehicle Type -->
@@ -32,38 +69,30 @@
           <label class="block text-sm font-medium text-gray-700">🚗 Loại xe</label>
           <select v-model="filters.type" class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white shadow-sm">
             <option value="">Tất cả loại</option>
-            <option v-for="t in vehicleTypes" :key="t" :value="t">{{ t }}</option>
+            <option value="BIKE">Xe đạp điện</option>
+            <option value="SCOOTER">Xe máy điện</option>
+            <option value="CAR">Ô tô điện</option>
           </select>
         </div>
 
-        <!-- Sort -->
+        <!-- Sort + Search Button -->
         <div class="space-y-2">
           <label class="block text-sm font-medium text-gray-700">📊 Sắp xếp</label>
           <div class="flex space-x-2">
             <select v-model="sortBy" class="flex-1 p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white shadow-sm">
-              <option value="price">Giá</option>
-              <option value="name">Tên xe</option>
-              <option value="range">Tầm xa</option>
-              <option value="seats">Số chỗ</option>
+              <option value="price_asc">Giá tăng</option>
+              <option value="price_desc">Giá giảm</option>
+              <option value="updated_desc">Cập nhật mới nhất</option>
+              <option value="default">Mặc định</option>
             </select>
             <button 
-              @click="toggleSortOrder"
+              @click="applyFilters"
               class="px-4 py-3 bg-green-100 text-green-700 rounded-xl hover:bg-green-200 transition-colors border border-green-200"
-              :title="sortOrder === 'asc' ? 'Tăng dần' : 'Giảm dần'"
+              style="min-width:44px"
             >
-              {{ sortOrder === 'asc' ? '↑' : '↓' }}
+              🔍
             </button>
           </div>
-        </div>
-
-        <!-- Apply Button -->
-        <div class="flex items-end">
-          <button 
-            @click="applyFilters"
-            class="w-full bg-gradient-to-r from-green-500 to-green-600 text-white p-3 rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-300 font-medium shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
-          >
-            🔍 Tìm xe
-          </button>
         </div>
       </div>
 
@@ -189,8 +218,8 @@
     <!-- Results Info -->
     <div class="mb-6 text-center">
       <p class="text-gray-600 text-lg">
-        Hiển thị <span class="font-semibold text-green-600">{{ displayVehicles.length }}</span> 
-        trong tổng số <span class="font-semibold text-green-600">{{ totalVehicles }}</span> xe điện
+        <!-- Hiển thị <span class="font-semibold text-green-600">{{ displayVehicles.length }}</span>  -->
+        <!-- trong tổng số <span class="font-semibold text-green-600">{{ totalVehicles }}</span> xe điện -->
       </p>
     </div>
 
@@ -213,12 +242,6 @@
           
           <!-- Status Badges -->
           <div class="absolute top-4 left-4 flex flex-col gap-2">
-            <span 
-              v-if="vehicle.freeCharging"
-              class="bg-green-500/90 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-full font-medium shadow-lg"
-            >
-              ⚡ Miễn phí sạc
-            </span>
             <span 
               v-if="vehicle.status === 'available'"
               class="bg-blue-500/90 backdrop-blur-sm text-white text-xs px-3 py-1.5 rounded-full font-medium shadow-lg"
@@ -249,24 +272,16 @@
           <h3 class="text-xl font-bold text-gray-900 mb-4 group-hover:text-green-600 transition-colors">{{ vehicle.name }}</h3>
 
           <!-- Vehicle Specs -->
-          <div class="grid grid-cols-2 gap-3 mb-6 text-sm text-gray-600">
+          <!-- <div class="grid grid-cols-2 gap-3 mb-6 text-sm text-gray-600">
             <div class="flex items-center bg-gray-50 rounded-lg p-3">
               <span class="mr-2 text-lg">🚗</span>
               <span class="font-medium">{{ vehicle.type }}</span>
             </div>
             <div class="flex items-center bg-gray-50 rounded-lg p-3">
-              <span class="mr-2 text-lg">⚡</span>
-              <span class="font-medium">{{ vehicle.range }}km</span>
-            </div>
-            <div class="flex items-center bg-gray-50 rounded-lg p-3">
               <span class="mr-2 text-lg">👥</span>
-              <span class="font-medium">{{ vehicle.seats }} chỗ</span>
+              <span class="font-medium">{{ vehicle.address }} địa chỉ</span>
             </div>
-            <div class="flex items-center bg-gray-50 rounded-lg p-3">
-              <span class="mr-2 text-lg">🔋</span>
-              <span class="font-medium">{{ vehicle.batteryCapacity }}</span>
-            </div>
-          </div>
+          </div> -->
 
           <!-- Book Button -->
           <button 
@@ -354,11 +369,12 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted } from 'vue'
+import { computed, onMounted, ref, watch } from 'vue'
 import { toast } from 'vue3-toastify'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 import { useVehiclesStore } from '../../../../stores/vehicles'
+import vnApi from '~~/stores/vn_api.json'
 
 // @ts-ignore - Nuxt auto-import
 definePageMeta({
@@ -384,6 +400,62 @@ const {
   sortBy,
   sortOrder
 } = storeToRefs(vehiclesStore)
+
+// Location data
+const allProvinces = ref(vnApi)
+const provinceSearch = ref('')
+const selectedProvince = ref(null)
+const showProvinceDropdown = ref(false)
+
+const allWards = ref([])
+const wardSearch = ref('')
+const selectedWard = ref(null)
+const showWardDropdown = ref(false)
+
+const filteredProvinces = computed(() => {
+  if (!provinceSearch.value) {
+    return allProvinces.value
+  }
+  return allProvinces.value.filter(p => p.name.toLowerCase().includes(provinceSearch.value.toLowerCase()))
+})
+
+const filteredWards = computed(() => {
+  if (!wardSearch.value) {
+    return allWards.value
+  }
+  return allWards.value.filter((w: { name: string }) => w.name.toLowerCase().includes(wardSearch.value.toLowerCase()))
+})
+
+watch(sortBy, () => {
+  applyFilters()
+})
+
+watch(selectedProvince, (newProvince) => {
+  if (newProvince) {
+    allWards.value = (newProvince as any).wards
+    selectedWard.value = null
+    wardSearch.value = '' // Xóa lựa chọn xã/phường cũ
+    filters.value.province = (newProvince as any).slug // Chỉ lưu slug của tỉnh
+    filters.value.ward = '' // Reset ward
+  } else {
+    allWards.value = []
+    filters.value.province = ''
+    filters.value.ward = ''
+  }
+})
+
+function selectProvince(province : any) {
+  selectedProvince.value = province
+  provinceSearch.value = province.name // Hiển thị tên trên UI
+  showProvinceDropdown.value = false
+}
+
+function selectWard(ward : any) {
+  selectedWard.value = ward
+  wardSearch.value = ward.name // Hiển thị tên trên UI
+  showWardDropdown.value = false
+  filters.value.ward = ward.slug // Lưu slug của xã/phường
+}
 
 // Computed properties
 const visiblePages = computed(() => {
