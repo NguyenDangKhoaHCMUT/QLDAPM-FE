@@ -671,7 +671,6 @@ async function confirmBooking() {
     router.push('/user/profile/bookings')
   } catch (error: any) {
     console.error('Error creating booking:', error)
-    toast.error(error?.message || 'Không thể đặt xe. Vui lòng thử lại!')
   } finally {
     isCreatingBooking.value = false
   }

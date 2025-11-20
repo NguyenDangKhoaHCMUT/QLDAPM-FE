@@ -36,286 +36,242 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
       <!-- Left Column: Booking Details -->
-      <div class="lg:col-span-2 space-y-6">
-        <!-- Vehicle Info -->
-        <div class="bg-white p-6 rounded-lg shadow-sm">
-          <h2 class="text-xl font-semibold text-gray-900 mb-4">Thông tin xe</h2>
-          <div class="flex items-center space-x-4">
+      <div class="lg:col-span-2 space-y-4">
+        <!-- Vehicle & Rental Info -->
+        <div class="bg-white p-5 rounded-lg shadow-sm">
+          <h2 class="text-lg font-semibold text-gray-900 mb-4">Thông tin đặt xe</h2>
+          <div class="flex items-start space-x-4 mb-5 pb-5 border-b border-gray-200">
             <img 
               :src="bookingData.vehicle.image" 
               :alt="bookingData.vehicle.name"
-              class="w-20 h-20 object-cover rounded-lg"
+              class="w-20 h-20 object-cover rounded-lg shadow-sm"
             >
-            <div>
-              <h3 class="text-lg font-semibold text-gray-900">{{ bookingData.vehicle.name }}</h3>
-              <p class="text-gray-600">{{ bookingData.vehicle.type }}</p>
-              <p class="text-green-600 font-medium">{{ formatPrice(hourlyRate) }} VNĐ/giờ</p>
+            <div class="flex-1">
+              <h3 class="text-base font-semibold text-gray-900">{{ bookingData.vehicle.name }}</h3>
+              <p class="text-sm text-gray-600 mt-0.5">{{ bookingData.vehicle.type }}</p>
+              <p class="text-green-600 font-semibold mt-1">{{ formatPrice(hourlyRate) }} VNĐ/giờ</p>
             </div>
-          </div>
-        </div>
-
-        <!-- Rental Details -->
-        <div class="bg-white p-6 rounded-lg shadow-sm">
-          <h2 class="text-xl font-semibold text-gray-900 mb-4">Chi tiết thuê xe</h2>
-          <div class="grid grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Ngày nhận xe</label>
-              <input 
-                v-model="bookingData.startDate"
-                type="date" 
-                class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              >
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Giờ nhận xe</label>
-              <input 
-                v-model="bookingData.startTime"
-                type="time" 
-                class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              >
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Ngày trả xe</label>
-              <input 
-                v-model="bookingData.endDate"
-                type="date" 
-                class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              >
-            </div>
-            <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Giờ trả xe</label>
-              <input 
-                v-model="bookingData.endTime"
-                type="time" 
-                class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              >
+            <div class="text-right">
+              <span class="text-sm text-gray-600">Thời gian thuê</span>
+              <p class="text-lg font-bold text-green-600 mt-0.5">{{ totalHours }} giờ</p>
             </div>
           </div>
           
-          <div class="mt-4 pt-4 border-t border-gray-200">
-            <div class="flex justify-between items-center">
-              <span class="text-lg font-medium text-gray-900">Tổng thời gian thuê:</span>
-              <span class="text-lg font-semibold text-green-600">{{ totalHours }} giờ</span>
+          <div class="grid grid-cols-2 gap-3 mb-4">
+            <div>
+              <label class="block text-xs font-medium text-gray-500 mb-1">Ngày nhận xe</label>
+              <input 
+                :value="bookingData.startDate"
+                type="date" 
+                readonly
+                class="w-full p-2 text-sm border border-gray-200 rounded-md bg-gray-50 text-gray-700 cursor-not-allowed"
+              >
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-500 mb-1">Giờ nhận xe</label>
+              <input 
+                :value="bookingData.startTime"
+                type="time" 
+                readonly
+                class="w-full p-2 text-sm border border-gray-200 rounded-md bg-gray-50 text-gray-700 cursor-not-allowed"
+              >
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-500 mb-1">Ngày trả xe</label>
+              <input 
+                :value="bookingData.endDate"
+                type="date" 
+                readonly
+                class="w-full p-2 text-sm border border-gray-200 rounded-md bg-gray-50 text-gray-700 cursor-not-allowed"
+              >
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-500 mb-1">Giờ trả xe</label>
+              <input 
+                :value="bookingData.endTime"
+                type="time" 
+                readonly
+                class="w-full p-2 text-sm border border-gray-200 rounded-md bg-gray-50 text-gray-700 cursor-not-allowed"
+              >
             </div>
           </div>
         </div>
 
         <!-- Customer Info -->
-        <div class="bg-white p-6 rounded-lg shadow-sm">
-          <h2 class="text-xl font-semibold text-gray-900 mb-4">Thông tin khách hàng</h2>
-          <div class="grid grid-cols-2 gap-4">
+        <div class="bg-white p-5 rounded-lg shadow-sm">
+          <h2 class="text-lg font-semibold text-gray-900 mb-4">Thông tin khách hàng</h2>
+          <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Họ và tên</label>
+              <label class="block text-xs font-medium text-gray-500 mb-1">Họ và tên</label>
               <input 
                 v-model="customerInfo.fullName"
                 type="text" 
                 readonly
-                class="w-full p-3 border border-gray-200 rounded-md bg-gray-50 text-gray-600 cursor-not-allowed"
+                class="w-full p-2 text-sm border border-gray-200 rounded-md bg-gray-50 text-gray-700 cursor-not-allowed"
                 placeholder="Họ và tên"
               >
             </div>
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Số điện thoại</label>
+              <label class="block text-xs font-medium text-gray-500 mb-1">Số điện thoại</label>
               <input 
                 v-model="customerInfo.phone"
                 type="text"  
                 readonly
-                class="w-full p-3 border border-gray-200 rounded-md bg-gray-50 text-gray-600 cursor-not-allowed"
+                class="w-full p-2 text-sm border border-gray-200 rounded-md bg-gray-50 text-gray-700 cursor-not-allowed"
                 placeholder="Số điện thoại"
               >
             </div>
             <div class="col-span-2">
-              <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+              <label class="block text-xs font-medium text-gray-500 mb-1">Email</label>
               <input 
                 v-model="customerInfo.email"
                 type="email" 
                 readonly
-                class="w-full p-3 border border-gray-200 rounded-md bg-gray-50 text-gray-600 cursor-not-allowed"
+                class="w-full p-2 text-sm border border-gray-200 rounded-md bg-gray-50 text-gray-700 cursor-not-allowed"
                 placeholder="Email"
               >
             </div>
           </div>
         </div>
 
-        <!-- Payment Method -->
-        <div class="bg-white p-6 rounded-lg shadow-sm">
-          <h2 class="text-xl font-semibold text-gray-900 mb-4">Phương thức thanh toán</h2>
-          <div class="space-y-3">
-            <label class="flex items-center p-3 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50">
-              <input 
-                v-model="paymentMethod" 
-                type="radio" 
-                value="vnpay" 
-                class="text-green-600 focus:ring-green-500"
-              >
-              <span class="ml-3">💳 VNPay</span>
-            </label>
-            <label class="flex items-center p-3 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50">
-              <input 
-                v-model="paymentMethod" 
-                type="radio" 
-                value="cash" 
-                class="text-green-600 focus:ring-green-500"
-              >
-              <span class="ml-3">💵 Thanh toán khi nhận xe</span>
-            </label>
-            <label class="flex items-center p-3 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50">
-              <input 
-                v-model="paymentMethod" 
-                type="radio" 
-                value="qr" 
-                class="text-green-600 focus:ring-green-500"
-              >
-              <span class="ml-3">🏦 Chuyển khoản QR</span>
-            </label>
+        <!-- QR Code -->
+        <div class="bg-white p-5 rounded-lg shadow-sm">
+          <h2 class="text-lg font-semibold text-gray-900 mb-4">Mã QR thanh toán</h2>
+          
+          <div v-if="qrLoading" class="p-6 bg-blue-50 border border-blue-100 rounded-lg text-blue-700 text-sm text-center">
+            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-3"></div>
+            Đang tạo mã QR, vui lòng chờ...
           </div>
-
-          <div v-if="paymentMethod === 'qr'" class="mt-6 space-y-4">
-            <div v-if="qrLoading" class="p-4 bg-blue-50 border border-blue-100 rounded-lg text-blue-700 text-sm">
-              Đang tạo mã QR cho booking, vui lòng chờ...
+          <div v-else-if="qrError" class="p-6 bg-red-50 border border-red-100 rounded-lg text-red-700 text-sm text-center space-y-3">
+            <p>{{ qrError }}</p>
+            <button
+              class="px-4 py-2 rounded-md bg-red-600 text-white text-sm hover:bg-red-700"
+              @click="prepareQrPayment(true)"
+            >
+              Thử lại
+            </button>
+          </div>
+          <div v-else-if="qrInfo" class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div class="flex flex-col items-center p-4 border border-green-100 rounded-xl bg-green-50">
+              <ClientOnly>
+                <QrcodeVue
+                  :value="qrPayload"
+                  :size="180"
+                  level="H"
+                  class="bg-white p-2 rounded-xl shadow-md"
+                />
+                <template #fallback>
+                  <div class="w-44 h-44 bg-gray-100 rounded-xl animate-pulse" />
+                </template>
+              </ClientOnly>
+              <p class="text-xs text-gray-600 mt-2 text-center">
+                Quét mã để chuyển khoản
+              </p>
             </div>
-            <div v-else-if="qrError" class="p-4 bg-red-50 border border-red-100 rounded-lg text-red-700 text-sm space-y-2">
-              <p>{{ qrError }}</p>
-              <button
-                class="px-4 py-2 rounded-md bg-red-600 text-white text-sm hover:bg-red-700"
-                @click="prepareQrPayment(true)"
-              >
-                Thử lại
-              </button>
-            </div>
-            <div v-else-if="qrInfo" class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div class="p-4 border border-green-100 rounded-xl bg-green-50 flex flex-col items-center">
-                <ClientOnly>
-                  <QrcodeVue
-                    :value="qrPayload"
-                    :size="180"
-                    level="H"
-                    class="bg-white p-2 rounded-xl shadow-sm"
-                  />
-                  <template #fallback>
-                    <div class="w-44 h-44 bg-gray-100 rounded-xl animate-pulse" />
-                  </template>
-                </ClientOnly>
-                <p class="text-sm text-gray-600 mt-2 text-center">
-                  Quét mã để chuyển khoản nhanh
-                </p>
+            <div class="space-y-2.5 text-sm">
+              <div class="flex justify-between py-1.5 border-b border-gray-100">
+                <span class="text-gray-600">Ngân hàng</span>
+                <span class="font-semibold text-gray-900 text-right">{{ qrInfo.bankInfo.bankName }} ({{ qrInfo.bankInfo.bankCode }})</span>
               </div>
-              <div class="space-y-2 text-sm">
-                <div class="flex justify-between">
-                  <span class="text-gray-500">Ngân hàng</span>
-                  <span class="font-semibold">{{ qrInfo.bankInfo.bankName }} ({{ qrInfo.bankInfo.bankCode }})</span>
+              <div class="flex justify-between py-1.5 border-b border-gray-100">
+                <span class="text-gray-600">Số tài khoản</span>
+                <span class="font-semibold text-gray-900">{{ qrInfo.bankInfo.accountNumber }}</span>
+              </div>
+              <div class="flex justify-between py-1.5 border-b border-gray-100">
+                <span class="text-gray-600">Chủ tài khoản</span>
+                <span class="font-semibold text-gray-900 text-right">{{ qrInfo.bankInfo.accountName }}</span>
+              </div>
+              <div class="flex justify-between py-1.5 border-b border-gray-100">
+                <span class="text-gray-600">Số tiền</span>
+                <span class="text-green-600 font-bold">{{ formatPrice(qrInfo.amount) }} VNĐ</span>
+              </div>
+              <div class="pt-2">
+                <span class="block text-gray-600 mb-1.5 text-xs">Nội dung chuyển khoản</span>
+                <div class="font-semibold text-gray-900 bg-gray-100 rounded-lg px-3 py-2 text-center border border-gray-200 text-sm">
+                  {{ qrInfo.transferContent }}
                 </div>
-                <div class="flex justify-between">
-                  <span class="text-gray-500">Số tài khoản</span>
-                  <span class="font-semibold">{{ qrInfo.bankInfo.accountNumber }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-gray-500">Chủ tài khoản</span>
-                  <span class="font-semibold">{{ qrInfo.bankInfo.accountName }}</span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="text-gray-500">Số tiền</span>
-                  <span class="text-green-600 font-bold">{{ formatPrice(qrInfo.amount) }} VNĐ</span>
-                </div>
-                <div>
-                  <span class="block text-gray-500">Nội dung chuyển khoản</span>
-                  <div class="font-semibold text-gray-900 bg-gray-100 rounded-lg px-3 py-2">
-                    {{ qrInfo.transferContent }}
-                  </div>
-                </div>
-                <p class="text-xs text-gray-500">{{ qrInfo.note || 'Vui lòng chuyển khoản đúng nội dung để được xác nhận nhanh.' }}</p>
-                <button
-                  class="w-full px-4 py-2 rounded-md bg-blue-600 text-white font-semibold hover:bg-blue-700 disabled:opacity-60"
-                  :disabled="confirmTransferLoading"
-                  @click="confirmQrTransfer"
-                >
-                  {{ confirmTransferLoading ? 'Đang gửi xác nhận...' : 'Tôi đã chuyển khoản' }}
-                </button>
+                <p class="text-xs text-gray-500 mt-2">{{ qrInfo.note || 'Vui lòng chuyển khoản đúng nội dung để được xác nhận nhanh.' }}</p>
               </div>
             </div>
-            <div v-else class="p-4 bg-yellow-50 border border-yellow-100 rounded-lg text-yellow-700 text-sm">
-              Hệ thống sẽ tạo mã QR sau khi bạn nhập đầy đủ thông tin đặt xe. Vui lòng đảm bảo bạn chuyển đúng số tiền và nội dung để chủ xe xác nhận.
-            </div>
+          </div>
+          <div v-else class="p-6 bg-yellow-50 border border-yellow-100 rounded-lg text-yellow-700 text-sm text-center">
+            Đang tải thông tin mã QR...
           </div>
         </div>
       </div>
 
       <!-- Right Column: Price Summary -->
       <div class="lg:col-span-1">
-        <div class="bg-white p-6 rounded-lg shadow-sm sticky top-6">
-          <h2 class="text-xl font-semibold text-gray-900 mb-4">Tóm tắt thanh toán</h2>
+        <div class="bg-white p-5 rounded-lg shadow-sm sticky top-6">
+          <h2 class="text-lg font-semibold text-gray-900 mb-4">Tóm tắt thanh toán</h2>
           
-          <div class="space-y-3">
-            <div class="flex justify-between">
+          <div class="space-y-2 mb-5">
+            <div class="flex justify-between text-sm py-1">
               <span class="text-gray-600">Giá thuê xe</span>
-              <span class="text-gray-900">{{ formatPrice(hourlyRate) }} VNĐ/giờ</span>
+              <span class="text-gray-900 font-medium">{{ formatPrice(hourlyRate) }} VNĐ/giờ</span>
             </div>
-            <div class="flex justify-between">
+            <div class="flex justify-between text-sm py-1">
               <span class="text-gray-600">Số giờ thuê</span>
-              <span class="text-gray-900">{{ totalHours }} giờ</span>
+              <span class="text-gray-900 font-medium">{{ totalHours }} giờ</span>
             </div>
-            <div class="flex justify-between">
+            <div class="flex justify-between text-sm py-1">
               <span class="text-gray-600">Tạm tính</span>
-              <span class="text-gray-900">{{ formatPrice(subtotal) }} VNĐ</span>
+              <span class="text-gray-900 font-medium">{{ formatPrice(subtotal) }} VNĐ</span>
             </div>
-            <div class="flex justify-between">
+            <div class="flex justify-between text-sm py-1">
               <span class="text-gray-600">Phí dịch vụ (5%)</span>
-              <span class="text-gray-900">{{ formatPrice(serviceFee) }} VNĐ</span>
+              <span class="text-gray-900 font-medium">{{ formatPrice(serviceFee) }} VNĐ</span>
             </div>
-            <div class="flex justify-between">
+            <div class="flex justify-between text-sm py-1">
               <span class="text-gray-600">Thuế VAT (10%)</span>
-              <span class="text-gray-900">{{ formatPrice(vat) }} VNĐ</span>
+              <span class="text-gray-900 font-medium">{{ formatPrice(vat) }} VNĐ</span>
             </div>
             
-            <hr class="my-4">
+            <hr class="my-3 border-gray-200">
             
-            <div class="flex justify-between items-center">
+            <div class="flex justify-between items-center pt-1">
               <span class="text-lg font-semibold text-gray-900">Tổng cộng</span>
-              <span class="text-xl font-bold text-green-600">{{ formatPrice(totalAmount) }} VNĐ</span>
+              <span class="text-2xl font-bold text-green-600">{{ formatPrice(totalAmount) }} VNĐ</span>
             </div>
           </div>
 
-          <button 
-            @click="processPayment"
-            :disabled="!canProceedPayment"
-            :class="[
-              'w-full mt-6 py-3 px-4 rounded-md font-medium text-white transition-colors',
-              canProceedPayment
-                ? 'bg-green-600 hover:bg-green-700'
-                : 'bg-gray-400 cursor-not-allowed'
-            ]"
-          >
-            {{ paymentButtonText }}
-          </button>
-          
-          <p class="text-xs text-gray-500 mt-3 text-center">
-            Bằng cách nhấn "Thanh toán", bạn đồng ý với 
-            <a href="#" class="text-green-600 hover:underline">Điều khoản dịch vụ</a> 
-            của chúng tôi
-          </p>
+          <div class="pt-4 border-t border-gray-200">
+            <button 
+              v-if="qrInfo"
+              @click="confirmQrTransfer"
+              :disabled="confirmTransferLoading"
+              class="w-full py-3 px-4 rounded-lg font-semibold text-white transition-colors bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
+            >
+              {{ confirmTransferLoading ? 'Đang xác nhận...' : 'Tôi đã chuyển khoản' }}
+            </button>
+            
+            <button 
+              v-else-if="!qrLoading && !qrError && canProceedPayment"
+              @click="refreshQrCode"
+              class="w-full py-3 px-4 rounded-lg font-semibold text-white transition-colors bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
+            >
+              Tải mã QR
+            </button>
+            
+            <p class="text-xs text-gray-500 mt-3 text-center leading-relaxed">
+              Sau khi chuyển khoản, nhấn "Tôi đã chuyển khoản" để chủ xe xác nhận
+            </p>
+          </div>
         </div>
       </div>
     </div>
 
-      <!-- Payment Modal -->
-      <PaymentModal 
-        v-if="showPaymentModal && currentPaymentData"
-        :payment-data="currentPaymentData"
-        @close="closePaymentModal"
-        @confirm="handlePaymentConfirmation"
-      />
     </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuth } from '~/composables/useAuth'
 import { useApi } from '~/composables/useApi'
 import { useBookingsStore } from '~~/stores/bookings'
 import type { BookingQrInfo } from '~~/stores/bookings'
-import { generatePaymentData, type PaymentData } from '../../../../mock-data/checkout'
 import QrcodeVue from 'qrcode.vue'
 
 // Auth and routing
@@ -350,9 +306,6 @@ const customerInfo = ref({
   email: user?.email || ''
 })
 
-const paymentMethod = ref('vnpay')
-const showPaymentModal = ref(false)
-const currentPaymentData = ref<PaymentData | null>(null)
 const currentBookingId = ref<string | null>(null)
 const qrInfo = ref<BookingQrInfo | null>(null)
 const qrLoading = ref(false)
@@ -397,7 +350,6 @@ const totalAmount = computed(() => {
 
 const canProceedPayment = computed(() => {
   return Boolean(
-    paymentMethod.value &&
     currentBookingId.value &&
     totalHours.value > 0 &&
     bookingData.value.startDate &&
@@ -405,16 +357,6 @@ const canProceedPayment = computed(() => {
     bookingData.value.startTime &&
     bookingData.value.endTime
   )
-})
-
-const paymentButtonText = computed(() => {
-  if (!canProceedPayment.value) {
-    return 'Vui lòng điền đầy đủ thông tin'
-  }
-  if (paymentMethod.value === 'qr') {
-    return qrInfo.value ? 'Làm mới mã QR' : 'Tạo mã QR chuyển khoản'
-  }
-  return `Thanh toán ${formatPrice(totalAmount.value)} VNĐ`
 })
 
 const qrPayload = computed(() => {
@@ -530,44 +472,9 @@ async function loadBookingDetails(bookingIdParam: string) {
   }
 }
 
-async function processPayment() {
+async function refreshQrCode() {
   if (!canProceedPayment.value) return
-
-  try {
-    if (paymentMethod.value === 'qr') {
-      await prepareQrPayment(true)
-      return
-    }
-
-    currentPaymentData.value = generatePaymentData(paymentMethod.value, totalAmount.value)
-    
-    if (paymentMethod.value === 'vnpay') {
-      showPaymentModal.value = true
-    } else if (paymentMethod.value === 'cash') {
-      handlePaymentSuccess(currentPaymentData.value.transactionId)
-    }
-    
-  } catch (error) {
-    console.error('Payment initialization failed:', error)
-    alert('Không thể khởi tạo thanh toán. Vui lòng thử lại!')
-  }
-}
-
-function closePaymentModal() {
-  showPaymentModal.value = false
-  currentPaymentData.value = null
-}
-
-function handlePaymentConfirmation(transactionId: string) {
-  closePaymentModal()
-  handlePaymentSuccess(transactionId)
-}
-
-function handlePaymentSuccess(transactionId: string) {
-  const bookingId = currentBookingId.value || 'N/A'
-  console.log('Payment confirmed:', transactionId, bookingId)
-  alert(`Thanh toán thành công!\nMã đặt xe: ${bookingId}\nTổng số tiền: ${formatPrice(totalAmount.value)} VNĐ`)
-  router.push('/user/profile/bookings')
+  await prepareQrPayment(true)
 }
 
 // Initialize booking data from params and query
@@ -606,17 +513,8 @@ async function confirmQrTransfer() {
   }
 }
 
-watch(paymentMethod, (method) => {
-  if (method === 'qr') {
-    prepareQrPayment()
-  } else {
-    qrError.value = ''
-  }
-})
-
 onMounted(async () => {
   const bookingId = route.params.id as string
-  const query = route.query
   
   // Validate booking ID
   if (!bookingId) {
@@ -626,12 +524,11 @@ onMounted(async () => {
   }
   
   await loadBookingDetails(bookingId)
-
-  // Allow overriding from query params if provided
-  if (query.startDate) bookingData.value.startDate = String(query.startDate)
-  if (query.startTime) bookingData.value.startTime = String(query.startTime)
-  if (query.endDate) bookingData.value.endDate = String(query.endDate)
-  if (query.endTime) bookingData.value.endTime = String(query.endTime)
+  
+  // Auto-load QR code after booking details are loaded
+  if (canProceedPayment.value && currentBookingId.value) {
+    prepareQrPayment()
+  }
 })
 
 // @ts-ignore - Nuxt auto-import

@@ -95,7 +95,7 @@
               <button
                 class="px-4 py-2 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-60"
                 :disabled="isConfirming"
-                @click="confirmBooking(booking.id, noteDrafts[booking.id], 'reject')"
+                @click="confirmBooking(booking.id, noteDrafts[booking.id], 'cancel')"
               >
                 Từ chối
               </button>
@@ -127,12 +127,21 @@ function formatPrice(value: number) {
 
 function formatDate(value?: string) {
   if (!value) return '—'
-  return new Date(value).toLocaleString('vi-VN', {
-    hour: '2-digit',
-    minute: '2-digit',
-    day: '2-digit',
-    month: '2-digit'
-  })
+  // API returns dates as yyyy-MM-dd strings
+  try {
+    const date = new Date(value)
+    if (isNaN(date.getTime())) {
+      // If invalid date, try to format as-is if it's already yyyy-MM-dd
+      return value
+    }
+    return date.toLocaleDateString('vi-VN', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    })
+  } catch {
+    return value
+  }
 }
 
 function statusLabel(status: string) {
@@ -166,7 +175,7 @@ function isPendingConfirmation(status: string) {
   return status.toUpperCase() === 'PENDING_CONFIRMATION'
 }
 
-async function confirmBooking(id: string, note?: string, action: 'confirm' | 'reject' = 'confirm') {
+async function confirmBooking(id: string, note?: string, action: 'confirm' | 'cancel' = 'confirm') {
   await companyBookingsStore.confirmPayment(id, {
     action,
     note

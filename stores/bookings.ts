@@ -56,20 +56,13 @@ export const useBookingsStore = defineStore('bookings', () => {
     
     try {
       const response = await post<CreateBookingResponse>('/api/bookings', bookingData)
-      
-      if (response && response.data) {
-        toast.success('Tạo đặt xe thành công!')
-        return response.data
-      } else {
-        const msg = response?.message || 'Create booking failed'
-        lastError.value = msg
-        throw new Error(msg)
-      }
+      toast.success('Tạo đặt xe thành công!')
+      return response.data
     } catch (e: any) {
-      const errorMsg = error.value || e?.message || 'Create booking failed'
+      const errorMsg ='Xe đã được đặt trong khoảng thời gian này'
       lastError.value = errorMsg
-      toast.error(`Tạo đặt xe thất bại: ${errorMsg}`)
-      throw e
+      toast.error(errorMsg)
+      throw new Error(errorMsg)
     } finally {
       isLoading.value = false
     }
@@ -112,7 +105,7 @@ export const useBookingsStore = defineStore('bookings', () => {
     }
   }
 
-  async function confirmOwnerPayment(bookingId: string | number, payload: { action: 'confirm' | 'reject'; note?: string }) {
+  async function confirmOwnerPayment(bookingId: string | number, payload: { action: 'confirm' | 'cancel'; note?: string }) {
     try {
       const res = await post<ConfirmPaymentResponse>(`/api/bookings/${bookingId}/confirm-payment`, payload)
       return res?.data

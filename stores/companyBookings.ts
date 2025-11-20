@@ -19,7 +19,7 @@ export interface CompanyBooking {
 }
 
 interface ConfirmPaymentPayload {
-  action: 'confirm' | 'reject'
+  action: 'confirm' | 'cancel'
   note?: string
 }
 
@@ -46,18 +46,21 @@ export const useCompanyBookingsStore = defineStore('companyBookings', () => {
   }
 
   function mapBooking(item: any): CompanyBooking {
-    const id = item?.id ?? item?.bookingId ?? item?.booking_id ?? cryptoRandom()
+    // API returns booking_id as string
+    const bookingId = item?.booking_id ?? item?.bookingId ?? item?.id ?? cryptoRandom()
     const status = item?.status ?? item?.bookingStatus ?? 'PENDING_PAYMENT'
-    const total = Number(item?.totalAmount ?? item?.total_amount ?? 0)
+    const total = Number(item?.total_amount ?? item?.totalAmount ?? 0)
+    
     return {
-      id: String(id),
-      bookingCode: item?.bookingCode ?? toBookingCode(id),
+      id: String(bookingId),
+      bookingCode: item?.bookingCode ?? toBookingCode(bookingId),
       vehicleName: item?.vehicle?.name ?? item?.vehicleName ?? 'Xe điện',
       vehicleImage: item?.vehicle?.imageUrl ?? item?.vehicle?.image ?? item?.vehicleImage ?? '',
       renterName: item?.renter?.fullname ?? item?.renterName ?? item?.renter_fullname,
       renterPhone: item?.renter?.phone ?? item?.renterPhone ?? item?.renter_phone,
-      startTime: item?.startTime ?? item?.start_time,
-      endTime: item?.endTime ?? item?.end_time,
+      // API returns startDate and endDate as yyyy-MM-dd strings
+      startTime: item?.startDate ?? item?.startTime ?? item?.start_time,
+      endTime: item?.endDate ?? item?.endTime ?? item?.end_time,
       status: normalizeStatus(status),
       totalAmount: total,
       note: item?.note ?? ''
@@ -68,13 +71,33 @@ export const useCompanyBookingsStore = defineStore('companyBookings', () => {
     return Math.floor(Math.random() * 1000000)
   }
 
-  async function fetchCompanyBookings() {
+  async function fetchCompanyBookings(params?: {
+    page?: number
+    size?: number
+    sortBy?: string
+    sortDirection?: 'ASC' | 'DESC'
+  }) {
     isLoading.value = true
     lastError.value = null
     try {
-      const res = await get<any>('/api/company/bookings')
+      // Build query parameters
+      const queryParams = new URLSearchParams()
+      if (params?.page !== undefined) queryParams.append('page', String(params.page))
+      else queryParams.append('page', '0')
+      if (params?.size !== undefined) queryParams.append('size', String(params.size))
+      else queryParams.append('size', '10')
+      if (params?.sortBy) queryParams.append('sortBy', params.sortBy)
+      else queryParams.append('sortBy', 'createdAt')
+      if (params?.sortDirection) queryParams.append('sortDirection', params.sortDirection)
+      else queryParams.append('sortDirection', 'ASC')
+      
+      const queryString = queryParams.toString()
+      const endpoint = `/api/bookings/company${queryString ? `?${queryString}` : ''}`
+      
+      const res = await get<any>(endpoint)
+      // Response structure: { code: 200, message: "...", data: { items: [...], page: 0, size: 10, total: 6, totalPages: 1 } }
       const payload = res?.data
-      const items = Array.isArray(payload) ? payload : Array.isArray(payload?.items) ? payload.items : []
+      const items = Array.isArray(payload?.items) ? payload.items : Array.isArray(payload) ? payload : []
       bookings.value = items.map(mapBooking)
     } catch (e: any) {
       lastError.value = error.value || e?.message || 'Không thể tải danh sách booking'
