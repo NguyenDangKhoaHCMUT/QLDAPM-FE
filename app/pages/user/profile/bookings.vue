@@ -88,8 +88,8 @@
 
           <!-- Payment -->
           <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 border-t border-gray-100 pt-4">
-            <div>
-              <p class="text-sm text-gray-500">Tổng tiền</p>
+            <div class="space-y-2">
+              <p class="text-sm text-gray-500">Tổng tiền (đã bao gồm phí dịch vụ 5% và VAT 10%)</p>
               <p class="text-2xl font-bold text-green-600">{{ formatPrice(booking.totalAmount) }} VNĐ</p>
             </div>
             <div class="flex items-center gap-3">

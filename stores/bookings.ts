@@ -5,8 +5,8 @@ import { toast } from 'vue3-toastify'
 
 interface CreateBookingRequest {
   vehicle_id: string
-  start_time: string // FORMAT: yyyy-MM-dd
-  end_time: string // FORMAT: yyyy-MM-dd
+  start_time: string // FORMAT: yyyy-MM-dd HH:mm:ss
+  end_time: string // FORMAT: yyyy-MM-dd HH:mm:ss
   total_amount: number
 }
 

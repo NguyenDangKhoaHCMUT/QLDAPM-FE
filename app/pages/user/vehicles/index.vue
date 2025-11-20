@@ -1,41 +1,42 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50">
+  <div class="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 pb-12">
     <!-- Header -->
-    <div class="mb-8">
-      <div class="text-center mb-6">
-        <h1 class="text-4xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mb-3">
+    <div class="mb-6">
+      <div class="text-center mb-5">
+        <h1 class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mb-2">
           Thuê xe điện
         </h1>
-        <p class="text-gray-600 text-lg">Tìm và đặt xe điện phù hợp với nhu cầu của bạn</p>
+        <p class="text-gray-600 text-base md:text-lg">Tìm và đặt xe điện phù hợp với nhu cầu của bạn</p>
       </div>
     </div>
 
     <!-- Search and Filter Section -->
-    <div class="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-xl border border-white/20 mb-8">
+    <div class="bg-white/90 backdrop-blur-sm p-5 rounded-xl shadow-lg border border-gray-100 mb-6">
       
       <!-- Main Filters Row -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
         <!-- Location - Province -->
-        <div class="space-y-1">
-          <label class="block text-xs font-medium text-gray-600">📍 Thành phố</label>
+        <div class="space-y-1.5">
+          <label class="block text-xs font-semibold text-gray-700">📍 Thành phố</label>
           <div class="relative">
             <input
               type="text"
               v-model="provinceSearch"
               @focus="showProvinceDropdown = true"
+              @blur="handleProvinceBlur"
               placeholder="Chọn thành phố..."
-              class="w-full p-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white"
+              class="w-full p-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white transition-all"
             />
             <div 
               v-if="showProvinceDropdown" 
               @mousedown.prevent
-              class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+              class="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto"
             >
               <div
                 v-for="province in filteredProvinces"
                 :key="province.code"
                 @click="selectProvince(province)"
-                class="p-2.5 text-sm hover:bg-green-100 cursor-pointer"
+                class="p-2.5 text-sm hover:bg-green-50 cursor-pointer transition-colors border-b border-gray-50 last:border-0"
               >
                 {{ province.name }}
               </div>
@@ -44,27 +45,28 @@
         </div>
 
         <!-- Location - Ward -->
-        <div class="space-y-1">
-          <label class="block text-xs font-medium text-gray-600">📍 Xã/Phường</label>
+        <div class="space-y-1.5">
+          <label class="block text-xs font-semibold text-gray-700">📍 Xã/Phường</label>
           <div class="relative">
             <input
               type="text"
               v-model="wardSearch"
               @focus="showWardDropdown = true"
+              @blur="handleWardBlur"
               :placeholder="selectedProvince ? 'Chọn xã/phường...' : 'Chọn thành phố trước'"
               :disabled="!selectedProvince"
-              class="w-full p-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white disabled:bg-gray-100"
+              class="w-full p-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed transition-all"
             />
             <div 
               v-if="showWardDropdown && selectedProvince" 
               @mousedown.prevent
-              class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto"
+              class="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto"
             >
               <div
                 v-for="(ward, index) in filteredWards"
                 :key="ward?.id || index"
                 @click="selectWard(ward)"
-                class="p-2.5 text-sm hover:bg-green-100 cursor-pointer"
+                class="p-2.5 text-sm hover:bg-green-50 cursor-pointer transition-colors border-b border-gray-50 last:border-0"
               >
                 {{ ward?.name }}
               </div>
@@ -73,9 +75,9 @@
         </div>
 
         <!-- Vehicle Type -->
-        <div class="space-y-1">
-          <label class="block text-xs font-medium text-gray-600">🚗 Loại xe</label>
-          <select v-model="filters.type" class="w-full p-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white">
+        <div class="space-y-1.5">
+          <label class="block text-xs font-semibold text-gray-700">🚗 Loại xe</label>
+          <select v-model="filters.type" class="w-full p-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white transition-all cursor-pointer">
             <option value="">Tất cả loại</option>
             <option value="BIKE">Xe đạp điện</option>
             <option value="SCOOTER">Xe máy điện</option>
@@ -84,9 +86,9 @@
         </div>
 
         <!-- Sort -->
-        <div class="space-y-1">
-          <label class="block text-xs font-medium text-gray-600">📊 Sắp xếp</label>
-          <select v-model="sortBy" class="w-full p-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white">
+        <div class="space-y-1.5">
+          <label class="block text-xs font-semibold text-gray-700">📊 Sắp xếp</label>
+          <select v-model="sortBy" class="w-full p-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white transition-all cursor-pointer">
             <option value="price_asc">Giá tăng</option>
             <option value="price_desc">Giá giảm</option>
             <option value="updated_desc">Cập nhật mới nhất</option>
@@ -96,58 +98,24 @@
       </div>
 
       <!-- Collapsible Advanced Filters -->
-      <div class="space-y-3">
-        <!-- Date Section -->
-        <div class="border border-gray-200 rounded-lg overflow-hidden">
-          <button 
-            @click="showDateFilters = !showDateFilters"
-            class="w-full px-4 py-2.5 bg-gray-50 hover:bg-gray-100 text-left flex items-center justify-between transition-colors"
-          >
-            <span class="text-sm font-medium text-gray-700">📅 Thời gian thuê xe</span>
-            <span class="text-gray-500">{{ showDateFilters ? '▼' : '▶' }}</span>
-          </button>
-          <div v-show="showDateFilters" class="p-4 bg-gray-50/50">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <!-- Pickup -->
-              <div class="space-y-2">
-                <label class="block text-xs font-medium text-gray-600">🚗 Ngày nhận xe</label>
-                <input 
-                  v-model="filters.startDate" 
-                  type="date" 
-                  class="w-full p-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white"
-                >
-              </div>
-
-              <!-- Return -->
-              <div class="space-y-2">
-                <label class="block text-xs font-medium text-gray-600">🏁 Ngày trả xe</label>
-                <input 
-                  v-model="filters.endDate" 
-                  type="date" 
-                  class="w-full p-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white"
-                >
-              </div>
-            </div>
-          </div>
-        </div>
-
+      <div class="space-y-2 mt-3 pt-3 border-t border-gray-200">
         <!-- Price Range Section -->
-        <div class="border border-gray-200 rounded-lg overflow-hidden">
+        <div class="border border-gray-200 rounded-lg overflow-hidden bg-gray-50/50">
           <button 
             @click="showPriceFilters = !showPriceFilters"
             class="w-full px-4 py-2.5 bg-gray-50 hover:bg-gray-100 text-left flex items-center justify-between transition-colors"
           >
-            <span class="text-sm font-medium text-gray-700">💰 Khoảng giá</span>
-            <span class="text-gray-500">{{ showPriceFilters ? '▼' : '▶' }}</span>
+            <span class="text-sm font-semibold text-gray-700">💰 Khoảng giá</span>
+            <span class="text-gray-500 text-xs">{{ showPriceFilters ? '▼' : '▶' }}</span>
           </button>
-          <div v-show="showPriceFilters" class="p-4 bg-gray-50/50">
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div v-show="showPriceFilters" class="p-4 bg-white">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <!-- Min Price -->
-              <div class="space-y-1">
-                <label class="block text-xs font-medium text-gray-600">Giá tối thiểu</label>
+              <div class="space-y-2">
+                <label class="block text-xs font-semibold text-gray-700">Giá tối thiểu</label>
                 <select 
                   v-model.number="filters.minPrice" 
-                  class="w-full p-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white"
+                  class="w-full p-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white transition-all cursor-pointer"
                 >
                   <option value="0">Không giới hạn</option>
                   <option value="50000">50,000 VNĐ/Giờ</option>
@@ -161,11 +129,11 @@
               </div>
 
               <!-- Max Price -->
-              <div class="space-y-1">
-                <label class="block text-xs font-medium text-gray-600">Giá tối đa</label>
+              <div class="space-y-2">
+                <label class="block text-xs font-semibold text-gray-700">Giá tối đa</label>
                 <select 
                   v-model.number="filters.maxPrice" 
-                  class="w-full p-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white"
+                  class="w-full p-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white transition-all cursor-pointer"
                 >
                   <option value="0">Không giới hạn</option>
                   <option value="50000">50,000 VNĐ/Giờ</option>
@@ -180,8 +148,8 @@
                 </select>
               </div>
             </div>
-            <div class="mt-3 pt-3 border-t border-gray-200 text-center text-xs text-gray-600">
-              <span class="font-medium text-green-600">
+            <div class="mt-4 pt-3 border-t border-gray-200 text-center">
+              <span class="text-sm font-semibold text-green-600">
                 {{ filters.minPrice === 0 ? 'Không giới hạn' : formatPrice(filters.minPrice) }} 
                 - 
                 {{ filters.maxPrice === 0 ? 'Không giới hạn' : formatPrice(filters.maxPrice) }} VNĐ/Giờ
@@ -195,7 +163,7 @@
       <div class="mt-4 pt-4 border-t border-gray-200">
         <button 
           @click="applyFilters"
-          class="w-full py-3 px-6 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+          class="w-full py-3 px-6 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-md hover:shadow-xl active:scale-98"
         >
           🔍 Tìm kiếm
         </button>
@@ -211,36 +179,44 @@
     </div>
 
     <!-- Vehicle Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 mb-8">
       <div 
         v-for="vehicle in displayVehicles" 
         :key="vehicle.id"
-        class="bg-white rounded-xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 border border-gray-100"
+        :class="[
+          'bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 border',
+          vehicle.status === 'available' && !vehicle.paused
+            ? 'hover:shadow-xl border-gray-100 hover:border-green-200'
+            : 'grayscale opacity-60 border-gray-200 cursor-not-allowed'
+        ]"
       >
         <!-- Vehicle Image -->
         <div class="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
           <img 
             :src="vehicle.image" 
             :alt="vehicle.name"
-            class="w-full h-full object-cover"
+            :class="[
+              'w-full h-full object-cover transition-transform duration-300',
+              vehicle.status === 'available' && !vehicle.paused ? 'hover:scale-110' : 'opacity-60'
+            ]"
           >
           <!-- Status Badge -->
-          <div class="absolute top-3 right-3">
+          <div class="absolute top-2 right-2">
             <span 
-              v-if="vehicle.status === 'available'"
-              class="bg-green-500 text-white text-xs px-3 py-1 rounded-full font-medium shadow-md"
+              v-if="vehicle.status === 'available' && !vehicle.paused"
+              class="bg-green-500 text-white text-xs px-2.5 py-1 rounded-full font-semibold shadow-lg"
             >
               ✅ Có sẵn
             </span>
             <span 
-              v-else-if="vehicle.status === 'paused'"
-              class="bg-yellow-500 text-white text-xs px-3 py-1 rounded-full font-medium shadow-md"
+              v-else-if="vehicle.paused || vehicle.status === 'paused'"
+              class="bg-yellow-500 text-white text-xs px-2.5 py-1 rounded-full font-semibold shadow-lg"
             >
               ⏸️ Tạm dừng
             </span>
             <span 
               v-else
-              class="bg-red-500 text-white text-xs px-3 py-1 rounded-full font-medium shadow-md"
+              class="bg-red-500 text-white text-xs px-2.5 py-1 rounded-full font-semibold shadow-lg"
             >
               ❌ Đã thuê
             </span>
@@ -250,29 +226,44 @@
         <!-- Vehicle Info -->
         <div class="p-4">
           <!-- Vehicle Name -->
-          <h3 class="text-lg font-bold text-gray-900 mb-3">{{ vehicle.name }}</h3>
+          <h3 :class="[
+            'text-base font-bold mb-2 line-clamp-1',
+            vehicle.status === 'available' && !vehicle.paused ? 'text-gray-900' : 'text-gray-500'
+          ]">
+            {{ vehicle.name }}
+          </h3>
 
           <!-- Price -->
           <div class="mb-4">
-            <span class="text-2xl font-bold text-green-600">{{ formatPrice(vehicle.price) }}</span>
-            <span class="text-sm text-gray-500 ml-1">VNĐ/Giờ</span>
+            <span :class="[
+              'text-xl font-bold',
+              vehicle.status === 'available' && !vehicle.paused ? 'text-green-600' : 'text-gray-400'
+            ]">
+              {{ formatPrice(vehicle.price) }}
+            </span>
+            <span :class="[
+              'text-xs ml-1',
+              vehicle.status === 'available' && !vehicle.paused ? 'text-gray-500' : 'text-gray-400'
+            ]">
+              VNĐ/Giờ
+            </span>
           </div>
 
           <!-- Action Buttons -->
           <div class="flex gap-2">
             <button 
               @click="viewVehicleDetail(vehicle.id)"
-              class="flex-1 py-2 px-4 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors text-sm"
+              class="flex-1 py-2 px-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 active:scale-95 transition-all text-xs"
             >
-              Xem chi tiết
+              Chi tiết
             </button>
             <button 
               @click="bookVehicle(vehicle)"
-              :disabled="vehicle.status !== 'available'"
+              :disabled="vehicle.status !== 'available' || vehicle.paused"
               :class="[
-                'flex-1 py-2 px-4 rounded-lg font-medium transition-colors text-sm',
-                vehicle.status === 'available'
-                  ? 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700'
+                'flex-1 py-2 px-3 rounded-lg font-semibold transition-all text-xs',
+                vehicle.status === 'available' && !vehicle.paused
+                  ? 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-md hover:shadow-lg active:scale-95'
                   : 'bg-gray-200 text-gray-400 cursor-not-allowed'
               ]"
             >
@@ -352,46 +343,102 @@
     <!-- Booking Confirmation Modal -->
     <div 
       v-if="showBookingModal" 
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn"
       @click.self="closeBookingModal"
     >
-      <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
-        <h2 class="text-2xl font-bold text-gray-900 mb-4">Xác nhận đặt xe</h2>
+      <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-slideUp">
+        <div class="flex items-center justify-between mb-5">
+          <h2 class="text-2xl font-bold text-gray-900">Xác nhận đặt xe</h2>
+          <button 
+            @click="closeBookingModal"
+            class="text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
         
         <!-- Vehicle Info -->
-        <div class="mb-6">
-          <div class="flex items-center space-x-4 mb-4">
+        <div class="mb-5 pb-5 border-b border-gray-200">
+          <div class="flex items-center space-x-4">
             <img 
               v-if="selectedVehicle?.image"
               :src="selectedVehicle.image" 
               :alt="selectedVehicle.name"
-              class="w-20 h-20 object-cover rounded-lg"
+              class="w-16 h-16 object-cover rounded-xl shadow-md"
             >
             <div>
-              <h3 class="text-lg font-semibold text-gray-900">{{ selectedVehicle?.name }}</h3>
-              <p class="text-green-600 font-medium">{{ formatPrice(selectedVehicle?.price || 0) }} VNĐ/giờ</p>
+              <h3 class="text-lg font-bold text-gray-900">{{ selectedVehicle?.name }}</h3>
+              <p class="text-green-600 font-semibold text-sm mt-0.5">{{ formatPrice(selectedVehicle?.price || 0) }} VNĐ/giờ</p>
             </div>
           </div>
         </div>
 
-        <!-- Booking Details -->
+        <!-- Booking Date & Time Selection -->
+        <div class="mb-6 pb-5 border-b border-gray-200">
+          <h3 class="text-base font-semibold text-gray-900 mb-4">📅 Thời gian thuê xe</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Pickup Date & Time -->
+            <div class="space-y-2">
+              <label class="block text-xs font-semibold text-gray-700">🚗 Ngày nhận xe</label>
+              <input 
+                v-model="bookingConfirmData.startDate" 
+                type="date" 
+                class="w-full p-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white transition-all"
+                @change="calculateBookingSummary"
+              >
+              <input 
+                v-model="bookingConfirmData.startTime" 
+                type="time" 
+                class="w-full p-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white transition-all"
+                @change="calculateBookingSummary"
+              >
+            </div>
+
+            <!-- Return Date & Time -->
+            <div class="space-y-2">
+              <label class="block text-xs font-semibold text-gray-700">🏁 Ngày trả xe</label>
+              <input 
+                v-model="bookingConfirmData.endDate" 
+                type="date" 
+                class="w-full p-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white transition-all"
+                @change="calculateBookingSummary"
+              >
+              <input 
+                v-model="bookingConfirmData.endTime" 
+                type="time" 
+                class="w-full p-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white transition-all"
+                @change="calculateBookingSummary"
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Booking Details Summary -->
         <div class="space-y-3 mb-6">
-          <div class="flex justify-between items-center">
-            <span class="text-gray-600">Ngày nhận xe:</span>
-            <span class="font-medium text-gray-900">{{ formatBookingDate(bookingConfirmData.startDate) }}</span>
+          <div class="flex justify-between items-center py-2">
+            <span class="text-sm text-gray-600">Ngày nhận xe:</span>
+            <span class="font-semibold text-gray-900">
+              {{ bookingConfirmData.startDate ? formatBookingDate(bookingConfirmData.startDate) : 'Chưa chọn' }}
+              <span v-if="bookingConfirmData.startTime" class="text-gray-600 ml-2">{{ bookingConfirmData.startTime }}</span>
+            </span>
           </div>
-          <div class="flex justify-between items-center">
-            <span class="text-gray-600">Ngày trả xe:</span>
-            <span class="font-medium text-gray-900">{{ formatBookingDate(bookingConfirmData.endDate) }}</span>
+          <div class="flex justify-between items-center py-2">
+            <span class="text-sm text-gray-600">Ngày trả xe:</span>
+            <span class="font-semibold text-gray-900">
+              {{ bookingConfirmData.endDate ? formatBookingDate(bookingConfirmData.endDate) : 'Chưa chọn' }}
+              <span v-if="bookingConfirmData.endTime" class="text-gray-600 ml-2">{{ bookingConfirmData.endTime }}</span>
+            </span>
           </div>
-          <div class="flex justify-between items-center">
-            <span class="text-gray-600">Số ngày thuê:</span>
-            <span class="font-medium text-gray-900">{{ bookingConfirmData.totalDays }} ngày</span>
+          <div class="flex justify-between items-center py-2">
+            <span class="text-sm text-gray-600">Số ngày thuê:</span>
+            <span class="font-semibold text-gray-900">{{ bookingConfirmData.totalDays || 0 }} ngày</span>
           </div>
           <div class="border-t border-gray-200 pt-3 mt-3">
             <div class="flex justify-between items-center">
-              <span class="text-lg font-semibold text-gray-900">Tổng số tiền:</span>
-              <span class="text-xl font-bold text-green-600">{{ formatPrice(bookingConfirmData.totalAmount) }} VNĐ</span>
+              <span class="text-lg font-bold text-gray-900">Tổng số tiền:</span>
+              <span class="text-2xl font-bold text-green-600">{{ formatPrice(bookingConfirmData.totalAmount || 0) }} VNĐ</span>
             </div>
           </div>
         </div>
@@ -400,7 +447,7 @@
         <div class="flex gap-3">
           <button 
             @click="closeBookingModal"
-            class="flex-1 py-3 px-4 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+            class="flex-1 py-3 px-4 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 active:scale-95 transition-all"
           >
             Huỷ
           </button>
@@ -408,10 +455,10 @@
             @click="confirmBooking"
             :disabled="isCreatingBooking"
             :class="[
-              'flex-1 py-3 px-4 rounded-lg font-medium transition-colors',
+              'flex-1 py-3 px-4 rounded-lg font-semibold transition-all',
               isCreatingBooking
                 ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
-                : 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700'
+                : 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-md hover:shadow-lg active:scale-95'
             ]"
           >
             {{ isCreatingBooking ? 'Đang xử lý...' : 'Xác nhận đặt xe' }}
@@ -467,7 +514,6 @@ const allWards = ref<any[]>([])
 const wardSearch = ref('')
 const selectedWard = ref<any>(null)
 const showWardDropdown = ref(false)
-const showDateFilters = ref(false)
 const showPriceFilters = ref(false)
 
 // Booking modal
@@ -477,6 +523,8 @@ const isCreatingBooking = ref(false)
 const bookingConfirmData = ref({
   startDate: '',
   endDate: '',
+  startTime: '',
+  endTime: '',
   totalDays: 0,
   totalAmount: 0
 })
@@ -512,6 +560,20 @@ watch(selectedProvince, (newProvince) => {
     filters.value.ward = ''
   }
 })
+
+function handleProvinceBlur() {
+  // Delay closing dropdown to allow click events
+  window.setTimeout(() => {
+    showProvinceDropdown.value = false
+  }, 200)
+}
+
+function handleWardBlur() {
+  // Delay closing dropdown to allow click events
+  window.setTimeout(() => {
+    showWardDropdown.value = false
+  }, 200)
+}
 
 function selectProvince(province : any) {
   selectedProvince.value = province
@@ -566,8 +628,13 @@ function formatBookingDate(date: string): string {
 
 function calculateTotalDays(startDate: string, endDate: string): number {
   if (!startDate || !endDate) return 0
-  const start = new Date(startDate)
-  const end = new Date(endDate)
+  // Ensure dates are in yyyy-MM-dd format
+  const normalizedStart = formatDateForApi(startDate)
+  const normalizedEnd = formatDateForApi(endDate)
+  if (!normalizedStart || !normalizedEnd) return 0
+  // Create Date objects at midnight to calculate day difference correctly
+  const start = new Date(normalizedStart + 'T00:00:00')
+  const end = new Date(normalizedEnd + 'T00:00:00')
   // Calculate difference in days
   const diffMs = end.getTime() - start.getTime()
   const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24))
@@ -586,56 +653,108 @@ function calculateTotalAmount(pricePerHour: number, days: number): number {
 
 function formatDateForApi(dateString: string): string {
   if (!dateString) return ''
-  // Return date in yyyy-MM-dd format
-  return dateString
+  // Ensure date is in yyyy-MM-dd format (extract only date part, no time)
+  // Handle both date-only strings and datetime strings
+  const dateOnly = dateString.split('T')[0]?.split(' ')[0] || dateString.split(' ')[0] || dateString
+  if (dateOnly && /^\d{4}-\d{2}-\d{2}$/.test(dateOnly)) {
+    return dateOnly
+  }
+  // If invalid format, try to parse and extract date part
+  const date = new Date(dateString)
+  if (!isNaN(date.getTime())) {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+  return ''
+}
+
+function formatDateTimeForApi(dateString: string, timeString: string): string {
+  if (!dateString) return ''
+  
+  // Normalize date to yyyy-MM-dd format
+  const normalizedDate = formatDateForApi(dateString)
+  if (!normalizedDate) return ''
+  
+  // Use provided time or default to '00:00'
+  const time = timeString || '00:00'
+  
+  // Format: yyyy-MM-dd HH:mm:ss
+  return `${normalizedDate} ${time}:00`
 }
 
 function viewVehicleDetail(vehicleId: number) {
   router.push(`/user/vehicles/${vehicleId}`)
 }
 
-function bookVehicle(vehicle: any) {
-  // Check if dates are selected
-  if (!filters.value.startDate || !filters.value.endDate) {
-    toast.error('Vui lòng chọn ngày nhận và trả xe!')
-    return
-  }
-
-  // Check if end date is after start date
-  const startDate = new Date(filters.value.startDate)
-  const endDate = new Date(filters.value.endDate)
-  
-  if (endDate <= startDate) {
-    toast.error('Ngày trả xe phải sau ngày nhận xe!')
-    return
-  }
-
-  // Check if start date is not in the past
+function getNextHourTime(): string {
   const now = new Date()
-  now.setHours(0, 0, 0, 0) // Reset time to compare dates only
-  if (startDate < now) {
-    toast.error('Ngày nhận xe không thể trong quá khứ!')
-    return
-  }
+  now.setMinutes(0, 0, 0)
+  now.setHours(now.getHours() + 1)
+  const hours = String(now.getHours()).padStart(2, '0')
+  return `${hours}:00`
+}
 
-  // Calculate booking details
-  const totalDays = calculateTotalDays(
-    filters.value.startDate,
-    filters.value.endDate
-  )
-  const totalAmount = calculateTotalAmount(vehicle.price, totalDays)
-
-  // Set booking confirmation data
+function bookVehicle(vehicle: any) {
+  // Initialize booking data with default dates (today and tomorrow)
+  const startDate = getStartDate()
+  const endDate = getEndDate(startDate)
+  const nextHour = getNextHourTime()
+  
   selectedVehicle.value = vehicle
+  
+  // Reset booking data with defaults
   bookingConfirmData.value = {
-    startDate: filters.value.startDate,
-    endDate: filters.value.endDate,
-    totalDays,
-    totalAmount
+    startDate: startDate,
+    endDate: endDate,
+    startTime: nextHour,
+    endTime: nextHour,
+    totalDays: 0,
+    totalAmount: 0
   }
+
+  // Calculate initial summary
+  calculateBookingSummary()
 
   // Show modal
   showBookingModal.value = true
+}
+
+function calculateBookingSummary() {
+  if (!selectedVehicle.value) return
+
+  // Get dates and times from booking confirm data
+  const startDate = bookingConfirmData.value.startDate
+  const endDate = bookingConfirmData.value.endDate
+  const startTime = bookingConfirmData.value.startTime || '00:00'
+  const endTime = bookingConfirmData.value.endTime || '00:00'
+
+  if (!startDate || !endDate) {
+    bookingConfirmData.value.totalDays = 0
+    bookingConfirmData.value.totalAmount = 0
+    return
+  }
+
+  // Normalize dates
+  const normalizedStartDate = formatDateForApi(startDate)
+  const normalizedEndDate = formatDateForApi(endDate)
+
+  if (!normalizedStartDate || !normalizedEndDate) {
+    bookingConfirmData.value.totalDays = 0
+    bookingConfirmData.value.totalAmount = 0
+    return
+  }
+
+  // Calculate total days
+  const totalDays = calculateTotalDays(normalizedStartDate, normalizedEndDate)
+  
+  // Calculate total amount
+  const totalAmount = calculateTotalAmount(selectedVehicle.value.price, totalDays)
+
+  // Update booking confirm data
+  bookingConfirmData.value.totalDays = totalDays
+  bookingConfirmData.value.totalAmount = totalAmount
 }
 
 function closeBookingModal() {
@@ -646,22 +765,74 @@ function closeBookingModal() {
 async function confirmBooking() {
   if (!selectedVehicle.value || isCreatingBooking.value) return
 
+  // Validate dates and times
+  if (!bookingConfirmData.value.startDate || !bookingConfirmData.value.endDate) {
+    toast.error('Vui lòng chọn ngày nhận và trả xe!')
+    return
+  }
+
+  // Normalize dates
+  const normalizedStartDate = formatDateForApi(bookingConfirmData.value.startDate)
+  const normalizedEndDate = formatDateForApi(bookingConfirmData.value.endDate)
+
+  if (!normalizedStartDate || !normalizedEndDate) {
+    toast.error('Ngày không hợp lệ!')
+    return
+  }
+
+  // Create Date objects for validation
+  const startDate = new Date(normalizedStartDate + 'T00:00:00')
+  const endDate = new Date(normalizedEndDate + 'T00:00:00')
+  
+  // Check if end date is after start date
+  if (endDate <= startDate) {
+    toast.error('Ngày trả xe phải sau ngày nhận xe!')
+    return
+  }
+
+  // Check if start date is not in the past
+  const now = new Date()
+  now.setHours(0, 0, 0, 0)
+  if (startDate < now) {
+    toast.error('Ngày nhận xe không thể trong quá khứ!')
+    return
+  }
+
+  if (!bookingConfirmData.value.totalAmount || bookingConfirmData.value.totalAmount <= 0) {
+    toast.error('Vui lòng kiểm tra lại thông tin đặt xe!')
+    return
+  }
+
   isCreatingBooking.value = true
 
   try {
-    const startDate = formatDateForApi(bookingConfirmData.value.startDate)
-    const endDate = formatDateForApi(bookingConfirmData.value.endDate)
+    // Format date + time for API
+    const startDateTime = formatDateTimeForApi(
+      bookingConfirmData.value.startDate,
+      bookingConfirmData.value.startTime || '00:00'
+    )
+    const endDateTime = formatDateTimeForApi(
+      bookingConfirmData.value.endDate,
+      bookingConfirmData.value.endTime || '00:00'
+    )
 
-    if (!startDate || !endDate) {
-      toast.error('Vui lòng nhập đầy đủ ngày')
+    if (!startDateTime || !endDateTime) {
+      toast.error('Vui lòng nhập đầy đủ ngày và giờ')
+      isCreatingBooking.value = false
       return
     }
 
-    // Create booking
+    if (!selectedVehicle.value?.id) {
+      toast.error('Thông tin xe không hợp lệ')
+      isCreatingBooking.value = false
+      return
+    }
+
+    // Create booking with date + time
     await bookingsStore.createBooking({
       vehicle_id: String(selectedVehicle.value.id),
-      start_time: startDate,
-      end_time: endDate,
+      start_time: startDateTime,
+      end_time: endDateTime,
       total_amount: bookingConfirmData.value.totalAmount
     })
 
@@ -757,5 +928,38 @@ useHead({
 </script>
 
 <style scoped>
-/* Custom styles for the vehicle booking page */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.animate-slideUp {
+  animation: slideUp 0.3s ease-out;
+}
+
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
 </style>

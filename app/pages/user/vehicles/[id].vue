@@ -203,46 +203,102 @@
     <!-- Booking Confirmation Modal -->
     <div 
       v-if="showBookingModal" 
-      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+      class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn"
       @click.self="closeBookingModal"
     >
-      <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6">
-        <h2 class="text-2xl font-bold text-gray-900 mb-4">Xác nhận đặt xe</h2>
+      <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-slideUp">
+        <div class="flex items-center justify-between mb-5">
+          <h2 class="text-2xl font-bold text-gray-900">Xác nhận đặt xe</h2>
+          <button 
+            @click="closeBookingModal"
+            class="text-gray-400 hover:text-gray-600 transition-colors"
+          >
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            </svg>
+          </button>
+        </div>
         
         <!-- Vehicle Info -->
-        <div class="mb-6">
-          <div class="flex items-center space-x-4 mb-4">
+        <div class="mb-5 pb-5 border-b border-gray-200">
+          <div class="flex items-center space-x-4">
             <img 
               v-if="vehicle?.imageUrl"
               :src="vehicle.imageUrl" 
               :alt="vehicle.name"
-              class="w-20 h-20 object-cover rounded-lg"
+              class="w-16 h-16 object-cover rounded-xl shadow-md"
             >
             <div>
-              <h3 class="text-lg font-semibold text-gray-900">{{ vehicle?.name }}</h3>
-              <p class="text-green-600 font-medium">{{ formatPrice(vehicle?.pricePerHour || 0) }} VNĐ/giờ</p>
+              <h3 class="text-lg font-bold text-gray-900">{{ vehicle?.name }}</h3>
+              <p class="text-green-600 font-semibold text-sm mt-0.5">{{ formatPrice(vehicle?.pricePerHour || 0) }} VNĐ/giờ</p>
             </div>
           </div>
         </div>
 
-        <!-- Booking Details -->
+        <!-- Booking Date & Time Selection -->
+        <div class="mb-6 pb-5 border-b border-gray-200">
+          <h3 class="text-base font-semibold text-gray-900 mb-4">📅 Thời gian thuê xe</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Pickup Date & Time -->
+            <div class="space-y-2">
+              <label class="block text-xs font-semibold text-gray-700">🚗 Ngày nhận xe</label>
+              <input 
+                v-model="bookingConfirmData.startDate" 
+                type="date" 
+                class="w-full p-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white transition-all"
+                @change="calculateBookingSummary"
+              >
+              <input 
+                v-model="bookingConfirmData.startTime" 
+                type="time" 
+                class="w-full p-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white transition-all"
+                @change="calculateBookingSummary"
+              >
+            </div>
+
+            <!-- Return Date & Time -->
+            <div class="space-y-2">
+              <label class="block text-xs font-semibold text-gray-700">🏁 Ngày trả xe</label>
+              <input 
+                v-model="bookingConfirmData.endDate" 
+                type="date" 
+                class="w-full p-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white transition-all"
+                @change="calculateBookingSummary"
+              >
+              <input 
+                v-model="bookingConfirmData.endTime" 
+                type="time" 
+                class="w-full p-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white transition-all"
+                @change="calculateBookingSummary"
+              >
+            </div>
+          </div>
+        </div>
+
+        <!-- Booking Details Summary -->
         <div class="space-y-3 mb-6">
-          <div class="flex justify-between items-center">
-            <span class="text-gray-600">Ngày nhận xe:</span>
-            <span class="font-medium text-gray-900">{{ formatBookingDate(bookingConfirmData.startDate) }}</span>
+          <div class="flex justify-between items-center py-2">
+            <span class="text-sm text-gray-600">Ngày nhận xe:</span>
+            <span class="font-semibold text-gray-900">
+              {{ bookingConfirmData.startDate ? formatBookingDate(bookingConfirmData.startDate) : 'Chưa chọn' }}
+              <span v-if="bookingConfirmData.startTime" class="text-gray-600 ml-2">{{ bookingConfirmData.startTime }}</span>
+            </span>
           </div>
-          <div class="flex justify-between items-center">
-            <span class="text-gray-600">Ngày trả xe:</span>
-            <span class="font-medium text-gray-900">{{ formatBookingDate(bookingConfirmData.endDate) }}</span>
+          <div class="flex justify-between items-center py-2">
+            <span class="text-sm text-gray-600">Ngày trả xe:</span>
+            <span class="font-semibold text-gray-900">
+              {{ bookingConfirmData.endDate ? formatBookingDate(bookingConfirmData.endDate) : 'Chưa chọn' }}
+              <span v-if="bookingConfirmData.endTime" class="text-gray-600 ml-2">{{ bookingConfirmData.endTime }}</span>
+            </span>
           </div>
-          <div class="flex justify-between items-center">
-            <span class="text-gray-600">Số ngày thuê:</span>
-            <span class="font-medium text-gray-900">{{ bookingConfirmData.totalDays }} ngày</span>
+          <div class="flex justify-between items-center py-2">
+            <span class="text-sm text-gray-600">Số ngày thuê:</span>
+            <span class="font-semibold text-gray-900">{{ bookingConfirmData.totalDays || 0 }} ngày</span>
           </div>
           <div class="border-t border-gray-200 pt-3 mt-3">
             <div class="flex justify-between items-center">
-              <span class="text-lg font-semibold text-gray-900">Tổng số tiền:</span>
-              <span class="text-xl font-bold text-green-600">{{ formatPrice(bookingConfirmData.totalAmount) }} VNĐ</span>
+              <span class="text-lg font-bold text-gray-900">Tổng số tiền:</span>
+              <span class="text-2xl font-bold text-green-600">{{ formatPrice(bookingConfirmData.totalAmount || 0) }} VNĐ</span>
             </div>
           </div>
         </div>
@@ -251,7 +307,7 @@
         <div class="flex gap-3">
           <button 
             @click="closeBookingModal"
-            class="flex-1 py-3 px-4 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+            class="flex-1 py-3 px-4 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 active:scale-95 transition-all"
           >
             Huỷ
           </button>
@@ -259,10 +315,10 @@
             @click="confirmBooking"
             :disabled="isCreatingBooking"
             :class="[
-              'flex-1 py-3 px-4 rounded-lg font-medium transition-colors',
+              'flex-1 py-3 px-4 rounded-lg font-semibold transition-all',
               isCreatingBooking
                 ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
-                : 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700'
+                : 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-md hover:shadow-lg active:scale-95'
             ]"
           >
             {{ isCreatingBooking ? 'Đang xử lý...' : 'Xác nhận đặt xe' }}
@@ -323,6 +379,8 @@ const isCreatingBooking = ref(false)
 const bookingConfirmData = ref({
   startDate: '',
   endDate: '',
+  startTime: '',
+  endTime: '',
   totalDays: 0,
   totalAmount: 0
 })
@@ -373,10 +431,19 @@ function calculateTotalAmount(pricePerHour: number, days: number): number {
   return subtotal + serviceFee + vat
 }
 
-function formatDateForApi(dateString: string): string {
+
+function formatDateTimeForApi(dateString: string, timeString: string): string {
   if (!dateString) return ''
-  // Return date in yyyy-MM-dd format
-  return dateString
+  
+  // Normalize date to yyyy-MM-dd format
+  const normalizedDate = formatDateForApi(dateString)
+  if (!normalizedDate) return ''
+  
+  // Use provided time or default to '00:00'
+  const time = timeString || '00:00'
+  
+  // Format: yyyy-MM-dd HH:mm:ss
+  return `${normalizedDate} ${time}:00`
 }
 
 function getVehicleTypeName(type: string): string {
@@ -434,6 +501,104 @@ async function loadVehicle() {
   }
 }
 
+// Get start date (today)
+function getStartDate(): string {
+  const now = new Date()
+  const year = now.getFullYear()
+  const month = String(now.getMonth() + 1).padStart(2, '0')
+  const day = String(now.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+// Get end date (default to next day)
+function getEndDate(startDate: string): string {
+  if (!startDate) {
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    const year = tomorrow.getFullYear()
+    const month = String(tomorrow.getMonth() + 1).padStart(2, '0')
+    const day = String(tomorrow.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+  const start = new Date(startDate)
+  if (isNaN(start.getTime())) {
+    const tomorrow = new Date()
+    tomorrow.setDate(tomorrow.getDate() + 1)
+    const year = tomorrow.getFullYear()
+    const month = String(tomorrow.getMonth() + 1).padStart(2, '0')
+    const day = String(tomorrow.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+  const end = new Date(start)
+  end.setDate(end.getDate() + 1)
+  const year = end.getFullYear()
+  const month = String(end.getMonth() + 1).padStart(2, '0')
+  const day = String(end.getDate()).padStart(2, '0')
+  return `${year}-${month}-${day}`
+}
+
+function formatDateForApi(dateString: string): string {
+  if (!dateString) return ''
+  // Ensure date is in yyyy-MM-dd format (extract only date part, no time)
+  const dateOnly = dateString.split('T')[0]?.split(' ')[0] || dateString.split(' ')[0] || dateString
+  if (dateOnly && /^\d{4}-\d{2}-\d{2}$/.test(dateOnly)) {
+    return dateOnly
+  }
+  // If invalid format, try to parse and extract date part
+  const date = new Date(dateString)
+  if (!isNaN(date.getTime())) {
+    const year = date.getFullYear()
+    const month = String(date.getMonth() + 1).padStart(2, '0')
+    const day = String(date.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+  return ''
+}
+
+function calculateBookingSummary() {
+  if (!vehicle.value) return
+
+  // Get dates and times from booking confirm data
+  const startDate = bookingConfirmData.value.startDate
+  const endDate = bookingConfirmData.value.endDate
+  const startTime = bookingConfirmData.value.startTime || '00:00'
+  const endTime = bookingConfirmData.value.endTime || '00:00'
+
+  if (!startDate || !endDate) {
+    bookingConfirmData.value.totalDays = 0
+    bookingConfirmData.value.totalAmount = 0
+    return
+  }
+
+  // Normalize dates
+  const normalizedStartDate = formatDateForApi(startDate)
+  const normalizedEndDate = formatDateForApi(endDate)
+
+  if (!normalizedStartDate || !normalizedEndDate) {
+    bookingConfirmData.value.totalDays = 0
+    bookingConfirmData.value.totalAmount = 0
+    return
+  }
+
+  // Calculate total days
+  const totalDays = calculateTotalDays(normalizedStartDate, normalizedEndDate)
+  
+  // Calculate total amount
+  const totalAmount = calculateTotalAmount(vehicle.value.pricePerHour, totalDays)
+
+  // Update booking confirm data
+  bookingConfirmData.value.totalDays = totalDays
+  bookingConfirmData.value.totalAmount = totalAmount
+}
+
+function getNextHourTime(): string {
+  const now = new Date()
+  now.setMinutes(0, 0, 0)
+  now.setHours(now.getHours() + 1)
+  const hours = String(now.getHours()).padStart(2, '0')
+  return `${hours}:00`
+}
+
 function handleBookVehicle() {
   if (!vehicle.value) return
   
@@ -448,54 +613,27 @@ function handleBookVehicle() {
     return
   }
 
-  // Get dates from filters or use defaults
-  const filters = vehiclesStore.filters
-  let startDate = filters.startDate
-  let endDate = filters.endDate
-
-  // If no dates selected, use default (today and tomorrow)
-  if (!startDate || !endDate) {
-    const now = new Date()
-    const year = now.getFullYear()
-    const month = String(now.getMonth() + 1).padStart(2, '0')
-    const day = String(now.getDate()).padStart(2, '0')
-    startDate = `${year}-${month}-${day}`
-    
-    const tomorrow = new Date(now)
-    tomorrow.setDate(tomorrow.getDate() + 1)
-    const year2 = tomorrow.getFullYear()
-    const month2 = String(tomorrow.getMonth() + 1).padStart(2, '0')
-    const day2 = String(tomorrow.getDate()).padStart(2, '0')
-    endDate = `${year2}-${month2}-${day2}`
-  }
-
-  // Validate dates
-  const start = new Date(startDate)
-  const end = new Date(endDate)
+  // Initialize booking data with default dates (today and tomorrow)
+  const startDate = getStartDate()
+  const endDate = getEndDate(startDate)
   
-  if (end <= start) {
-    toast.error('Ngày trả xe phải sau ngày nhận xe!')
-    return
-  }
+  // Get default times from filters or use defaults
+  const filters = vehiclesStore.filters
+  
+  const nextHour = getNextHourTime()
 
-  const now = new Date()
-  now.setHours(0, 0, 0, 0) // Reset time to compare dates only
-  if (start < now) {
-    toast.error('Ngày nhận xe không thể trong quá khứ!')
-    return
-  }
-
-  // Calculate booking details
-  const totalDays = calculateTotalDays(startDate, endDate)
-  const totalAmount = calculateTotalAmount(vehicle.value.pricePerHour, totalDays)
-
-  // Set booking confirmation data
+  // Reset booking data with defaults
   bookingConfirmData.value = {
-    startDate,
-    endDate,
-    totalDays,
-    totalAmount
+    startDate: startDate,
+    endDate: endDate,
+    startTime: nextHour,
+    endTime: nextHour,
+    totalDays: 0,
+    totalAmount: 0
   }
+
+  // Calculate initial summary
+  calculateBookingSummary()
 
   // Show modal
   showBookingModal.value = true
@@ -508,22 +646,68 @@ function closeBookingModal() {
 async function confirmBooking() {
   if (!vehicle.value || isCreatingBooking.value) return
 
+  // Validate dates and times
+  if (!bookingConfirmData.value.startDate || !bookingConfirmData.value.endDate) {
+    toast.error('Vui lòng chọn ngày nhận và trả xe!')
+    return
+  }
+
+  // Normalize dates
+  const normalizedStartDate = formatDateForApi(bookingConfirmData.value.startDate)
+  const normalizedEndDate = formatDateForApi(bookingConfirmData.value.endDate)
+
+  if (!normalizedStartDate || !normalizedEndDate) {
+    toast.error('Ngày không hợp lệ!')
+    return
+  }
+
+  // Create Date objects for validation
+  const startDate = new Date(normalizedStartDate + 'T00:00:00')
+  const endDate = new Date(normalizedEndDate + 'T00:00:00')
+  
+  // Check if end date is after start date
+  if (endDate <= startDate) {
+    toast.error('Ngày trả xe phải sau ngày nhận xe!')
+    return
+  }
+
+  // Check if start date is not in the past
+  const now = new Date()
+  now.setHours(0, 0, 0, 0)
+  if (startDate < now) {
+    toast.error('Ngày nhận xe không thể trong quá khứ!')
+    return
+  }
+
+  if (!bookingConfirmData.value.totalAmount || bookingConfirmData.value.totalAmount <= 0) {
+    toast.error('Vui lòng kiểm tra lại thông tin đặt xe!')
+    return
+  }
+
   isCreatingBooking.value = true
 
   try {
-    const startDate = formatDateForApi(bookingConfirmData.value.startDate)
-    const endDate = formatDateForApi(bookingConfirmData.value.endDate)
+    // Format date + time for API
+    const startDateTime = formatDateTimeForApi(
+      bookingConfirmData.value.startDate,
+      bookingConfirmData.value.startTime || '00:00'
+    )
+    const endDateTime = formatDateTimeForApi(
+      bookingConfirmData.value.endDate,
+      bookingConfirmData.value.endTime || '00:00'
+    )
 
-    if (!startDate || !endDate) {
-      toast.error('Vui lòng nhập đầy đủ ngày')
+    if (!startDateTime || !endDateTime) {
+      toast.error('Vui lòng nhập đầy đủ ngày và giờ')
+      isCreatingBooking.value = false
       return
     }
 
-    // Create booking
+    // Create booking with date + time
     await bookingsStore.createBooking({
       vehicle_id: String(vehicle.value.id),
-      start_time: startDate,
-      end_time: endDate,
+      start_time: startDateTime,
+      end_time: endDateTime,
       total_amount: bookingConfirmData.value.totalAmount
     })
 
@@ -549,5 +733,32 @@ useHead({
 </script>
 
 <style scoped>
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.2s ease-out;
+}
+
+.animate-slideUp {
+  animation: slideUp 0.3s ease-out;
+}
 </style>
 

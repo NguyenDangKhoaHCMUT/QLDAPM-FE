@@ -201,30 +201,40 @@ export const useVehiclesStore = defineStore('vehicles', () => {
 
       rentedBookings.value = items.map((item: any) => {
         const vehicle = item?.vehicle ?? item
-        const start = item?.startTime ?? vehicle?.createdAt
-        const end = item?.endTime ?? vehicle?.updatedAt ?? vehicle?.createdAt
+        const start = item?.startTime ?? item?.startDateTime ?? vehicle?.createdAt
+        const end = item?.endTime ?? item?.endDateTime ?? vehicle?.updatedAt ?? vehicle?.createdAt
         const hours = diffHours(String(start), String(end))
         const pricePerHour = Number(vehicle?.pricePerHour || 0)
-        const amount = Math.round(pricePerHour * hours)
+        
+        // Use total_amount from API if available, otherwise calculate with fees
+        let amount = Number(item?.total_amount ?? item?.totalAmount ?? 0)
+        if (amount <= 0) {
+          // Calculate subtotal (price per hour * hours)
+          const subtotal = Math.round(pricePerHour * hours)
+          // Calculate with fees: 5% service fee + 10% VAT
+          const serviceFee = Math.round(subtotal * 0.05)
+          const vat = Math.round((subtotal + serviceFee) * 0.1)
+          amount = subtotal + serviceFee + vat
+        }
 
-        const idSource = item?.bookingId ?? vehicle?.id
+        const idSource = item?.bookingId ?? item?.id ?? vehicle?.id
         return {
           id: String(idSource),
-          bookingCode: `EV${padStartWithZeros(idSource, 3)}`,
+          bookingCode: item?.bookingCode ?? `EV${padStartWithZeros(idSource, 3)}`,
           vehicle: {
             id: String(vehicle?.id ?? ''),
             name: vehicle?.name || 'Xe',
             type: vehicle?.type || '',
             price: pricePerHour,
-            image: vehicle?.imageUrl || ''
+            image: vehicle?.imageUrl || vehicle?.image || ''
           },
           startDateTime: String(start),
           endDateTime: String(end),
           totalHours: hours,
           totalAmount: amount,
-          paymentMethod: undefined,
-          createdAt: String(vehicle?.createdAt || start),
-          bookingStatus: String(item?.bookingStatus || '')
+          paymentMethod: item?.paymentMethod,
+          createdAt: String(item?.createdAt ?? vehicle?.createdAt ?? start),
+          bookingStatus: String(item?.bookingStatus ?? item?.status ?? '')
         }
       })
     } catch (err) {
