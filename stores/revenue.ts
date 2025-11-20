@@ -20,7 +20,7 @@ function getCookieValue(name: string): string | null {
 }
 
 // Temporary flag: switch to false when backend APIs are ready
-const USE_REVENUE_MOCK = true // TODO: switch to false when backend APIs are ready
+const USE_REVENUE_MOCK = false // TODO: switch to false when backend APIs are ready
 
 export const useRevenueStore = defineStore('revenue', () => {
   const useMock = USE_REVENUE_MOCK

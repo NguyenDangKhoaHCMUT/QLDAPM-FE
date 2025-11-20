@@ -148,17 +148,6 @@
             <p v-if="errors.ward" class="text-red-500 text-sm mt-1">{{ errors.ward }}</p>
           </div>
 
-          <!-- <div class="space-y-2">
-            <label class="block text-sm font-medium text-gray-700">📍 Quận/Huyện <span class="text-red-500">*</span></label>
-            <input
-              type="text"
-              v-model="formData.district"
-              placeholder="Nhập quận/huyện"
-              class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white shadow-sm"
-            />
-            <p v-if="errors.district" class="text-red-500 text-sm mt-1">{{ errors.district }}</p>
-          </div> -->
-
           <div class="space-y-2">
             <label class="block text-sm font-medium text-gray-700">🏠 Địa chỉ chi tiết <span class="text-red-500">*</span></label>
             <input
@@ -305,7 +294,6 @@ const formData = reactive({
   color: '',
   licensePlate: '',
   province: '',
-  district: '',
   ward: '',
   address: '',
   pricePerHour: null as number | null,
@@ -320,7 +308,6 @@ const errors = reactive({
   name: '',
   type: '',
   province: '',
-  district: '',
   ward: '',
   pricePerHour: '',
   imageUrl: '',
@@ -447,10 +434,6 @@ function validateForm(): boolean {
     errors.province = 'Tỉnh/Thành phố không được để trống'
     isValid = false
   }
-  if (!formData.district.trim()) {
-    errors.district = 'Quận/Huyện không được để trống'
-    isValid = false
-  }
   if (!formData.ward) {
     errors.ward = 'Phường/Xã không được để trống'
     isValid = false
@@ -508,20 +491,22 @@ async function submitForm() {
     }
 
     // Prepare API payload
+    const address = formData.address || (formData.ward && formData.province 
+      ? `${formData.ward}, ${formData.province}`
+      : formData.province || '')
     const vehicleData = {
       name: formData.name.trim(),
       type: formData.type,
-      brand: formData.brand.trim() || null,
-      model: formData.model.trim() || null,
-      color: formData.color.trim() || null,
-      licensePlate: formData.licensePlate.trim() || null,
+      brand: formData.brand?.trim() || null,
+      model: formData.model?.trim() || null,
+      color: formData.color?.trim() || null,
+      licensePlate: formData.licensePlate?.trim() || null,
       pricePerHour: formData.pricePerHour!,
       imageUrl: formData.imageUrl,
-      description: formData.description.trim() || null,
+      description: formData.description?.trim() || null,
       ward: formData.ward,
-      district: formData.district.trim(),
       province: formData.province,
-      address: formData.address.trim()
+      address: address
     }
     
     // Call API

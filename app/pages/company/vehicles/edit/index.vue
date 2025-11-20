@@ -178,18 +178,6 @@
             <p v-if="errors.province" class="text-red-500 text-sm mt-1">{{ errors.province }}</p>
           </div>
 
-          <!-- District -->
-          <!-- <div class="space-y-2">
-            <label class="block text-sm font-medium text-gray-700">📍 Quận/Huyện</label>
-            <input
-              v-model="formData.district"
-              type="text"
-              class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="VD: Quận Thanh Khê, Huyện Đức Trọng..."
-            />
-            <p v-if="errors.district" class="text-red-500 text-sm mt-1">{{ errors.district }}</p>
-          </div> -->
-
           <!-- Ward -->
           <div class="space-y-2">
             <label class="block text-sm font-medium text-gray-700">📍 Xã/Phường</label>            
@@ -346,7 +334,6 @@ const formData = reactive({
   licensePlate: '',
   description: '',
   province: '',
-  district: '',
   ward: '',
   address: '',
   image: '',
@@ -363,7 +350,6 @@ const errors = reactive({
   licensePlate: '',
   description: '',
   province: '',
-  district: '',
   ward: '',
   address: '',
   image: '',
@@ -456,7 +442,6 @@ onMounted(async () => {
         formData.image = foundVehicle.image || ''
         formData.pricePerHour = foundVehicle.pricePerHour || null
         formData.province = foundVehicle.province || ''
-        formData.district = foundVehicle.district || ''
         formData.ward = foundVehicle.ward || ''
         formData.address = foundVehicle.address || ''
         
@@ -564,9 +549,7 @@ async function submitForm() {
   try {
     // Build full address if not provided
     const fullAddress = formData.address || 
-      (formData.ward && formData.district && formData.province 
-        ? `${formData.address ? formData.address + ', ' : ''}${formData.ward}, ${formData.district}, ${formData.province}`
-        : formData.ward && formData.province
+      (formData.ward && formData.province 
         ? `${formData.ward}, ${formData.province}`
         : formData.province || '')
     
@@ -580,7 +563,6 @@ async function submitForm() {
       licensePlate: formData.licensePlate?.trim() || null,
       description: formData.description?.trim() || null,
       province: formData.province,
-      district: formData.district?.trim() || null,
       ward: formData.ward,
       address: fullAddress,
       image: formData.image || 'https://via.placeholder.com/400x300/gray/white?text=No+Image',
