@@ -52,6 +52,46 @@
         <p v-if="errors.type" class="text-red-500 text-sm mt-1">{{ errors.type }}</p>
       </div>
 
+      <!-- Vehicle Details -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Thương hiệu</label>
+          <input
+            v-model="formData.brand"
+            type="text"
+            class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            placeholder="VD: Toyota, VinFast..."
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Model</label>
+          <input
+            v-model="formData.model"
+            type="text"
+            class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            placeholder="VD: Vios 2022"
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Màu sắc</label>
+          <input
+            v-model="formData.color"
+            type="text"
+            class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+            placeholder="VD: Trắng, Đen, Bạc..."
+          />
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">Biển số</label>
+          <input
+            v-model="formData.licensePlate"
+            type="text"
+            class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent uppercase"
+            placeholder="VD: 43-A9 10101"
+          />
+        </div>
+      </div>
+
       <!-- Vehicle Address -->
       <div>
         <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -106,6 +146,28 @@
               </div>
             </div>
             <p v-if="errors.ward" class="text-red-500 text-sm mt-1">{{ errors.ward }}</p>
+          </div>
+
+          <!-- <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">📍 Quận/Huyện <span class="text-red-500">*</span></label>
+            <input
+              type="text"
+              v-model="formData.district"
+              placeholder="Nhập quận/huyện"
+              class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white shadow-sm"
+            />
+            <p v-if="errors.district" class="text-red-500 text-sm mt-1">{{ errors.district }}</p>
+          </div> -->
+
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">🏠 Địa chỉ chi tiết <span class="text-red-500">*</span></label>
+            <input
+              type="text"
+              v-model="formData.address"
+              placeholder="VD: 176 Hà Huy Tập..."
+              class="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-green-500 focus:border-transparent bg-white shadow-sm"
+            />
+            <p v-if="errors.address" class="text-red-500 text-sm mt-1">{{ errors.address }}</p>
           </div>
         </div>
       </div>
@@ -180,6 +242,19 @@
         <p class="text-gray-500 text-sm mt-1">Giá tối thiểu: 1,000 VNĐ/giờ</p>
       </div>
 
+      <!-- Description -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          Mô tả chi tiết
+        </label>
+        <textarea
+          v-model="formData.description"
+          rows="4"
+          class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-transparent"
+          placeholder="Mô tả ngắn về tình trạng xe, nội thất, tiện nghi..."
+        ></textarea>
+      </div>
+
       <!-- Submit Buttons -->
       <div class="flex space-x-4 pt-6">
         <button
@@ -225,10 +300,17 @@ const vehiclesStore = useCompanyVehiclesStore()
 const formData = reactive({
   name: '',
   type: '',
+  brand: '',
+  model: '',
+  color: '',
+  licensePlate: '',
   province: '',
+  district: '',
   ward: '',
+  address: '',
   pricePerHour: null as number | null,
-  imageUrl: ''
+  imageUrl: '',
+  description: ''
 })
 
 // Form state
@@ -237,12 +319,12 @@ const imagePreview = ref('')
 const errors = reactive({
   name: '',
   type: '',
-  brand: '',
-  model: '',
   province: '',
+  district: '',
   ward: '',
   pricePerHour: '',
-  imageUrl: ''
+  imageUrl: '',
+  address: ''
 })
 
 // Location data
@@ -365,8 +447,16 @@ function validateForm(): boolean {
     errors.province = 'Tỉnh/Thành phố không được để trống'
     isValid = false
   }
+  if (!formData.district.trim()) {
+    errors.district = 'Quận/Huyện không được để trống'
+    isValid = false
+  }
   if (!formData.ward) {
     errors.ward = 'Phường/Xã không được để trống'
+    isValid = false
+  }
+  if (!formData.address.trim()) {
+    errors.address = 'Địa chỉ chi tiết không được để trống'
     isValid = false
   }
   if (!imagePreview.value) {
@@ -418,15 +508,20 @@ async function submitForm() {
     }
 
     // Prepare API payload
-    const address = `${formData.ward}, ${formData.province}`
     const vehicleData = {
       name: formData.name.trim(),
       type: formData.type,
+      brand: formData.brand.trim() || null,
+      model: formData.model.trim() || null,
+      color: formData.color.trim() || null,
+      licensePlate: formData.licensePlate.trim() || null,
       pricePerHour: formData.pricePerHour!,
       imageUrl: formData.imageUrl,
-      ward: formData.ward, 
+      description: formData.description.trim() || null,
+      ward: formData.ward,
+      district: formData.district.trim(),
       province: formData.province,
-      address: address
+      address: formData.address.trim()
     }
     
     // Call API

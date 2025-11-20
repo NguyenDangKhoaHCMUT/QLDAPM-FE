@@ -14,11 +14,28 @@ interface VehicleSearchResponse {
   pricePerHour: number
   imageUrl: string
   status: string
-  province: string
-  ward: string
-  address: string
+  province: string | null
+  ward: string | null
+  address: string | null
   typeSortOrder: number
   paused: boolean
+  brand?: string | null
+  model?: string | null
+  color?: string | null
+  licensePlate?: string | null
+  description?: string | null
+}
+
+interface VehicleSearchApiResponse {
+  status: string
+  message: string
+  data: {
+    items: VehicleSearchResponse[]
+    page: number
+    size: number
+    total: number
+    totalPages: number
+  }
 }
 
 type RentedBooking = {
@@ -41,10 +58,11 @@ interface ApiVehicle {
   price: number
   range: number
   image: string
-  status: 'available' | 'unavailable'
+  status: 'available' | 'unavailable' | 'paused'
   province: string
   ward: string
   address: string
+  paused?: boolean
 }
 
 // Store to manage vehicles list and filters
@@ -72,10 +90,10 @@ export const useVehiclesStore = defineStore('vehicles', () => {
     endTime: '10:00',
     type: '',
     minPrice: 0,
-    maxPrice: 2000000
+    maxPrice: 0 // 0 means not selected, will only send param when > 0
   })
 
-  const sortBy = ref('price_asc')
+  const sortBy = ref('default')
   const sortOrder = ref('asc')
 
   // API client
@@ -125,25 +143,38 @@ export const useVehiclesStore = defineStore('vehicles', () => {
     if (filters.value.type) params.append('type', filters.value.type)
 
     if (sortBy.value && sortBy.value !== 'default') params.append('sort', sortBy.value)
-    if (filters.value.minPrice) params.append('priceMin', String(filters.value.minPrice))
+    // Only send price params if user has explicitly selected a price (> 0)
+    if (filters.value.minPrice && filters.value.minPrice > 0) params.append('priceMin', String(filters.value.minPrice))
     if (filters.value.maxPrice && filters.value.maxPrice > 0) params.append('priceMax', String(filters.value.maxPrice))
     
     try {
-      const res = await get<VehicleSearchResponse[]>(`/vehicles/search?${params.toString()}`)
-      const data = Array.isArray(res?.data?.items) ? res.data.items : []
+      const res = await get<any>(`/vehicles/search?${params.toString()}`)
+      // Handle both response formats: { data: { items: [...] } } or { data: [...] }
+      const data = Array.isArray(res?.data?.items) 
+        ? res.data.items 
+        : (Array.isArray(res?.data) ? res.data : [])
       // Transform API data to match ApiVehicle interface
-      const transformedData = data.map(v => ({
-        id: v.id,
-        name: v.name,
-        type: v.type,
-        price: v.pricePerHour || 0,
-        image: v.imageUrl || '',
-        status: (v.status === 'AVAILABLE' ? 'available' : 'unavailable') as 'available' | 'unavailable',
-        province: v.province || '',
-        ward: v.ward || '',
-        address: v.address || ''
-        
-      }))
+      const transformedData = data.map(v => {
+        const normalizedStatus: 'available' | 'unavailable' | 'paused' =
+          v.paused || v.status === 'PAUSED'
+            ? 'paused'
+            : v.status === 'AVAILABLE'
+              ? 'available'
+              : 'unavailable'
+
+        return {
+          id: v.id,
+          name: v.name,
+          type: v.type,
+          price: v.pricePerHour || 0,
+          image: v.imageUrl || '',
+          status: normalizedStatus,
+          province: v.province || '',
+          ward: v.ward || '',
+          address: v.address || '',
+          paused: Boolean(v.paused)
+        } as ApiVehicle
+      })
       vehicles.value = transformedData
       if (transformedData.length) {
         priceMax.value = Math.max(...transformedData.map(v => v.price))
@@ -230,9 +261,43 @@ export const useVehiclesStore = defineStore('vehicles', () => {
     }
   }
 
-  // Find vehicle by ID
+  // Find vehicle by ID from local list
   function findVehicleById(id: number) {
     return vehicles.value.find(v => v.id === id) || null
+  }
+
+  // Fetch vehicle details by ID from API
+  // Note: Since BE doesn't have GET /vehicles/{id}, we use search API and filter by id
+  const vehicleDetail = ref<VehicleSearchResponse | null>(null)
+  const vehicleDetailLoading = ref(false)
+  
+  async function fetchVehicleById(id: number) {
+    vehicleDetailLoading.value = true
+    try {
+      // Call search API without filters to get all vehicles, then filter by id
+      const res = await get<any>(`/vehicles/search`)
+      // Handle both response formats: { data: { items: [...] } } or { data: [...] }
+      const data = Array.isArray(res?.data?.items) 
+        ? res.data.items 
+        : (Array.isArray(res?.data) ? res.data : [])
+      
+      // Find vehicle with matching id
+      const vehicle = data.find((v: VehicleSearchResponse) => v.id === id)
+      
+      if (vehicle) {
+        vehicleDetail.value = vehicle
+        return vehicleDetail.value
+      } else {
+        vehicleDetail.value = null
+        throw new Error('Không tìm thấy xe với ID này')
+      }
+    } catch (e: any) {
+      console.error('Failed to fetch vehicle details:', e)
+      vehicleDetail.value = null
+      throw e
+    } finally {
+      vehicleDetailLoading.value = false
+    }
   }
 
   return {
@@ -264,6 +329,9 @@ export const useVehiclesStore = defineStore('vehicles', () => {
     nextPage,
     previousPage,
     goToPage,
-    findVehicleById
+    findVehicleById,
+    fetchVehicleById,
+    vehicleDetail,
+    vehicleDetailLoading
   }
 })

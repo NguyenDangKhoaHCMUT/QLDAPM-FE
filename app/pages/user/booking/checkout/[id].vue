@@ -159,6 +159,83 @@
               >
               <span class="ml-3">💵 Thanh toán khi nhận xe</span>
             </label>
+            <label class="flex items-center p-3 border border-gray-300 rounded-md cursor-pointer hover:bg-gray-50">
+              <input 
+                v-model="paymentMethod" 
+                type="radio" 
+                value="qr" 
+                class="text-green-600 focus:ring-green-500"
+              >
+              <span class="ml-3">🏦 Chuyển khoản QR</span>
+            </label>
+          </div>
+
+          <div v-if="paymentMethod === 'qr'" class="mt-6 space-y-4">
+            <div v-if="qrLoading" class="p-4 bg-blue-50 border border-blue-100 rounded-lg text-blue-700 text-sm">
+              Đang tạo mã QR cho booking, vui lòng chờ...
+            </div>
+            <div v-else-if="qrError" class="p-4 bg-red-50 border border-red-100 rounded-lg text-red-700 text-sm space-y-2">
+              <p>{{ qrError }}</p>
+              <button
+                class="px-4 py-2 rounded-md bg-red-600 text-white text-sm hover:bg-red-700"
+                @click="prepareQrPayment(true)"
+              >
+                Thử lại
+              </button>
+            </div>
+            <div v-else-if="qrInfo" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div class="p-4 border border-green-100 rounded-xl bg-green-50 flex flex-col items-center">
+                <ClientOnly>
+                  <QrcodeVue
+                    :value="qrPayload"
+                    :size="180"
+                    level="H"
+                    class="bg-white p-2 rounded-xl shadow-sm"
+                  />
+                  <template #fallback>
+                    <div class="w-44 h-44 bg-gray-100 rounded-xl animate-pulse" />
+                  </template>
+                </ClientOnly>
+                <p class="text-sm text-gray-600 mt-2 text-center">
+                  Quét mã để chuyển khoản nhanh
+                </p>
+              </div>
+              <div class="space-y-2 text-sm">
+                <div class="flex justify-between">
+                  <span class="text-gray-500">Ngân hàng</span>
+                  <span class="font-semibold">{{ qrInfo.bankInfo.bankName }} ({{ qrInfo.bankInfo.bankCode }})</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-500">Số tài khoản</span>
+                  <span class="font-semibold">{{ qrInfo.bankInfo.accountNumber }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-500">Chủ tài khoản</span>
+                  <span class="font-semibold">{{ qrInfo.bankInfo.accountName }}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="text-gray-500">Số tiền</span>
+                  <span class="text-green-600 font-bold">{{ formatPrice(qrInfo.amount) }} VNĐ</span>
+                </div>
+                <div>
+                  <span class="block text-gray-500">Nội dung chuyển khoản</span>
+                  <div class="font-semibold text-gray-900 bg-gray-100 rounded-lg px-3 py-2">
+                    {{ qrInfo.transferContent }}
+                  </div>
+                </div>
+                <p class="text-xs text-gray-500">{{ qrInfo.note || 'Vui lòng chuyển khoản đúng nội dung để được xác nhận nhanh.' }}</p>
+                <button
+                  class="w-full px-4 py-2 rounded-md bg-blue-600 text-white font-semibold hover:bg-blue-700 disabled:opacity-60"
+                  :disabled="confirmTransferLoading"
+                  @click="confirmQrTransfer"
+                >
+                  {{ confirmTransferLoading ? 'Đang gửi xác nhận...' : 'Tôi đã chuyển khoản' }}
+                </button>
+              </div>
+            </div>
+            <div v-else class="p-4 bg-yellow-50 border border-yellow-100 rounded-lg text-yellow-700 text-sm">
+              Hệ thống sẽ tạo mã QR sau khi bạn nhập đầy đủ thông tin đặt xe. Vui lòng đảm bảo bạn chuyển đúng số tiền và nội dung để chủ xe xác nhận.
+            </div>
           </div>
         </div>
       </div>
@@ -232,19 +309,21 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuth } from '~/composables/useAuth'
-import { useVehiclesStore } from '~~/stores/vehicles'
+import { useApi } from '~/composables/useApi'
 import { useBookingsStore } from '~~/stores/bookings'
+import type { BookingQrInfo } from '~~/stores/bookings'
 import { generatePaymentData, type PaymentData } from '../../../../mock-data/checkout'
+import QrcodeVue from 'qrcode.vue'
 
 // Auth and routing
 const { user } = useAuth()
 const route = useRoute()
 const router = useRouter()
-const vehiclesStore = useVehiclesStore()
 const bookingsStore = useBookingsStore()
+const { get: apiGet } = useApi()
 
 // Loading and error states
 const isLoadingVehicle = ref(true)
@@ -274,6 +353,11 @@ const customerInfo = ref({
 const paymentMethod = ref('vnpay')
 const showPaymentModal = ref(false)
 const currentPaymentData = ref<PaymentData | null>(null)
+const currentBookingId = ref<string | null>(null)
+const qrInfo = ref<BookingQrInfo | null>(null)
+const qrLoading = ref(false)
+const qrError = ref('')
+const confirmTransferLoading = ref(false)
 
 // Computed properties
 const hourlyRate = computed(() => {
@@ -312,58 +396,40 @@ const totalAmount = computed(() => {
 })
 
 const canProceedPayment = computed(() => {
-  return paymentMethod.value &&
-        totalHours.value > 0 &&
-        bookingData.value.startDate &&
-        bookingData.value.endDate &&
-        bookingData.value.startTime &&
-        bookingData.value.endTime
+  return Boolean(
+    paymentMethod.value &&
+    currentBookingId.value &&
+    totalHours.value > 0 &&
+    bookingData.value.startDate &&
+    bookingData.value.endDate &&
+    bookingData.value.startTime &&
+    bookingData.value.endTime
+  )
 })
 
 const paymentButtonText = computed(() => {
   if (!canProceedPayment.value) {
     return 'Vui lòng điền đầy đủ thông tin'
   }
+  if (paymentMethod.value === 'qr') {
+    return qrInfo.value ? 'Làm mới mã QR' : 'Tạo mã QR chuyển khoản'
+  }
   return `Thanh toán ${formatPrice(totalAmount.value)} VNĐ`
 })
 
+const qrPayload = computed(() => {
+  if (!qrInfo.value) return ''
+  const info = qrInfo.value
+  return JSON.stringify({
+    bank: info.bankInfo.bankCode,
+    account: info.bankInfo.accountNumber,
+    name: info.bankInfo.accountName,
+    amount: info.amount,
+    content: info.transferContent
+  })
+})
+
 // Methods
-async function fetchVehicleDetails(vehicleId: string) {
-  try {
-    isLoadingVehicle.value = true
-    vehicleError.value = ''
-    
-    // First, try to get vehicle from store
-    const vehicleIdNum = parseInt(vehicleId)
-    let vehicle = vehiclesStore.findVehicleById(vehicleIdNum)
-    
-    if (!vehicle) {
-      // If not found in store, try to fetch from API and update store
-      await vehiclesStore.SearchVehicles()
-      vehicle = vehiclesStore.findVehicleById(vehicleIdNum)
-    }
-    
-    if (vehicle) {
-      bookingData.value.vehicle = {
-        id: vehicle.id.toString(),
-        name: vehicle.name || '',
-        type: vehicle.type || '',
-        price: vehicle.price || 0,
-        image: vehicle.image || ''
-      }
-    } else {
-      throw new Error('Không tìm thấy thông tin xe')
-    }
-  } catch (error: any) {
-    console.error('Error fetching vehicle:', error)
-    vehicleError.value = error?.message || 'Không thể tải thông tin xe. Vui lòng thử lại.'
-  } finally {
-    isLoadingVehicle.value = false
-  }
-}
-
-
-
 function formatPrice(price: number): string {
   return new Intl.NumberFormat('vi-VN').format(price)
 }
@@ -396,18 +462,88 @@ function formatDateTimeForApi(dateString: string, timeString: string): string {
   return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`
 }
 
+function splitDateTime(value?: string) {
+  if (!value) {
+    return { date: '', time: '' }
+  }
+  const onlyDate = /^\d{4}-\d{2}-\d{2}$/.test(value)
+  if (onlyDate) {
+    return { date: value, time: '00:00' }
+  }
+  const parsed = new Date(value)
+  if (Number.isNaN(parsed.getTime())) {
+    const datePart = value.slice(0, 10)
+    const timePart = value.slice(11, 16) || '00:00'
+    return { date: datePart, time: timePart }
+  }
+  const isoString = parsed.toISOString()
+  return {
+    date: isoString.slice(0, 10),
+    time: isoString.slice(11, 16)
+  }
+}
+
+async function loadBookingDetails(bookingIdParam: string) {
+  try {
+    isLoadingVehicle.value = true
+    vehicleError.value = ''
+    const res = await apiGet<any>('/vehicles/rented')
+    const payload = res?.data as any
+    const items = Array.isArray(payload)
+      ? payload
+      : Array.isArray(payload?.data)
+        ? payload.data
+        : Array.isArray(payload?.items)
+          ? payload.items
+          : []
+
+    const numericId = Number(bookingIdParam)
+    const bookingItem = items.find((item: any) => Number(item?.bookingId ?? item?.booking_id) === numericId)
+
+    if (!bookingItem) {
+      throw new Error(`Không tìm thấy đơn đặt xe #${bookingIdParam}`)
+    }
+
+    const vehicle = bookingItem.vehicle ?? {}
+    bookingData.value.vehicle = {
+      id: vehicle?.id ? String(vehicle.id) : '',
+      name: vehicle?.name || 'Xe điện',
+      type: vehicle?.type || '',
+      price: Number(vehicle?.pricePerHour ?? vehicle?.price ?? 0),
+      image: vehicle?.imageUrl || vehicle?.image || ''
+    }
+
+    const start = splitDateTime(bookingItem.startTime ?? bookingItem.start_time)
+    const end = splitDateTime(bookingItem.endTime ?? bookingItem.end_time)
+
+    bookingData.value.startDate = start.date
+    bookingData.value.startTime = start.time
+    bookingData.value.endDate = end.date
+    bookingData.value.endTime = end.time
+
+    currentBookingId.value = String(bookingItem.bookingId ?? bookingItem.booking_id ?? bookingIdParam)
+  } catch (error: any) {
+    console.error('Error loading booking details:', error)
+    vehicleError.value = error?.message || 'Không thể tải thông tin đơn đặt xe. Vui lòng thử lại.'
+  } finally {
+    isLoadingVehicle.value = false
+  }
+}
+
 async function processPayment() {
   if (!canProceedPayment.value) return
 
   try {
-    // Generate payment data based on method
+    if (paymentMethod.value === 'qr') {
+      await prepareQrPayment(true)
+      return
+    }
+
     currentPaymentData.value = generatePaymentData(paymentMethod.value, totalAmount.value)
     
-    // Show payment modal for VNPay
     if (paymentMethod.value === 'vnpay') {
       showPaymentModal.value = true
     } else if (paymentMethod.value === 'cash') {
-      // For cash payment, directly proceed to success
       handlePaymentSuccess(currentPaymentData.value.transactionId)
     }
     
@@ -427,57 +563,75 @@ function handlePaymentConfirmation(transactionId: string) {
   handlePaymentSuccess(transactionId)
 }
 
-async function handlePaymentSuccess(transactionId: string) {
-  try {
-    // Create booking through API
-    const bookingRequest = {
-      vehicle_id: bookingData.value.vehicle.id,
-      start_time: formatDateTimeForApi(bookingData.value.startDate, bookingData.value.startTime),
-      end_time: formatDateTimeForApi(bookingData.value.endDate, bookingData.value.endTime),
-      total_amount: totalAmount.value
-    }
-
-    const bookingResponse = await bookingsStore.createBooking(bookingRequest)
-    
-    console.log('Booking created:', bookingResponse)
-    
-    // Show success message
-    alert(`Đặt xe thành công!\nMã đặt xe: ${bookingResponse.booking_id}\nTổng số tiền: ${formatPrice(totalAmount.value)} VNĐ`)
-    
-    // Redirect to bookings page
-    router.push('/user/profile/bookings')
-    
-  } catch (error: any) {
-    console.error('Failed to create booking:', error)
-    alert(`Đặt xe thất bại: ${error?.message || 'Có lỗi xảy ra'}`)
-  }
+function handlePaymentSuccess(transactionId: string) {
+  const bookingId = currentBookingId.value || 'N/A'
+  console.log('Payment confirmed:', transactionId, bookingId)
+  alert(`Thanh toán thành công!\nMã đặt xe: ${bookingId}\nTổng số tiền: ${formatPrice(totalAmount.value)} VNĐ`)
+  router.push('/user/profile/bookings')
 }
 
 // Initialize booking data from params and query
+async function prepareQrPayment(force = false) {
+  if (!canProceedPayment.value) {
+    qrError.value = 'Vui lòng nhập đầy đủ thông tin trước khi tạo QR'
+    return
+  }
+  if (!force && qrInfo.value) return
+  if (qrLoading.value) return
+
+  qrLoading.value = true
+  qrError.value = ''
+  try {
+    if (!currentBookingId.value) throw new Error('Không xác định được booking_id')
+    const info = await bookingsStore.fetchBookingQrInfo(currentBookingId.value)
+    qrInfo.value = info
+  } catch (error: any) {
+    console.error('prepareQrPayment error', error)
+    qrError.value = error?.message || 'Không thể tạo mã QR, vui lòng thử lại'
+  } finally {
+    qrLoading.value = false
+  }
+}
+
+async function confirmQrTransfer() {
+  if (!currentBookingId.value) return
+  confirmTransferLoading.value = true
+  try {
+    await bookingsStore.confirmTransfer(currentBookingId.value)
+    router.push('/user/profile/bookings')
+  } catch (error) {
+    console.error('confirm transfer failed', error)
+  } finally {
+    confirmTransferLoading.value = false
+  }
+}
+
+watch(paymentMethod, (method) => {
+  if (method === 'qr') {
+    prepareQrPayment()
+  } else {
+    qrError.value = ''
+  }
+})
+
 onMounted(async () => {
-  const vehicleId = route.params.id as string
+  const bookingId = route.params.id as string
   const query = route.query
   
-  // Validate vehicle ID
-  if (!vehicleId) {
-    vehicleError.value = 'Không tìm thấy ID xe'
+  // Validate booking ID
+  if (!bookingId) {
+    vehicleError.value = 'Không tìm thấy ID đơn đặt xe'
     isLoadingVehicle.value = false
     return
   }
   
-  // Fetch vehicle details from API
-  await fetchVehicleDetails(vehicleId)
-  
-  // Get booking details from query params
-  bookingData.value.startDate = query.startDate as string || ''
-  bookingData.value.startTime = query.startTime as string || ''
-  bookingData.value.endDate = query.endDate as string || ''
-  bookingData.value.endTime = query.endTime as string || ''
-  
-  // Validate booking data
-  if (!bookingData.value.startDate || !bookingData.value.endDate) {
-    vehicleError.value = 'Thiếu thông tin ngày đặt xe'
-  }
+  await loadBookingDetails(bookingId)
+
+  // Allow overriding from query params if provided
+  if (query.startDate) bookingData.value.startDate = String(query.startDate)
+  if (query.startTime) bookingData.value.startTime = String(query.startTime)
+  if (query.endDate) bookingData.value.endDate = String(query.endDate)
+  if (query.endTime) bookingData.value.endTime = String(query.endTime)
 })
 
 // @ts-ignore - Nuxt auto-import

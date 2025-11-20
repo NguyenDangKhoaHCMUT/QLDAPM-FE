@@ -56,6 +56,96 @@
         <p v-if="errors.name" class="mt-1 text-sm text-red-600">{{ errors.name }}</p>
       </div>
 
+      <!-- Vehicle Type -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          Loại xe <span class="text-red-500">*</span>
+        </label>
+        <select
+          v-model="formData.type"
+          class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          required
+        >
+          <option value="">Chọn loại xe</option>
+          <option value="BIKE">Xe đạp điện</option>
+          <option value="SCOOTER">Xe máy điện</option>
+          <option value="CAR">Ô tô điện</option>
+        </select>
+        <p v-if="errors.type" class="mt-1 text-sm text-red-600">{{ errors.type }}</p>
+      </div>
+
+      <!-- Vehicle Details Grid -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Brand -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Thương hiệu
+          </label>
+          <input
+            v-model="formData.brand"
+            type="text"
+            class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="VD: Toyota, Honda, Tesla..."
+          />
+          <p v-if="errors.brand" class="mt-1 text-sm text-red-600">{{ errors.brand }}</p>
+        </div>
+
+        <!-- Model -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Model
+          </label>
+          <input
+            v-model="formData.model"
+            type="text"
+            class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="VD: Vios 2022, Model 3..."
+          />
+          <p v-if="errors.model" class="mt-1 text-sm text-red-600">{{ errors.model }}</p>
+        </div>
+
+        <!-- Color -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Màu sắc
+          </label>
+          <input
+            v-model="formData.color"
+            type="text"
+            class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="VD: Silver, Đỏ, Xanh..."
+          />
+          <p v-if="errors.color" class="mt-1 text-sm text-red-600">{{ errors.color }}</p>
+        </div>
+
+        <!-- License Plate -->
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-2">
+            Biển số
+          </label>
+          <input
+            v-model="formData.licensePlate"
+            type="text"
+            class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            placeholder="VD: 43-A9 10101"
+          />
+          <p v-if="errors.licensePlate" class="mt-1 text-sm text-red-600">{{ errors.licensePlate }}</p>
+        </div>
+      </div>
+
+      <!-- Description -->
+      <div>
+        <label class="block text-sm font-medium text-gray-700 mb-2">
+          Mô tả
+        </label>
+        <textarea
+          v-model="formData.description"
+          rows="4"
+          class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          placeholder="Mô tả chi tiết về xe (điều kiện, đặc điểm, lưu ý...)"
+        ></textarea>
+        <p v-if="errors.description" class="mt-1 text-sm text-red-600">{{ errors.description }}</p>
+      </div>
       
       <!-- Vehicle Address -->
       <div>
@@ -63,9 +153,9 @@
           Địa chỉ <span class="text-red-500">*</span>
         </label>
         <div class="space-y-4">
-          <!-- Location -->
+          <!-- Province -->
           <div class="space-y-2">
-            <label class="block text-sm font-medium text-gray-700">📍 Thành phố</label>            
+            <label class="block text-sm font-medium text-gray-700">📍 Thành phố/Tỉnh</label>            
             <div class="relative" v-click-outside="() => showProvinceDropdown = false">
               <input
                 type="text"
@@ -88,6 +178,19 @@
             <p v-if="errors.province" class="text-red-500 text-sm mt-1">{{ errors.province }}</p>
           </div>
 
+          <!-- District -->
+          <!-- <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">📍 Quận/Huyện</label>
+            <input
+              v-model="formData.district"
+              type="text"
+              class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="VD: Quận Thanh Khê, Huyện Đức Trọng..."
+            />
+            <p v-if="errors.district" class="text-red-500 text-sm mt-1">{{ errors.district }}</p>
+          </div> -->
+
+          <!-- Ward -->
           <div class="space-y-2">
             <label class="block text-sm font-medium text-gray-700">📍 Xã/Phường</label>            
             <div class="relative" v-click-outside="() => showWardDropdown = false">
@@ -112,26 +215,19 @@
             </div>
             <p v-if="errors.ward" class="text-red-500 text-sm mt-1">{{ errors.ward }}</p>
           </div>
+
+          <!-- Address Detail -->
+          <div class="space-y-2">
+            <label class="block text-sm font-medium text-gray-700">📍 Địa chỉ chi tiết</label>
+            <input
+              v-model="formData.address"
+              type="text"
+              class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              placeholder="VD: 176 Hà, số nhà, tên đường..."
+            />
+            <p v-if="errors.address" class="text-red-500 text-sm mt-1">{{ errors.address }}</p>
+          </div>
         </div>
-      </div>
-
-
-      <!-- Vehicle Type -->
-      <div>
-        <label class="block text-sm font-medium text-gray-700 mb-2">
-          Loại xe <span class="text-red-500">*</span>
-        </label>
-        <select
-          v-model="formData.type"
-          class="w-full p-3 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-          required
-        >
-          <option value="">Chọn loại xe</option>
-          <option value="BIKE">Xe đạp điện</option>
-          <option value="SCOOTER">Xe máy điện</option>
-          <option value="CAR">Ô tô điện</option>
-        </select>
-        <p v-if="errors.type" class="mt-1 text-sm text-red-600">{{ errors.type }}</p>
       </div>
 
       <!-- Vehicle Image -->
@@ -244,8 +340,15 @@ const imagePreview = ref('')
 const formData = reactive({
   name: '',
   type: '',
+  brand: '',
+  model: '',
+  color: '',
+  licensePlate: '',
+  description: '',
   province: '',
+  district: '',
   ward: '',
+  address: '',
   image: '',
   pricePerHour: null as number | null
 })
@@ -254,8 +357,15 @@ const formData = reactive({
 const errors = reactive({
   name: '',
   type: '',
+  brand: '',
+  model: '',
+  color: '',
+  licensePlate: '',
+  description: '',
   province: '',
+  district: '',
   ward: '',
+  address: '',
   image: '',
   pricePerHour: ''
 })
@@ -287,11 +397,13 @@ const filteredWards = computed(() => {
 
 watch(selectedProvince, (newProvince, oldProvince) => {
   if (newProvince) {
-    allWards.value = (newProvince as any).wards
-    formData.province = (newProvince as any).slug
+    const newProv = newProvince as any
+    const oldProv = oldProvince as any
+    allWards.value = newProv.wards || []
+    formData.province = newProv.slug || ''
     // Chỉ reset xã/phường khi người dùng chủ động thay đổi tỉnh/thành phố
     // (không phải lúc onMounted đang chạy)
-    if (oldProvince && newProvince.slug !== oldProvince.slug) {
+    if (oldProv && newProv.slug !== oldProv.slug) {
       selectedWard.value = null
       wardSearch.value = ''
       formData.ward = ''
@@ -334,23 +446,30 @@ onMounted(async () => {
         vehicle.value = foundVehicle
         
         // Populate form with existing data
-        formData.name = foundVehicle.name
-        formData.type = foundVehicle.type
-        formData.image = foundVehicle.image
-        formData.pricePerHour = foundVehicle.pricePerHour
-        formData.province = foundVehicle.province
-        formData.ward = foundVehicle.ward
+        formData.name = foundVehicle.name || ''
+        formData.type = foundVehicle.type || ''
+        formData.brand = foundVehicle.brand || ''
+        formData.model = foundVehicle.model || ''
+        formData.color = foundVehicle.color || ''
+        formData.licensePlate = foundVehicle.licensePlate || ''
+        formData.description = foundVehicle.description || ''
+        formData.image = foundVehicle.image || ''
+        formData.pricePerHour = foundVehicle.pricePerHour || null
+        formData.province = foundVehicle.province || ''
+        formData.district = foundVehicle.district || ''
+        formData.ward = foundVehicle.ward || ''
+        formData.address = foundVehicle.address || ''
         
         // Set image preview
-        imagePreview.value = foundVehicle.image
+        imagePreview.value = foundVehicle.image || ''
 
         // Populate location fields
         if (foundVehicle.province) {
-          const province = allProvinces.value.find(p => p.slug === foundVehicle.province)
+          const province = allProvinces.value.find(p => p.slug === foundVehicle.province || p.name === foundVehicle.province)
           if (province) {
             selectProvince(province) // This will also populate wards
             if (foundVehicle.ward) {
-              const ward = province.wards.find(w => w.name === foundVehicle.ward)
+              const ward = province.wards?.find((w: any) => w.name === foundVehicle.ward)
               if (ward) {
                 selectWard(ward)
               }
@@ -443,14 +562,27 @@ async function submitForm() {
   isSubmitting.value = true
   
   try {
-    const address = `${formData.ward}, ${formData.province}`
+    // Build full address if not provided
+    const fullAddress = formData.address || 
+      (formData.ward && formData.district && formData.province 
+        ? `${formData.address ? formData.address + ', ' : ''}${formData.ward}, ${formData.district}, ${formData.province}`
+        : formData.ward && formData.province
+        ? `${formData.ward}, ${formData.province}`
+        : formData.province || '')
+    
     // Update vehicle using store
     const success = await vehiclesStore.updateVehicle(vehicleId.value, {
-      name: formData.name,
+      name: formData.name.trim(),
       type: formData.type,
+      brand: formData.brand?.trim() || null,
+      model: formData.model?.trim() || null,
+      color: formData.color?.trim() || null,
+      licensePlate: formData.licensePlate?.trim() || null,
+      description: formData.description?.trim() || null,
       province: formData.province,
+      district: formData.district?.trim() || null,
       ward: formData.ward,
-      address: address,
+      address: fullAddress,
       image: formData.image || 'https://via.placeholder.com/400x300/gray/white?text=No+Image',
       pricePerHour: formData.pricePerHour!
     })

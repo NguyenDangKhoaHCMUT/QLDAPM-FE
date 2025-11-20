@@ -12,6 +12,8 @@
               <NuxtLink to="/company" class="nav-link">Dashboard</NuxtLink>
               <NuxtLink to="/company/vehicles" class="nav-link">Quản lý xe</NuxtLink>
               <NuxtLink to="/company/reports/revenue" class="nav-link">Báo cáo doanh thu</NuxtLink>
+              <NuxtLink to="/company/bookings" class="nav-link">Đơn đặt xe</NuxtLink>
+              <NuxtLink to="/company/bank-account" class="nav-link">Tài khoản NH</NuxtLink>
             </div>
           </div>
           <div class="flex items-center space-x-4">

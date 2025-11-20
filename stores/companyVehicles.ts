@@ -11,7 +11,13 @@ interface ApiVehicle {
   ownerEmail: string
   name: string
   type: string
+  brand?: string | null
+  model?: string | null
+  color?: string | null
+  licensePlate?: string | null
+  description?: string | null
   province: string
+  district?: string | null
   ward: string
   address: string
   pricePerHour: number
@@ -22,13 +28,18 @@ interface ApiVehicle {
 export interface UiVehicleItem {
   id: number
   name: string
+  type: string
+  brand?: string | null
+  model?: string | null
+  color?: string | null
+  licensePlate?: string | null
+  description?: string | null
   province: string
+  district?: string | null
   ward: string
   address: string
   image: string
-  licensePlate: string
   status: string
-  type: string
   pricePerHour: number
 }
 
@@ -49,13 +60,18 @@ export const useCompanyVehiclesStore = defineStore('companyVehicles', () => {
       items.value = data.map(v => ({
         id: v.id,
         name: v.name,
+        type: v.type || '',
+        brand: v.brand || null,
+        model: v.model || null,
+        color: v.color || null,
+        licensePlate: v.licensePlate || null,
+        description: v.description || null,
         province: v.province || '',
+        district: v.district || null,
         ward: v.ward || '',
         address: v.address || '',
         image: v.imageUrl || '',
-        licensePlate: '-',
         status: (v.status || '').toLowerCase(),
-        type: v.type || '',
         pricePerHour: v.pricePerHour || 0
       }))
     } catch (e: any) {
@@ -94,12 +110,23 @@ export const useCompanyVehiclesStore = defineStore('companyVehicles', () => {
   async function updateVehicle(id: number, data: Partial<UiVehicleItem>) {
     try {
       // Format data according to API spec
-      const apiData = {
+      const apiData: any = {
         name: data.name,
         type: data.type,
         pricePerHour: data.pricePerHour,
         imageUrl: data.image
       }
+      
+      // Add optional fields if provided
+      if (data.brand !== undefined) apiData.brand = data.brand || null
+      if (data.model !== undefined) apiData.model = data.model || null
+      if (data.color !== undefined) apiData.color = data.color || null
+      if (data.licensePlate !== undefined) apiData.licensePlate = data.licensePlate || null
+      if (data.description !== undefined) apiData.description = data.description || null
+      if (data.province !== undefined) apiData.province = data.province
+      if (data.district !== undefined) apiData.district = data.district || null
+      if (data.ward !== undefined) apiData.ward = data.ward
+      if (data.address !== undefined) apiData.address = data.address
       
       const res = await put(`/vehicles/${id}`, apiData)
       const ok = (res as any)?.status === 'success' || (res as any)?.message?.toLowerCase?.().includes('thành công')
