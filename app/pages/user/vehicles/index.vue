@@ -780,21 +780,20 @@ async function confirmBooking() {
     return
   }
 
-  // Create Date objects for validation
-  const startDate = new Date(normalizedStartDate + 'T00:00:00')
-  const endDate = new Date(normalizedEndDate + 'T00:00:00')
+  // Create Date objects for validation with time
+  const startDateTime = new Date(`${normalizedStartDate}T${bookingConfirmData.value.startTime || '00:00'}:00`)
+  const endDateTime = new Date(`${normalizedEndDate}T${bookingConfirmData.value.endTime || '23:59'}:00`)
   
-  // Check if end date is after start date
-  if (endDate <= startDate) {
-    toast.error('Ngày trả xe phải sau ngày nhận xe!')
+  // Check if end time is after start time
+  if (endDateTime <= startDateTime) {
+    toast.error('Thời gian trả xe phải sau thời gian nhận xe!')
     return
   }
 
-  // Check if start date is not in the past
+  // Check if start time is not in the past
   const now = new Date()
-  now.setHours(0, 0, 0, 0)
-  if (startDate < now) {
-    toast.error('Ngày nhận xe không thể trong quá khứ!')
+  if (startDateTime <= now) {
+    toast.error('Thời gian nhận xe không thể trong quá khứ!')
     return
   }
 

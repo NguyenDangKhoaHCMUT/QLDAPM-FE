@@ -93,8 +93,8 @@
                 Không có hành động
               </button>
               <button
-                class="px-4 py-2 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-60"
-                :disabled="isConfirming"
+                class="px-4 py-2 rounded-xl border border-red-200 text-red-600 hover:bg-red-50 disabled:opacity-60 disabled:cursor-not-allowed"
+                :disabled="isConfirming || booking.status.toUpperCase() === 'CANCELLED'"
                 @click="confirmBooking(booking.id, noteDrafts[booking.id], 'cancel')"
               >
                 Từ chối
