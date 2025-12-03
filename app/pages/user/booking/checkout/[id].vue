@@ -137,11 +137,19 @@
         <div class="bg-white p-5 rounded-lg shadow-sm">
           <h2 class="text-lg font-semibold text-gray-900 mb-4">Mã QR thanh toán</h2>
           
-          <div v-if="qrLoading" class="p-6 bg-blue-50 border border-blue-100 rounded-lg text-blue-700 text-sm text-center">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-3"></div>
+          <div
+            v-if="qrLoading"
+            class="p-6 bg-blue-50 border border-blue-100 rounded-lg text-blue-700 text-sm text-center"
+          >
+            <div
+              class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto mb-3"
+            ></div>
             Đang tạo mã QR, vui lòng chờ...
           </div>
-          <div v-else-if="qrError" class="p-6 bg-red-50 border border-red-100 rounded-lg text-red-700 text-sm text-center space-y-3">
+          <div
+            v-else-if="qrError"
+            class="p-6 bg-red-50 border border-red-100 rounded-lg text-red-700 text-sm text-center space-y-3"
+          >
             <p>{{ qrError }}</p>
             <button
               class="px-4 py-2 rounded-md bg-red-600 text-white text-sm hover:bg-red-700"
@@ -151,7 +159,9 @@
             </button>
           </div>
           <div v-else-if="qrInfo" class="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div class="flex flex-col items-center p-4 border border-green-100 rounded-xl bg-green-50">
+            <div
+              class="flex flex-col items-center p-4 border border-green-100 rounded-xl bg-green-50"
+            >
               <ClientOnly>
                 <QrcodeVue
                   :value="qrPayload"
@@ -160,7 +170,9 @@
                   class="bg-white p-2 rounded-xl shadow-md"
                 />
                 <template #fallback>
-                  <div class="w-44 h-44 bg-gray-100 rounded-xl animate-pulse" />
+                  <div
+                    class="w-44 h-44 bg-gray-100 rounded-xl animate-pulse"
+                  ></div>
                 </template>
               </ClientOnly>
               <p class="text-xs text-gray-600 mt-2 text-center">
@@ -170,31 +182,75 @@
             <div class="space-y-2.5 text-sm">
               <div class="flex justify-between py-1.5 border-b border-gray-100">
                 <span class="text-gray-600">Ngân hàng</span>
-                <span class="font-semibold text-gray-900 text-right">{{ qrInfo.bankInfo.bankName }} ({{ qrInfo.bankInfo.bankCode }})</span>
+                <span class="font-semibold text-gray-900 text-right"
+                  >{{ qrInfo.bankInfo.bankName }} ({{ qrInfo.bankInfo.bankCode }})</span
+                >
               </div>
               <div class="flex justify-between py-1.5 border-b border-gray-100">
                 <span class="text-gray-600">Số tài khoản</span>
-                <span class="font-semibold text-gray-900">{{ qrInfo.bankInfo.accountNumber }}</span>
+                <span class="font-semibold text-gray-900">{{
+                  qrInfo.bankInfo.accountNumber
+                }}</span>
               </div>
               <div class="flex justify-between py-1.5 border-b border-gray-100">
                 <span class="text-gray-600">Chủ tài khoản</span>
-                <span class="font-semibold text-gray-900 text-right">{{ qrInfo.bankInfo.accountName }}</span>
+                <span class="font-semibold text-gray-900 text-right">{{
+                  qrInfo.bankInfo.accountName
+                }}</span>
               </div>
               <div class="flex justify-between py-1.5 border-b border-gray-100">
                 <span class="text-gray-600">Số tiền</span>
-                <span class="text-green-600 font-bold">{{ formatPrice(qrInfo.amount) }} VNĐ</span>
+                <span class="text-green-600 font-bold">{{
+                  formatPrice(qrInfo.amount)
+                }} VNĐ</span>
               </div>
               <div class="pt-2">
-                <span class="block text-gray-600 mb-1.5 text-xs">Nội dung chuyển khoản</span>
-                <div class="font-semibold text-gray-900 bg-gray-100 rounded-lg px-3 py-2 text-center border border-gray-200 text-sm">
+                <span class="block text-gray-600 mb-1.5 text-xs"
+                  >Nội dung chuyển khoản</span
+                >
+                <div
+                  class="font-semibold text-gray-900 bg-gray-100 rounded-lg px-3 py-2 text-center border border-gray-200 text-sm"
+                >
                   {{ qrInfo.transferContent }}
                 </div>
-                <p class="text-xs text-gray-500 mt-2">{{ qrInfo.note || 'Vui lòng chuyển khoản đúng nội dung để được xác nhận nhanh.' }}</p>
+                <p class="text-xs text-gray-500 mt-2">
+                  {{
+                    qrInfo.note ||
+                    'Vui lòng chuyển khoản đúng nội dung để được xác nhận nhanh.'
+                  }}
+                </p>
               </div>
             </div>
           </div>
-          <div v-else class="p-6 bg-yellow-50 border border-yellow-100 rounded-lg text-yellow-700 text-sm text-center">
+          <div
+            v-else
+            class="p-6 bg-yellow-50 border border-yellow-100 rounded-lg text-yellow-700 text-sm text-center"
+          >
             Đang tải thông tin mã QR...
+          </div>
+
+          <!-- Actions -->
+          <div class="mt-5 pt-4 border-t border-gray-200">
+            <button
+              v-if="qrInfo"
+              @click="confirmQrTransfer"
+              :disabled="confirmTransferLoading"
+              class="w-full py-3 px-4 rounded-lg font-semibold text-white transition-colors bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
+            >
+              {{ confirmTransferLoading ? 'Đang xác nhận...' : 'Tôi đã chuyển khoản' }}
+            </button>
+
+            <button
+              v-else-if="!qrLoading && !qrError && canProceedPayment"
+              @click="refreshQrCode"
+              class="w-full py-3 px-4 rounded-lg font-semibold text-white transition-colors bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
+            >
+              Tải mã QR
+            </button>
+
+            <p class="text-xs text-gray-500 mt-3 text-center leading-relaxed">
+              Sau khi chuyển khoản, nhấn "Tôi đã chuyển khoản" để chủ xe xác nhận.
+            </p>
           </div>
         </div>
       </div>
