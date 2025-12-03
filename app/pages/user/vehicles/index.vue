@@ -1,23 +1,32 @@
 <template>
-  <div class="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 pb-12">
+  <div
+    class="min-h-screen bg-gradient-to-br from-green-50 via-white to-blue-50 pb-12"
+  >
     <!-- Header -->
     <div class="mb-6">
       <div class="text-center mb-5">
-        <h1 class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mb-2">
+        <h1
+          class="text-3xl md:text-4xl font-bold bg-gradient-to-r from-green-600 to-blue-600 bg-clip-text text-transparent mb-2"
+        >
           Thuê xe điện
         </h1>
-        <p class="text-gray-600 text-base md:text-lg">Tìm và đặt xe điện phù hợp với nhu cầu của bạn</p>
+        <p class="text-gray-600 text-base md:text-lg">
+          Tìm và đặt xe điện phù hợp với nhu cầu của bạn
+        </p>
       </div>
     </div>
 
     <!-- Search and Filter Section -->
-    <div class="bg-white/90 backdrop-blur-sm p-5 rounded-xl shadow-lg border border-gray-100 mb-6">
-      
+    <div
+      class="bg-white/90 backdrop-blur-sm p-5 rounded-xl shadow-lg border border-gray-100 mb-6"
+    >
       <!-- Main Filters Row -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3 mb-3">
         <!-- Location - Province -->
         <div class="space-y-1.5">
-          <label class="block text-xs font-semibold text-gray-700">📍 Thành phố</label>
+          <label class="block text-xs font-semibold text-gray-700"
+            >📍 Thành phố</label
+          >
           <div class="relative">
             <input
               type="text"
@@ -27,8 +36,8 @@
               placeholder="Chọn thành phố..."
               class="w-full p-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white transition-all"
             />
-            <div 
-              v-if="showProvinceDropdown" 
+            <div
+              v-if="showProvinceDropdown"
               @mousedown.prevent
               class="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto"
             >
@@ -46,19 +55,23 @@
 
         <!-- Location - Ward -->
         <div class="space-y-1.5">
-          <label class="block text-xs font-semibold text-gray-700">📍 Xã/Phường</label>
+          <label class="block text-xs font-semibold text-gray-700"
+            >📍 Xã/Phường</label
+          >
           <div class="relative">
             <input
               type="text"
               v-model="wardSearch"
               @focus="showWardDropdown = true"
               @blur="handleWardBlur"
-              :placeholder="selectedProvince ? 'Chọn xã/phường...' : 'Chọn thành phố trước'"
+              :placeholder="
+                selectedProvince ? 'Chọn xã/phường...' : 'Chọn thành phố trước'
+              "
               :disabled="!selectedProvince"
               class="w-full p-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white disabled:bg-gray-100 disabled:cursor-not-allowed transition-all"
             />
-            <div 
-              v-if="showWardDropdown && selectedProvince" 
+            <div
+              v-if="showWardDropdown && selectedProvince"
               @mousedown.prevent
               class="absolute z-20 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-xl max-h-60 overflow-y-auto"
             >
@@ -76,8 +89,13 @@
 
         <!-- Vehicle Type -->
         <div class="space-y-1.5">
-          <label class="block text-xs font-semibold text-gray-700">🚗 Loại xe</label>
-          <select v-model="filters.type" class="w-full p-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white transition-all cursor-pointer">
+          <label class="block text-xs font-semibold text-gray-700"
+            >🚗 Loại xe</label
+          >
+          <select
+            v-model="filters.type"
+            class="w-full p-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white transition-all cursor-pointer"
+          >
             <option value="">Tất cả loại</option>
             <option value="BIKE">Xe đạp điện</option>
             <option value="SCOOTER">Xe máy điện</option>
@@ -87,8 +105,13 @@
 
         <!-- Sort -->
         <div class="space-y-1.5">
-          <label class="block text-xs font-semibold text-gray-700">📊 Sắp xếp</label>
-          <select v-model="sortBy" class="w-full p-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white transition-all cursor-pointer">
+          <label class="block text-xs font-semibold text-gray-700"
+            >📊 Sắp xếp</label
+          >
+          <select
+            v-model="sortBy"
+            class="w-full p-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white transition-all cursor-pointer"
+          >
             <option value="price_asc">Giá tăng</option>
             <option value="price_desc">Giá giảm</option>
             <option value="updated_desc">Cập nhật mới nhất</option>
@@ -100,21 +123,29 @@
       <!-- Collapsible Advanced Filters -->
       <div class="space-y-2 mt-3 pt-3 border-t border-gray-200">
         <!-- Price Range Section -->
-        <div class="border border-gray-200 rounded-lg overflow-hidden bg-gray-50/50">
-          <button 
+        <div
+          class="border border-gray-200 rounded-lg overflow-hidden bg-gray-50/50"
+        >
+          <button
             @click="showPriceFilters = !showPriceFilters"
             class="w-full px-4 py-2.5 bg-gray-50 hover:bg-gray-100 text-left flex items-center justify-between transition-colors"
           >
-            <span class="text-sm font-semibold text-gray-700">💰 Khoảng giá</span>
-            <span class="text-gray-500 text-xs">{{ showPriceFilters ? '▼' : '▶' }}</span>
+            <span class="text-sm font-semibold text-gray-700"
+              >💰 Khoảng giá</span
+            >
+            <span class="text-gray-500 text-xs">{{
+              showPriceFilters ? '▼' : '▶'
+            }}</span>
           </button>
           <div v-show="showPriceFilters" class="p-4 bg-white">
             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
               <!-- Min Price -->
               <div class="space-y-2">
-                <label class="block text-xs font-semibold text-gray-700">Giá tối thiểu</label>
-                <select 
-                  v-model.number="filters.minPrice" 
+                <label class="block text-xs font-semibold text-gray-700"
+                  >Giá tối thiểu</label
+                >
+                <select
+                  v-model.number="filters.minPrice"
                   class="w-full p-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white transition-all cursor-pointer"
                 >
                   <option value="0">Không giới hạn</option>
@@ -130,9 +161,11 @@
 
               <!-- Max Price -->
               <div class="space-y-2">
-                <label class="block text-xs font-semibold text-gray-700">Giá tối đa</label>
-                <select 
-                  v-model.number="filters.maxPrice" 
+                <label class="block text-xs font-semibold text-gray-700"
+                  >Giá tối đa</label
+                >
+                <select
+                  v-model.number="filters.maxPrice"
                   class="w-full p-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white transition-all cursor-pointer"
                 >
                   <option value="0">Không giới hạn</option>
@@ -150,9 +183,18 @@
             </div>
             <div class="mt-4 pt-3 border-t border-gray-200 text-center">
               <span class="text-sm font-semibold text-green-600">
-                {{ filters.minPrice === 0 ? 'Không giới hạn' : formatPrice(filters.minPrice) }} 
-                - 
-                {{ filters.maxPrice === 0 ? 'Không giới hạn' : formatPrice(filters.maxPrice) }} VNĐ/Giờ
+                {{
+                  filters.minPrice === 0
+                    ? 'Không giới hạn'
+                    : formatPrice(filters.minPrice)
+                }}
+                -
+                {{
+                  filters.maxPrice === 0
+                    ? 'Không giới hạn'
+                    : formatPrice(filters.maxPrice)
+                }}
+                VNĐ/Giờ
               </span>
             </div>
           </div>
@@ -161,7 +203,7 @@
 
       <!-- Search Button - At the bottom -->
       <div class="mt-4 pt-4 border-t border-gray-200">
-        <button 
+        <button
           @click="applyFilters"
           class="w-full py-3 px-6 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg font-semibold hover:from-green-600 hover:to-green-700 transition-all duration-200 shadow-md hover:shadow-xl active:scale-98"
         >
@@ -179,42 +221,48 @@
     </div>
 
     <!-- Vehicle Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 mb-8">
-      <div 
-        v-for="vehicle in displayVehicles" 
+    <div
+      class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5 mb-8"
+    >
+      <div
+        v-for="vehicle in displayVehicles"
         :key="vehicle.id"
         :class="[
           'bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 border',
           vehicle.status === 'available' && !vehicle.paused
             ? 'hover:shadow-xl border-gray-100 hover:border-green-200'
-            : 'grayscale opacity-60 border-gray-200 cursor-not-allowed'
+            : 'grayscale opacity-60 border-gray-200 cursor-not-allowed',
         ]"
       >
         <!-- Vehicle Image -->
-        <div class="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden">
-          <img 
-            :src="vehicle.image" 
+        <div
+          class="relative h-48 bg-gradient-to-br from-gray-100 to-gray-200 overflow-hidden"
+        >
+          <img
+            :src="vehicle.image"
             :alt="vehicle.name"
             :class="[
               'w-full h-full object-cover transition-transform duration-300',
-              vehicle.status === 'available' && !vehicle.paused ? 'hover:scale-110' : 'opacity-60'
+              vehicle.status === 'available' && !vehicle.paused
+                ? 'hover:scale-110'
+                : 'opacity-60',
             ]"
-          >
+          />
           <!-- Status Badge -->
           <div class="absolute top-2 right-2">
-            <span 
+            <span
               v-if="vehicle.status === 'available' && !vehicle.paused"
               class="bg-green-500 text-white text-xs px-2.5 py-1 rounded-full font-semibold shadow-lg"
             >
               ✅ Có sẵn
             </span>
-            <span 
+            <span
               v-else-if="vehicle.paused || vehicle.status === 'paused'"
               class="bg-yellow-500 text-white text-xs px-2.5 py-1 rounded-full font-semibold shadow-lg"
             >
               ⏸️ Tạm dừng
             </span>
-            <span 
+            <span
               v-else
               class="bg-red-500 text-white text-xs px-2.5 py-1 rounded-full font-semibold shadow-lg"
             >
@@ -226,45 +274,57 @@
         <!-- Vehicle Info -->
         <div class="p-4">
           <!-- Vehicle Name -->
-          <h3 :class="[
-            'text-base font-bold mb-2 line-clamp-1',
-            vehicle.status === 'available' && !vehicle.paused ? 'text-gray-900' : 'text-gray-500'
-          ]">
+          <h3
+            :class="[
+              'text-base font-bold mb-2 line-clamp-1',
+              vehicle.status === 'available' && !vehicle.paused
+                ? 'text-gray-900'
+                : 'text-gray-500',
+            ]"
+          >
             {{ vehicle.name }}
           </h3>
 
           <!-- Price -->
           <div class="mb-4">
-            <span :class="[
-              'text-xl font-bold',
-              vehicle.status === 'available' && !vehicle.paused ? 'text-green-600' : 'text-gray-400'
-            ]">
+            <span
+              :class="[
+                'text-xl font-bold',
+                vehicle.status === 'available' && !vehicle.paused
+                  ? 'text-green-600'
+                  : 'text-gray-400',
+              ]"
+            >
               {{ formatPrice(vehicle.price) }}
             </span>
-            <span :class="[
-              'text-xs ml-1',
-              vehicle.status === 'available' && !vehicle.paused ? 'text-gray-500' : 'text-gray-400'
-            ]">
+            <span
+              :class="[
+                'text-xs ml-1',
+                vehicle.status === 'available' && !vehicle.paused
+                  ? 'text-gray-500'
+                  : 'text-gray-400',
+              ]"
+            >
               VNĐ/Giờ
             </span>
           </div>
 
           <!-- Action Buttons -->
           <div class="flex gap-2">
-            <button 
+            <button
               @click="viewVehicleDetail(vehicle.id)"
               class="flex-1 py-2 px-3 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 active:scale-95 transition-all text-xs"
             >
               Chi tiết
             </button>
-            <button 
+            <button
               @click="bookVehicle(vehicle)"
               :disabled="vehicle.status !== 'available' || vehicle.paused"
               :class="[
                 'flex-1 py-2 px-3 rounded-lg font-semibold transition-all text-xs',
                 vehicle.status === 'available' && !vehicle.paused
                   ? 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-md hover:shadow-lg active:scale-95'
-                  : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                  : 'bg-gray-200 text-gray-400 cursor-not-allowed',
               ]"
             >
               Đặt xe
@@ -275,16 +335,19 @@
     </div>
 
     <!-- Pagination -->
-    <div v-if="totalPages > 1" class="flex justify-center items-center space-x-2 mb-8">
+    <div
+      v-if="totalPages > 1"
+      class="flex justify-center items-center space-x-2 mb-8"
+    >
       <!-- Previous Button -->
-      <button 
+      <button
         @click="previousPage"
         :disabled="!hasPreviousPage"
         :class="[
           'px-4 py-2 rounded-lg font-medium transition-all duration-300',
-          hasPreviousPage 
-            ? 'bg-white text-green-600 hover:bg-green-50 border border-green-200 shadow-md hover:shadow-lg' 
-            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+          hasPreviousPage
+            ? 'bg-white text-green-600 hover:bg-green-50 border border-green-200 shadow-md hover:shadow-lg'
+            : 'bg-gray-100 text-gray-400 cursor-not-allowed',
         ]"
       >
         ← Trước
@@ -300,7 +363,7 @@
             'px-4 py-2 rounded-lg font-medium transition-all duration-300',
             page === currentPage
               ? 'bg-gradient-to-r from-green-500 to-green-600 text-white shadow-lg'
-              : 'bg-white text-gray-700 hover:bg-green-50 border border-gray-200 hover:border-green-200'
+              : 'bg-white text-gray-700 hover:bg-green-50 border border-gray-200 hover:border-green-200',
           ]"
         >
           {{ page }}
@@ -308,14 +371,14 @@
       </div>
 
       <!-- Next Button -->
-      <button 
+      <button
         @click="nextPage"
         :disabled="!hasNextPage"
         :class="[
           'px-4 py-2 rounded-lg font-medium transition-all duration-300',
-          hasNextPage 
-            ? 'bg-white text-green-600 hover:bg-green-50 border border-green-200 shadow-md hover:shadow-lg' 
-            : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+          hasNextPage
+            ? 'bg-white text-green-600 hover:bg-green-50 border border-green-200 shadow-md hover:shadow-lg'
+            : 'bg-gray-100 text-gray-400 cursor-not-allowed',
         ]"
       >
         Sau →
@@ -329,88 +392,114 @@
 
     <!-- Loading State -->
     <div v-if="loading" class="flex justify-center items-center py-12">
-      <div class="animate-spin rounded-full h-12 w-12 border-4 border-green-200 border-t-green-600"></div>
+      <div
+        class="animate-spin rounded-full h-12 w-12 border-4 border-green-200 border-t-green-600"
+      ></div>
       <span class="ml-3 text-gray-600 text-lg">Đang tải xe...</span>
     </div>
 
     <!-- Empty State -->
-    <div v-if="!loading && filteredVehicles.length === 0" class="text-center py-16">
+    <div
+      v-if="!loading && filteredVehicles.length === 0"
+      class="text-center py-16"
+    >
       <div class="text-gray-400 text-8xl mb-6">🚗</div>
-      <h3 class="text-2xl font-bold text-gray-600 mb-3">Không tìm thấy xe phù hợp</h3>
+      <h3 class="text-2xl font-bold text-gray-600 mb-3">
+        Không tìm thấy xe phù hợp
+      </h3>
       <p class="text-gray-500 text-lg">Thử thay đổi bộ lọc để tìm xe khác</p>
     </div>
 
     <!-- Booking Confirmation Modal -->
-    <div 
-      v-if="showBookingModal" 
+    <div
+      v-if="showBookingModal"
       class="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn"
       @click.self="closeBookingModal"
     >
-      <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-slideUp">
+      <div
+        class="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 animate-slideUp"
+      >
         <div class="flex items-center justify-between mb-5">
           <h2 class="text-2xl font-bold text-gray-900">Xác nhận đặt xe</h2>
-          <button 
+          <button
             @click="closeBookingModal"
             class="text-gray-400 hover:text-gray-600 transition-colors"
           >
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+            <svg
+              class="w-6 h-6"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M6 18L18 6M6 6l12 12"
+              ></path>
             </svg>
           </button>
         </div>
-        
+
         <!-- Vehicle Info -->
         <div class="mb-5 pb-5 border-b border-gray-200">
           <div class="flex items-center space-x-4">
-            <img 
+            <img
               v-if="selectedVehicle?.image"
-              :src="selectedVehicle.image" 
+              :src="selectedVehicle.image"
               :alt="selectedVehicle.name"
               class="w-16 h-16 object-cover rounded-xl shadow-md"
-            >
+            />
             <div>
-              <h3 class="text-lg font-bold text-gray-900">{{ selectedVehicle?.name }}</h3>
-              <p class="text-green-600 font-semibold text-sm mt-0.5">{{ formatPrice(selectedVehicle?.price || 0) }} VNĐ/giờ</p>
+              <h3 class="text-lg font-bold text-gray-900">
+                {{ selectedVehicle?.name }}
+              </h3>
             </div>
           </div>
         </div>
 
         <!-- Booking Date & Time Selection -->
         <div class="mb-6 pb-5 border-b border-gray-200">
-          <h3 class="text-base font-semibold text-gray-900 mb-4">📅 Thời gian thuê xe</h3>
+          <h3 class="text-base font-semibold text-gray-900 mb-4">
+            📅 Thời gian thuê xe
+          </h3>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <!-- Pickup Date & Time -->
             <div class="space-y-2">
-              <label class="block text-xs font-semibold text-gray-700">🚗 Ngày nhận xe</label>
-              <input 
-                v-model="bookingConfirmData.startDate" 
-                type="date" 
+              <label class="block text-xs font-semibold text-gray-700"
+                >🚗 Ngày nhận xe</label
+              >
+              <input
+                v-model="bookingConfirmData.startDate"
+                type="date"
                 class="w-full p-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white transition-all"
                 @change="calculateBookingSummary"
-              >
-              <input 
-                v-model="bookingConfirmData.startTime" 
-                type="time" 
+              />
+              <input
+                v-model="bookingConfirmData.startTime"
+                type="time"
                 class="w-full p-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white transition-all"
                 @change="calculateBookingSummary"
-              >
+              />
             </div>
 
             <!-- Return Date & Time -->
             <div class="space-y-2">
-              <label class="block text-xs font-semibold text-gray-700">🏁 Ngày trả xe</label>
-              <input 
-                v-model="bookingConfirmData.endDate" 
-                type="date" 
+              <label class="block text-xs font-semibold text-gray-700"
+                >🏁 Ngày trả xe</label
+              >
+              <input
+                v-model="bookingConfirmData.endDate"
+                type="date"
                 class="w-full p-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white transition-all"
                 @change="calculateBookingSummary"
-              >
-              <input 
-                v-model="bookingConfirmData.endTime" 
-                type="time" 
+              />
+              <input
+                v-model="bookingConfirmData.endTime"
+                type="time"
                 class="w-full p-2.5 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white transition-all"
                 @change="calculateBookingSummary"
-              >
+              />
             </div>
           </div>
         </div>
@@ -420,45 +509,60 @@
           <div class="flex justify-between items-center py-2">
             <span class="text-sm text-gray-600">Ngày nhận xe:</span>
             <span class="font-semibold text-gray-900">
-              {{ bookingConfirmData.startDate ? formatBookingDate(bookingConfirmData.startDate) : 'Chưa chọn' }}
-              <span v-if="bookingConfirmData.startTime" class="text-gray-600 ml-2">{{ bookingConfirmData.startTime }}</span>
+              {{
+                bookingConfirmData.startDate
+                  ? formatBookingDate(bookingConfirmData.startDate)
+                  : 'Chưa chọn'
+              }}
+              <span
+                v-if="bookingConfirmData.startTime"
+                class="text-gray-600 ml-2"
+                >{{ bookingConfirmData.startTime }}</span
+              >
             </span>
           </div>
           <div class="flex justify-between items-center py-2">
             <span class="text-sm text-gray-600">Ngày trả xe:</span>
             <span class="font-semibold text-gray-900">
-              {{ bookingConfirmData.endDate ? formatBookingDate(bookingConfirmData.endDate) : 'Chưa chọn' }}
-              <span v-if="bookingConfirmData.endTime" class="text-gray-600 ml-2">{{ bookingConfirmData.endTime }}</span>
+              {{
+                bookingConfirmData.endDate
+                  ? formatBookingDate(bookingConfirmData.endDate)
+                  : 'Chưa chọn'
+              }}
+              <span
+                v-if="bookingConfirmData.endTime"
+                class="text-gray-600 ml-2"
+                >{{ bookingConfirmData.endTime }}</span
+              >
             </span>
           </div>
           <div class="flex justify-between items-center py-2">
             <span class="text-sm text-gray-600">Số ngày thuê:</span>
-            <span class="font-semibold text-gray-900">{{ bookingConfirmData.totalDays || 0 }} ngày</span>
+            <span class="font-semibold text-gray-900"
+              >{{ bookingConfirmData.totalDays || 0 }} ngày</span
+            >
           </div>
-          <div class="border-t border-gray-200 pt-3 mt-3">
-            <div class="flex justify-between items-center">
-              <span class="text-lg font-bold text-gray-900">Tổng số tiền:</span>
-              <span class="text-2xl font-bold text-green-600">{{ formatPrice(bookingConfirmData.totalAmount || 0) }} VNĐ</span>
-            </div>
+          <div class="border-t border-gray-200 pt-3 mt-3 text-sm text-gray-500">
+            Giá thuê sẽ được thông báo ở bước thanh toán.
           </div>
         </div>
 
         <!-- Action Buttons -->
         <div class="flex gap-3">
-          <button 
+          <button
             @click="closeBookingModal"
             class="flex-1 py-3 px-4 bg-gray-100 text-gray-700 rounded-lg font-semibold hover:bg-gray-200 active:scale-95 transition-all"
           >
             Huỷ
           </button>
-          <button 
+          <button
             @click="confirmBooking"
             :disabled="isCreatingBooking"
             :class="[
               'flex-1 py-3 px-4 rounded-lg font-semibold transition-all',
               isCreatingBooking
                 ? 'bg-gray-400 text-gray-600 cursor-not-allowed'
-                : 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-md hover:shadow-lg active:scale-95'
+                : 'bg-gradient-to-r from-green-500 to-green-600 text-white hover:from-green-600 hover:to-green-700 shadow-md hover:shadow-lg active:scale-95',
             ]"
           >
             {{ isCreatingBooking ? 'Đang xử lý...' : 'Xác nhận đặt xe' }}
@@ -480,7 +584,7 @@ import vnApi from '~~/stores/vn_api.json'
 
 // @ts-ignore - Nuxt auto-import
 definePageMeta({
-  middleware: ['role']
+  middleware: ['role'],
 })
 
 // Auth and routing
@@ -489,10 +593,10 @@ const router = useRouter()
 // Reactive data
 const vehiclesStore = useVehiclesStore()
 const bookingsStore = useBookingsStore()
-const { 
-  loading, 
-  filters, 
-  vehicleTypes, 
+const {
+  loading,
+  filters,
+  vehicleTypes,
   displayVehicles,
   filteredVehicles,
   totalPages,
@@ -501,7 +605,7 @@ const {
   hasPreviousPage,
   currentPage,
   sortBy,
-  sortOrder
+  sortOrder,
 } = storeToRefs(vehiclesStore)
 
 // Location data
@@ -526,21 +630,25 @@ const bookingConfirmData = ref({
   startTime: '',
   endTime: '',
   totalDays: 0,
-  totalAmount: 0
+  totalAmount: 0,
 })
 
 const filteredProvinces = computed(() => {
   if (!provinceSearch.value) {
     return allProvinces.value
   }
-  return allProvinces.value.filter(p => p.name.toLowerCase().includes(provinceSearch.value.toLowerCase()))
+  return allProvinces.value.filter((p) =>
+    p.name.toLowerCase().includes(provinceSearch.value.toLowerCase())
+  )
 })
 
 const filteredWards = computed(() => {
   if (!wardSearch.value) {
     return allWards.value
   }
-  return allWards.value.filter((w) => w?.name?.toLowerCase().includes(wardSearch.value.toLowerCase()))
+  return allWards.value.filter((w) =>
+    w?.name?.toLowerCase().includes(wardSearch.value.toLowerCase())
+  )
 })
 
 watch(sortBy, () => {
@@ -575,13 +683,13 @@ function handleWardBlur() {
   }, 200)
 }
 
-function selectProvince(province : any) {
+function selectProvince(province: any) {
   selectedProvince.value = province
   provinceSearch.value = province.name // Hiển thị tên trên UI
   showProvinceDropdown.value = false
 }
 
-function selectWard(ward : any) {
+function selectWard(ward: any) {
   selectedWard.value = ward
   wardSearch.value = ward.name // Hiển thị tên trên UI
   showWardDropdown.value = false
@@ -593,21 +701,21 @@ const visiblePages = computed(() => {
   const pages = []
   const total = totalPages.value
   const current = currentPage.value
-  
+
   // Show max 5 pages
   const maxVisible = 5
   let start = Math.max(1, current - Math.floor(maxVisible / 2))
   let end = Math.min(total, start + maxVisible - 1)
-  
+
   // Adjust start if we're near the end
   if (end - start + 1 < maxVisible) {
     start = Math.max(1, end - maxVisible + 1)
   }
-  
+
   for (let i = start; i <= end; i++) {
     pages.push(i)
   }
-  
+
   return pages
 })
 
@@ -622,7 +730,7 @@ function formatBookingDate(date: string): string {
   return dateObj.toLocaleDateString('vi-VN', {
     year: 'numeric',
     month: '2-digit',
-    day: '2-digit'
+    day: '2-digit',
   })
 }
 
@@ -655,7 +763,10 @@ function formatDateForApi(dateString: string): string {
   if (!dateString) return ''
   // Ensure date is in yyyy-MM-dd format (extract only date part, no time)
   // Handle both date-only strings and datetime strings
-  const dateOnly = dateString.split('T')[0]?.split(' ')[0] || dateString.split(' ')[0] || dateString
+  const dateOnly =
+    dateString.split('T')[0]?.split(' ')[0] ||
+    dateString.split(' ')[0] ||
+    dateString
   if (dateOnly && /^\d{4}-\d{2}-\d{2}$/.test(dateOnly)) {
     return dateOnly
   }
@@ -672,14 +783,14 @@ function formatDateForApi(dateString: string): string {
 
 function formatDateTimeForApi(dateString: string, timeString: string): string {
   if (!dateString) return ''
-  
+
   // Normalize date to yyyy-MM-dd format
   const normalizedDate = formatDateForApi(dateString)
   if (!normalizedDate) return ''
-  
+
   // Use provided time or default to '00:00'
   const time = timeString || '00:00'
-  
+
   // Format: yyyy-MM-dd HH:mm:ss
   return `${normalizedDate} ${time}:00`
 }
@@ -701,9 +812,9 @@ function bookVehicle(vehicle: any) {
   const startDate = getStartDate()
   const endDate = getEndDate(startDate)
   const nextHour = getNextHourTime()
-  
+
   selectedVehicle.value = vehicle
-  
+
   // Reset booking data with defaults
   bookingConfirmData.value = {
     startDate: startDate,
@@ -711,7 +822,7 @@ function bookVehicle(vehicle: any) {
     startTime: nextHour,
     endTime: nextHour,
     totalDays: 0,
-    totalAmount: 0
+    totalAmount: 0,
   }
 
   // Calculate initial summary
@@ -748,9 +859,12 @@ function calculateBookingSummary() {
 
   // Calculate total days
   const totalDays = calculateTotalDays(normalizedStartDate, normalizedEndDate)
-  
+
   // Calculate total amount
-  const totalAmount = calculateTotalAmount(selectedVehicle.value.price, totalDays)
+  const totalAmount = calculateTotalAmount(
+    selectedVehicle.value.price,
+    totalDays
+  )
 
   // Update booking confirm data
   bookingConfirmData.value.totalDays = totalDays
@@ -766,13 +880,18 @@ async function confirmBooking() {
   if (!selectedVehicle.value || isCreatingBooking.value) return
 
   // Validate dates and times
-  if (!bookingConfirmData.value.startDate || !bookingConfirmData.value.endDate) {
+  if (
+    !bookingConfirmData.value.startDate ||
+    !bookingConfirmData.value.endDate
+  ) {
     toast.error('Vui lòng chọn ngày nhận và trả xe!')
     return
   }
 
   // Normalize dates
-  const normalizedStartDate = formatDateForApi(bookingConfirmData.value.startDate)
+  const normalizedStartDate = formatDateForApi(
+    bookingConfirmData.value.startDate
+  )
   const normalizedEndDate = formatDateForApi(bookingConfirmData.value.endDate)
 
   if (!normalizedStartDate || !normalizedEndDate) {
@@ -781,9 +900,13 @@ async function confirmBooking() {
   }
 
   // Create Date objects for validation with time
-  const startDateTime = new Date(`${normalizedStartDate}T${bookingConfirmData.value.startTime || '00:00'}:00`)
-  const endDateTime = new Date(`${normalizedEndDate}T${bookingConfirmData.value.endTime || '23:59'}:00`)
-  
+  const startDateTime = new Date(
+    `${normalizedStartDate}T${bookingConfirmData.value.startTime || '00:00'}:00`
+  )
+  const endDateTime = new Date(
+    `${normalizedEndDate}T${bookingConfirmData.value.endTime || '23:59'}:00`
+  )
+
   // Check if end time is after start time
   if (endDateTime <= startDateTime) {
     toast.error('Thời gian trả xe phải sau thời gian nhận xe!')
@@ -797,7 +920,10 @@ async function confirmBooking() {
     return
   }
 
-  if (!bookingConfirmData.value.totalAmount || bookingConfirmData.value.totalAmount <= 0) {
+  if (
+    !bookingConfirmData.value.totalAmount ||
+    bookingConfirmData.value.totalAmount <= 0
+  ) {
     toast.error('Vui lòng kiểm tra lại thông tin đặt xe!')
     return
   }
@@ -832,7 +958,7 @@ async function confirmBooking() {
       vehicle_id: String(selectedVehicle.value.id),
       start_time: startDateTime,
       end_time: endDateTime,
-      total_amount: bookingConfirmData.value.totalAmount
+      total_amount: bookingConfirmData.value.totalAmount,
     })
 
     // Close modal and redirect
@@ -912,7 +1038,7 @@ function getEndDate(startDate: string): string {
 onMounted(() => {
   const startDate = getStartDate()
   const endDate = getEndDate(startDate)
-  
+
   if (startDate) filters.value.startDate = startDate
   if (endDate) filters.value.endDate = endDate
 
@@ -922,7 +1048,7 @@ onMounted(() => {
 
 // @ts-ignore - Nuxt auto-import
 useHead({
-  title: 'Thuê xe điện - EV Sharing User'
+  title: 'Thuê xe điện - EV Sharing User',
 })
 </script>
 

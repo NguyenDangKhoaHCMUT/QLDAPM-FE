@@ -29,14 +29,13 @@
     <!-- Main Content -->
     <div v-else>
       <!-- Header -->
-      <div class="mb-6">
+      <div class="mb-6 text-center">
         <h1 class="text-3xl font-bold text-gray-900">Thanh toán đặt xe</h1>
-        <p class="text-gray-600">Xác nhận thông tin và thanh toán để hoàn tất đặt xe</p>
+        <p class="text-gray-600 mt-1">Xác nhận thông tin và thanh toán để hoàn tất đặt xe</p>
       </div>
 
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <!-- Left Column: Booking Details -->
-      <div class="lg:col-span-2 space-y-4">
+      <!-- Main Column: Booking + QR -->
+      <div class="space-y-4">
         <!-- Vehicle & Rental Info -->
         <div class="bg-white p-5 rounded-lg shadow-sm">
           <h2 class="text-lg font-semibold text-gray-900 mb-4">Thông tin đặt xe</h2>
@@ -199,68 +198,6 @@
           </div>
         </div>
       </div>
-
-      <!-- Right Column: Price Summary -->
-      <div class="lg:col-span-1">
-        <div class="bg-white p-5 rounded-lg shadow-sm sticky top-6">
-          <h2 class="text-lg font-semibold text-gray-900 mb-4">Tóm tắt thanh toán</h2>
-          
-          <div class="space-y-2 mb-5">
-            <div class="flex justify-between text-sm py-1">
-              <span class="text-gray-600">Giá thuê xe</span>
-              <span class="text-gray-900 font-medium">{{ formatPrice(hourlyRate) }} VNĐ/giờ</span>
-            </div>
-            <div class="flex justify-between text-sm py-1">
-              <span class="text-gray-600">Số giờ thuê</span>
-              <span class="text-gray-900 font-medium">{{ totalHours }} giờ</span>
-            </div>
-            <div class="flex justify-between text-sm py-1">
-              <span class="text-gray-600">Tạm tính</span>
-              <span class="text-gray-900 font-medium">{{ formatPrice(subtotal) }} VNĐ</span>
-            </div>
-            <div class="flex justify-between text-sm py-1">
-              <span class="text-gray-600">Phí dịch vụ (5%)</span>
-              <span class="text-gray-900 font-medium">{{ formatPrice(serviceFee) }} VNĐ</span>
-            </div>
-            <div class="flex justify-between text-sm py-1">
-              <span class="text-gray-600">Thuế VAT (10%)</span>
-              <span class="text-gray-900 font-medium">{{ formatPrice(vat) }} VNĐ</span>
-            </div>
-            
-            <hr class="my-3 border-gray-200">
-            
-            <div class="flex justify-between items-center pt-1">
-              <span class="text-lg font-semibold text-gray-900">Tổng cộng</span>
-              <span class="text-2xl font-bold text-green-600">{{ formatPrice(totalAmount) }} VNĐ</span>
-            </div>
-          </div>
-
-          <div class="pt-4 border-t border-gray-200">
-            <button 
-              v-if="qrInfo"
-              @click="confirmQrTransfer"
-              :disabled="confirmTransferLoading"
-              class="w-full py-3 px-4 rounded-lg font-semibold text-white transition-colors bg-green-600 hover:bg-green-700 disabled:bg-gray-400 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
-            >
-              {{ confirmTransferLoading ? 'Đang xác nhận...' : 'Tôi đã chuyển khoản' }}
-            </button>
-            
-            <button 
-              v-else-if="!qrLoading && !qrError && canProceedPayment"
-              @click="refreshQrCode"
-              class="w-full py-3 px-4 rounded-lg font-semibold text-white transition-colors bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed shadow-md hover:shadow-lg"
-            >
-              Tải mã QR
-            </button>
-            
-            <p class="text-xs text-gray-500 mt-3 text-center leading-relaxed">
-              Sau khi chuyển khoản, nhấn "Tôi đã chuyển khoản" để chủ xe xác nhận
-            </p>
-          </div>
-        </div>
-      </div>
-    </div>
-
     </div>
   </div>
 </template>
@@ -300,6 +237,20 @@ const bookingData = ref({
   endTime: ''
 })
 
+interface PricingBreakdown {
+  subtotal: number
+  serviceFee: number
+  vat: number
+  total: number
+}
+
+const pricingBreakdown = ref<PricingBreakdown>({
+  subtotal: 0,
+  serviceFee: 0,
+  vat: 0,
+  total: 0
+})
+
 const customerInfo = ref({
   fullName: user?.fullname || '',
   phone: user?.phone || '',
@@ -333,18 +284,33 @@ const totalHours = computed(() => {
 })
 
 const subtotal = computed(() => {
-  return hourlyRate.value * totalHours.value
+  if (pricingBreakdown.value.subtotal > 0) {
+    return pricingBreakdown.value.subtotal
+  }
+  return Math.round(hourlyRate.value * totalHours.value)
 })
 
 const serviceFee = computed(() => {
+  if (pricingBreakdown.value.serviceFee > 0) {
+    return pricingBreakdown.value.serviceFee
+  }
+  if (subtotal.value <= 0) return 0
   return Math.round(subtotal.value * 0.05)
 })
 
 const vat = computed(() => {
-  return Math.round((subtotal.value + serviceFee.value) * 0.1)
+  if (pricingBreakdown.value.vat > 0) {
+    return pricingBreakdown.value.vat
+  }
+  const base = subtotal.value + serviceFee.value
+  if (base <= 0) return 0
+  return Math.round(base * 0.1)
 })
 
 const totalAmount = computed(() => {
+  if (pricingBreakdown.value.total > 0) {
+    return pricingBreakdown.value.total
+  }
   return subtotal.value + serviceFee.value + vat.value
 })
 
@@ -374,6 +340,14 @@ const qrPayload = computed(() => {
 // Methods
 function formatPrice(price: number): string {
   return new Intl.NumberFormat('vi-VN').format(price)
+}
+
+function parseAmount(value: unknown): number {
+  const num = Number(value)
+  if (!Number.isFinite(num)) {
+    return 0
+  }
+  return Math.round(num)
 }
 
 function formatDate(dateString: string): string {
@@ -408,20 +382,31 @@ function splitDateTime(value?: string) {
   if (!value) {
     return { date: '', time: '' }
   }
-  const onlyDate = /^\d{4}-\d{2}-\d{2}$/.test(value)
-  if (onlyDate) {
-    return { date: value, time: '00:00' }
+
+  const trimmed = value.trim()
+  const match = trimmed.match(/^(\d{4}-\d{2}-\d{2})(?:[T\s](\d{2}:\d{2})(?::\d{2})?)?/)
+  if (match) {
+    const [, datePart = '', timePart] = match
+    return {
+      date: datePart,
+      time: timePart || '00:00'
+    }
   }
-  const parsed = new Date(value)
+
+  const parsed = new Date(trimmed)
   if (Number.isNaN(parsed.getTime())) {
-    const datePart = value.slice(0, 10)
-    const timePart = value.slice(11, 16) || '00:00'
-    return { date: datePart, time: timePart }
+    return { date: '', time: '' }
   }
-  const isoString = parsed.toISOString()
+
+  const year = parsed.getFullYear()
+  const month = String(parsed.getMonth() + 1).padStart(2, '0')
+  const day = String(parsed.getDate()).padStart(2, '0')
+  const hours = String(parsed.getHours()).padStart(2, '0')
+  const minutes = String(parsed.getMinutes()).padStart(2, '0')
+
   return {
-    date: isoString.slice(0, 10),
-    time: isoString.slice(11, 16)
+    date: `${year}-${month}-${day}`,
+    time: `${hours}:${minutes}`
   }
 }
 
@@ -462,6 +447,41 @@ async function loadBookingDetails(bookingIdParam: string) {
     bookingData.value.startTime = start.time
     bookingData.value.endDate = end.date
     bookingData.value.endTime = end.time
+
+    const apiSubtotal = parseAmount(
+      bookingItem.subtotal ??
+      bookingItem.sub_total ??
+      bookingItem.totalBeforeFee ??
+      bookingItem.total_before_fee
+    )
+    const apiServiceFee = parseAmount(
+      bookingItem.serviceFee ??
+      bookingItem.service_fee ??
+      bookingItem.platformFee ??
+      bookingItem.platform_fee
+    )
+    const apiVat = parseAmount(
+      bookingItem.vat ??
+      bookingItem.vatFee ??
+      bookingItem.vat_fee ??
+      bookingItem.tax ??
+      bookingItem.taxAmount ??
+      bookingItem.tax_amount
+    )
+    const apiTotal = parseAmount(
+      bookingItem.totalAmount ??
+      bookingItem.total_amount ??
+      bookingItem.amount ??
+      bookingItem.grandTotal ??
+      bookingItem.grand_total
+    )
+
+    pricingBreakdown.value = {
+      subtotal: apiSubtotal,
+      serviceFee: apiServiceFee,
+      vat: apiVat,
+      total: apiTotal
+    }
 
     currentBookingId.value = String(bookingItem.bookingId ?? bookingItem.booking_id ?? bookingIdParam)
   } catch (error: any) {

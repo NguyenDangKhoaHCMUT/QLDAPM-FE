@@ -52,7 +52,6 @@
               <div class="space-y-1">
                 <h3 class="text-xl font-semibold text-gray-900">{{ booking.vehicle.name }}</h3>
                 <p class="text-sm text-gray-500">{{ booking.vehicle.type || 'Không rõ loại' }}</p>
-                <p class="text-green-600 font-semibold">{{ formatPrice(booking.vehicle.price) }} VNĐ/giờ</p>
               </div>
             </div>
           </div>
@@ -86,11 +85,11 @@
             </div>
           </div>
 
-          <!-- Payment -->
+          <!-- Actions -->
           <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 border-t border-gray-100 pt-4">
-            <div class="space-y-2">
-              <p class="text-sm text-gray-500">Tổng tiền (đã bao gồm phí dịch vụ 5% và VAT 10%)</p>
-              <p class="text-2xl font-bold text-green-600">{{ formatPrice(booking.totalAmount) }} VNĐ</p>
+            <div class="text-sm text-gray-500">
+              Trạng thái đơn: 
+              <span class="font-semibold text-gray-900">{{ statusLabel(booking.bookingStatus) }}</span>
             </div>
             <div class="flex items-center gap-3">
               <button
@@ -140,11 +139,6 @@ definePageMeta({
 // Store
 const vehiclesStore = useVehiclesStore()
 const { rentedLoading, rentedBookings } = storeToRefs(vehiclesStore)
-
-// Methods
-function formatPrice(price: number): string {
-  return new Intl.NumberFormat('vi-VN').format(price)
-}
 
 function formatDateTime(dateTimeString: string): string {
   const date = new Date(dateTimeString)
