@@ -187,17 +187,34 @@ export const useVehiclesStore = defineStore('vehicles', () => {
   }
 
   // Actions: rented vehicles
-  async function fetchRentedVehicles() {
+  async function fetchRentedVehicles(params?: { page?: number; size?: number }) {
     rentedLoading.value = true
     try {
-      const res = await get<any>('/vehicles/rented')
-      // API may return either an array directly or an object with { data: [...] }
+      const query: string[] = []
+      if (typeof params?.page === 'number') {
+        query.push(`page=${params.page}`)
+      }
+      if (typeof params?.size === 'number') {
+        query.push(`size=${params.size}`)
+      }
+
+      const queryString = query.length ? `?${query.join('&')}` : ''
+      const res = await get<any>(`/vehicles/rented${queryString}`)
+
+      // API may return either:
+      // - an array directly
+      // - an object with { data: [...] }
+      // - an object with { items: [...], page, size, total, totalPages }
       const payload = res?.data as any
-      const items: any[] = Array.isArray(payload)
-        ? payload
-        : Array.isArray(payload?.data)
-          ? payload.data
-          : []
+      let items: any[] = []
+
+      if (Array.isArray(payload)) {
+        items = payload
+      } else if (Array.isArray(payload?.data)) {
+        items = payload.data
+      } else if (Array.isArray(payload?.items)) {
+        items = payload.items
+      }
 
       rentedBookings.value = items.map((item: any) => {
         const vehicle = item?.vehicle ?? item

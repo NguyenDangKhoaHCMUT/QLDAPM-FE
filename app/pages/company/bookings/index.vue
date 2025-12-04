@@ -104,11 +104,54 @@
         </div>
       </div>
     </div>
+
+    <!-- Pagination Controls -->
+    <div class="flex flex-col md:flex-row md:items-center md:justify-between mt-4 text-sm text-gray-600 gap-3">
+      <!-- Left: Prev / Next -->
+      <div class="flex items-center gap-2">
+        <button
+          class="px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          :disabled="currentPage === 1 || isLoading"
+          @click="loadPage(currentPage - 1)"
+        >
+          ← Trước
+        </button>
+        <button
+          class="px-3 py-2 rounded-lg border border-gray-200 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+          :disabled="isLoading || currentPage >= totalPages"
+          @click="loadPage(currentPage + 1)"
+        >
+          Sau →
+        </button>
+      </div>
+
+      <!-- Middle: Page numbers -->
+      <div class="flex items-center justify-center gap-1">
+        <button
+          v-for="page in visiblePages"
+          :key="page"
+          @click="loadPage(page)"
+          :class="[
+            'px-3 py-1.5 rounded-lg border text-sm font-medium transition-colors',
+            page === currentPage
+              ? 'bg-blue-600 text-white border-blue-600'
+              : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'
+          ]"
+        >
+          {{ page }}
+        </button>
+      </div>
+
+      <!-- Right: Info -->
+      <div class="text-right">
+        Trang {{ currentPage }} / {{ totalPages }} ({{ totalItems }} đơn)
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed, onMounted, reactive } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useCompanyBookingsStore } from '~~/stores/companyBookings'
 
 const defaultVehicleImage = 'https://images.unsplash.com/photo-1525609004556-c46c7d6cf023?w=400'
@@ -116,10 +159,37 @@ const defaultVehicleImage = 'https://images.unsplash.com/photo-1525609004556-c46
 const companyBookingsStore = useCompanyBookingsStore()
 const noteDrafts = reactive<Record<string, string>>({})
 
+// Pagination (1-based on UI, 0-based for API)
+const currentPage = ref(1)
+const pageSize = 10
+
 const bookings = computed(() => companyBookingsStore.bookings)
 const pendingCount = computed(() => companyBookingsStore.pendingConfirmationCount)
 const isLoading = computed(() => companyBookingsStore.isLoading)
 const isConfirming = computed(() => companyBookingsStore.isConfirming)
+const totalPages = computed(() => companyBookingsStore.totalPages)
+const totalItems = computed(() => companyBookingsStore.total)
+
+// Hiển thị tối đa 5 nút trang, trượt theo currentPage
+const visiblePages = computed(() => {
+  const pages: number[] = []
+  const total = totalPages.value || 1
+  const current = currentPage.value
+  const maxVisible = 5
+
+  let start = Math.max(1, current - Math.floor(maxVisible / 2))
+  let end = Math.min(total, start + maxVisible - 1)
+
+  if (end - start + 1 < maxVisible) {
+    start = Math.max(1, end - maxVisible + 1)
+  }
+
+  for (let i = start; i <= end; i++) {
+    pages.push(i)
+  }
+
+  return pages
+})
 
 function formatPrice(value: number) {
   return new Intl.NumberFormat('vi-VN').format(value)
@@ -182,12 +252,22 @@ async function confirmBooking(id: string, note?: string, action: 'confirm' | 'ca
   })
 }
 
+async function loadPage(page: number) {
+  if (page < 1) return
+  currentPage.value = page
+  // API expects 0-based page index
+  await companyBookingsStore.fetchCompanyBookings({
+    page: page - 1,
+    size: pageSize
+  })
+}
+
 async function refresh() {
-  await companyBookingsStore.fetchCompanyBookings()
+  await loadPage(currentPage.value)
 }
 
 onMounted(async () => {
-  await refresh()
+  await loadPage(1)
 })
 
 // @ts-ignore - Nuxt auto-import

@@ -29,6 +29,12 @@ export const useCompanyBookingsStore = defineStore('companyBookings', () => {
   const isConfirming = ref(false)
   const lastError = ref<string | null>(null)
 
+  // Pagination state from API (0-based page index)
+  const page = ref(0)
+  const size = ref(10)
+  const total = ref(0)
+  const totalPages = ref(1)
+
   const { get, post, error } = useApi()
 
   const pendingConfirmationCount = computed(() =>
@@ -96,9 +102,27 @@ export const useCompanyBookingsStore = defineStore('companyBookings', () => {
       
       const res = await get<any>(endpoint)
       // Response structure: { code: 200, message: "...", data: { items: [...], page: 0, size: 10, total: 6, totalPages: 1 } }
-      const payload = res?.data
-      const items = Array.isArray(payload?.items) ? payload.items : Array.isArray(payload) ? payload : []
+      const payload = res?.data as any
+
+      // API response may be wrapped: { code, message, data: { items, page, size, total, totalPages } }
+      const data = payload?.data ?? payload
+
+      const items = Array.isArray(data?.items) ? data.items : (Array.isArray(data) ? data : [])
       bookings.value = items.map(mapBooking)
+
+      // Update pagination meta if available
+      if (typeof data?.page === 'number') {
+        page.value = data.page
+      }
+      if (typeof data?.size === 'number') {
+        size.value = data.size
+      }
+      if (typeof data?.total === 'number') {
+        total.value = data.total
+      }
+      if (typeof data?.totalPages === 'number') {
+        totalPages.value = data.totalPages
+      }
     } catch (e: any) {
       lastError.value = error.value || e?.message || 'Không thể tải danh sách booking'
       toast.error(lastError.value)
@@ -131,6 +155,11 @@ export const useCompanyBookingsStore = defineStore('companyBookings', () => {
     isConfirming,
     lastError,
     pendingConfirmationCount,
+    // pagination meta
+    page,
+    size,
+    total,
+    totalPages,
     fetchCompanyBookings,
     confirmPayment
   }
