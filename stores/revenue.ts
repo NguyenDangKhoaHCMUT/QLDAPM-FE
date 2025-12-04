@@ -49,9 +49,9 @@ export const useRevenueStore = defineStore('revenue', () => {
         endDate
       })
       const res = await get<RevenueSummary>(`/api/reports/revenue/summary?${params.toString()}`)
-      console.log(res)
-      summary.value = res.data
-      return res.data
+      const payload = (res as any)?.data ?? res
+      summary.value = payload as RevenueSummary
+      return summary.value
     } catch (e: any) {
       const errorMsg = error.value || e?.message || 'Fetch revenue summary failed'
       lastError.value = errorMsg
@@ -95,9 +95,9 @@ export const useRevenueStore = defineStore('revenue', () => {
         sort
       })
       const res = await get<RevenueTransactionsResponse>(`/api/reports/revenue/transactions?${params.toString()}`)
-      
-      transactions.value = res.data
-      return res.data
+      const payload = (res as any)?.data ?? res
+      transactions.value = payload as RevenueTransactionsResponse
+      return transactions.value
     } catch (e: any) {
       const errorMsg = error.value || e?.message || 'Fetch revenue transactions failed'
       lastError.value = errorMsg

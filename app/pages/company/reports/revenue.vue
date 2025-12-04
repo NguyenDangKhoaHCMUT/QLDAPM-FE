@@ -366,6 +366,7 @@ async function loadData() {
   } catch (error) {
     console.error('Failed to load revenue data', error)
   } finally {
+    console.log(revenueStore.summary)
     isPageLoading.value = false
   }
 }
